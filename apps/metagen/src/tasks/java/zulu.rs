@@ -13,30 +13,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::java::{into_java_build, ZuluBuild, ZuluPackage};
-use crate::tasks::java::Provider;
-use crate::CLIENT;
+use crate::{
+    models::java::{into_java_build, ZuluBuild, ZuluPackage},
+    tasks::java::Provider,
+    CLIENT,
+};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
-use launcher::models::java::JavaBuild;
-use launcher::models::Environment;
-use platforms::{Arch, Env, OS};
+use launcher::models::{java::JavaBuild, Environment};
+use platforms::{Arch, OS};
 use url::Url;
 
 const ZULU_BASE: &str = "https://api.azul.com/metadata/v1/zulu/packages";
 
 /// Maps Platform enums to strings that the Zulu API accepts.
-fn map(env: Environment) -> (&'static str, &'static str, &'static str) {
-    let clib = match env.env {
-        Env::Musl => "linux-musl",
-        _ => "linux-glibc",
-    };
+fn map(env: &Environment) -> (&'static str, &'static str, &'static str) {
     (
-        match env.os {
-            OS::MacOS | OS::Windows => env.os.as_str(),
-            OS::Linux => clib,
-            _ => unimplemented!(),
-        },
+        env.os.as_str(),
         match env.arch {
             Arch::AArch64 => "aarch64",
             Arch::X86_64 => "x64",
@@ -54,10 +47,10 @@ pub struct Zulu;
 
 #[async_trait]
 impl Provider for Zulu {
-    async fn fetch(version: u8, env: Environment) -> Result<JavaBuild> {
+    async fn fetch(version: u8, env: &Environment) -> Result<JavaBuild> {
         let (os, arch, archive) = map(env);
         let params = &[
-            ("java_package_type", "jre"),
+            // ("java_package_type", "jre"),
             ("javafx_bundled", "false"),
             ("latest", "true"),
             ("release_status", "ga"),

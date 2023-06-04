@@ -13,27 +13,32 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use platforms::{Arch, OS};
+use crate::models::game::common::Stability;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::env::consts;
-use std::str::FromStr;
+use url::Url;
 
-pub mod game;
-pub mod java;
-
-/// A struct that describes the environment the binary is running in.
-/// (Somewhat similar to a target triple)
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Environment {
-    pub os: OS,
-    pub arch: Arch,
+#[serde(rename_all = "camelCase")]
+pub struct _GameVersionInfo {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub stability: Stability,
+    pub url: Url,
+    pub time: DateTime<Utc>,
+    pub release_time: DateTime<Utc>,
+    pub sha1: String,
+    pub compliance_level: u8,
 }
 
-impl Default for Environment {
-    fn default() -> Self {
-        Environment {
-            os: OS::from_str(consts::OS).unwrap(),
-            arch: Arch::from_str(consts::ARCH).unwrap(),
-        }
-    }
+#[derive(Debug, Deserialize, Serialize)]
+pub struct _GameVersionInfoIndexLatest {
+    pub release: String,
+    pub snapshot: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GameVersionInfoIndex {
+    pub latest: _GameVersionInfoIndexLatest,
+    pub versions: Vec<_GameVersionInfo>,
 }

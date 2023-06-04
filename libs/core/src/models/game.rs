@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use platforms::{Arch, OS};
 use semver::VersionReq;
 use serde::{Deserialize, Serialize};
@@ -114,7 +114,7 @@ pub struct GameVersion {
     /// The Java class that serves as the entry point for this version.
     pub entrypoint: String,
     /// Date and time of release of this version.
-    pub released: NaiveDateTime,
+    pub released: DateTime<Utc>,
     /// Arguments to be passed to the game.
     pub arguments: Vec<GameMaybeConditional<String>>,
     /// Arguments to be passed to the Java virtual machine.

@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct AdoptiumBuildDownloadable {
+pub struct _AdoptiumBuildDownloadable {
     pub name: String,
     pub link: Url,
     pub size: u64,
@@ -31,19 +31,19 @@ pub struct AdoptiumBuildDownloadable {
 #[non_exhaustive]
 #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum AdoptiumBuildOS {
+pub enum _AdoptiumBuildOS {
     Linux,
     Windows,
     Mac,
 }
 
 #[allow(clippy::from_over_into)]
-impl Into<OS> for AdoptiumBuildOS {
+impl Into<OS> for _AdoptiumBuildOS {
     fn into(self) -> OS {
         match self {
-            AdoptiumBuildOS::Linux => OS::Linux,
-            AdoptiumBuildOS::Windows => OS::Windows,
-            AdoptiumBuildOS::Mac => OS::MacOS,
+            _AdoptiumBuildOS::Linux => OS::Linux,
+            _AdoptiumBuildOS::Windows => OS::Windows,
+            _AdoptiumBuildOS::Mac => OS::MacOS,
         }
     }
 }
@@ -51,75 +51,66 @@ impl Into<OS> for AdoptiumBuildOS {
 #[non_exhaustive]
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum AdoptiumBuildArch {
+pub enum _AdoptiumBuildArch {
     X64,
     AArch64,
 }
 
 #[allow(clippy::from_over_into)]
-impl Into<Arch> for AdoptiumBuildArch {
+impl Into<Arch> for _AdoptiumBuildArch {
     fn into(self) -> Arch {
         match self {
-            AdoptiumBuildArch::X64 => Arch::X86_64,
-            AdoptiumBuildArch::AArch64 => Arch::AArch64,
+            _AdoptiumBuildArch::X64 => Arch::X86_64,
+            _AdoptiumBuildArch::AArch64 => Arch::AArch64,
         }
     }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum AdoptiumBuildCLib {
+pub enum _AdoptiumBuildCLib {
     Glibc,
     Musl,
 }
 
 #[allow(clippy::from_over_into)]
-impl Into<Env> for AdoptiumBuildCLib {
+impl Into<Env> for _AdoptiumBuildCLib {
     fn into(self) -> Env {
         match self {
-            AdoptiumBuildCLib::Glibc => Env::Gnu,
-            AdoptiumBuildCLib::Musl => Env::Musl,
+            _AdoptiumBuildCLib::Glibc => Env::Gnu,
+            _AdoptiumBuildCLib::Musl => Env::Musl,
         }
     }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct AdoptiumBinary {
-    pub os: AdoptiumBuildOS,
-    pub architecture: AdoptiumBuildArch,
-    pub c_lib: Option<AdoptiumBuildCLib>,
-    pub package: AdoptiumBuildDownloadable,
+pub struct _AdoptiumBinary {
+    pub os: _AdoptiumBuildOS,
+    pub architecture: _AdoptiumBuildArch,
+    pub c_lib: Option<_AdoptiumBuildCLib>,
+    pub package: _AdoptiumBuildDownloadable,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct AdoptiumBuildVersionData {
+pub struct _AdoptiumBuildVersionData {
     pub semver: Version,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AdoptiumBuild {
-    pub binary: AdoptiumBinary,
-    pub version: AdoptiumBuildVersionData,
+    pub binary: _AdoptiumBinary,
+    pub version: _AdoptiumBuildVersionData,
 }
 
 #[allow(clippy::from_over_into)]
 impl Into<JavaBuild> for AdoptiumBuild {
     fn into(self) -> JavaBuild {
-        let env = if self.binary.os == AdoptiumBuildOS::Windows {
-            Env::Msvc
-        } else if self.binary.os == AdoptiumBuildOS::Linux {
-            self.binary.c_lib.unwrap_or(AdoptiumBuildCLib::Glibc).into()
-        } else {
-            Env::None
-        };
-
         JavaBuild {
             provider: JavaProvider::Adoptium,
             version: self.version.semver,
             environment: Environment {
                 os: self.binary.os.into(),
                 arch: self.binary.architecture.into(),
-                env,
             },
             name: self.binary.package.name,
             size: self.binary.package.size,

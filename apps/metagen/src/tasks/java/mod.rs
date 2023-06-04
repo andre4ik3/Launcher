@@ -17,18 +17,54 @@ use anyhow::Result;
 use async_trait::async_trait;
 use launcher::models::java::JavaBuild;
 use launcher::models::Environment;
+use platforms::{Arch, OS};
 
 mod adoptium;
 mod zulu;
 
-pub use adoptium::Adoptium;
-pub use zulu::Zulu;
+const JAVA_TARGETS: [Environment; 6] = [
+    Environment {
+        os: OS::Linux,
+        arch: Arch::AArch64,
+    },
+    Environment {
+        os: OS::Linux,
+        arch: Arch::X86_64,
+    },
+    Environment {
+        os: OS::MacOS,
+        arch: Arch::AArch64,
+    },
+    Environment {
+        os: OS::MacOS,
+        arch: Arch::X86_64,
+    },
+    Environment {
+        os: OS::Windows,
+        arch: Arch::AArch64,
+    },
+    Environment {
+        os: OS::Windows,
+        arch: Arch::X86_64,
+    },
+];
 
 /// An abstract interface to fetch a specific Java build from the provider
 #[async_trait]
 pub trait Provider {
-    async fn fetch(version: u8, env: Environment) -> Result<JavaBuild>;
+    async fn fetch(version: u8, env: &Environment) -> Result<JavaBuild>;
 }
 
-/// A task to fetch Java builds for all available major versions and OS'es
-pub struct JavaTask;
+pub async fn run() -> Result<()> {
+    for target in JAVA_TARGETS {
+        let build = {
+            if let Ok(build) = adoptium::Adoptium::fetch(17, &target).await {
+                build
+            } else {
+                zulu::Zulu::fetch(17, &target).await?
+            }
+        };
+        println!("{:?}", build);
+    }
+    Ok(())
+}

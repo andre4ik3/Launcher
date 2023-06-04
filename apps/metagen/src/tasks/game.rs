@@ -12,3 +12,27 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+use crate::models::game::legacy::GameManifestLegacy;
+use crate::models::game::{GameManifest, GameVersionInfoIndex};
+use crate::CLIENT;
+use anyhow::Result;
+
+const INDEX_URL: &str = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
+
+pub async fn run() -> Result<()> {
+    let resp = CLIENT.get(INDEX_URL).send().await?.error_for_status()?;
+    let mut resp: GameVersionInfoIndex = resp.json().await?;
+
+    resp.versions.reverse();
+
+    #[allow(clippy::never_loop)]
+    for version in resp.versions {
+        println!("{}: {}", version.id, version.url);
+        let data = CLIENT.get(version.url).send().await?.error_for_status()?;
+        let data: GameManifestLegacy = data.json().await?;
+        println!("{:?}", data);
+    }
+
+    Ok(())
+}

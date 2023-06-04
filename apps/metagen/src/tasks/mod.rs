@@ -13,14 +13,5 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use anyhow::Result;
-use async_trait::async_trait;
-
-mod game;
+pub mod game;
 pub mod java;
-
-/// A task that runs during the metadata generation sequence.
-#[async_trait]
-pub trait Task {
-    async fn run() -> Result<()>;
-}

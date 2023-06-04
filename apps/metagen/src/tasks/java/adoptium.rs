@@ -13,12 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::java::AdoptiumBuild;
-use crate::{tasks::java::Provider, CLIENT};
+use crate::{models::java::AdoptiumBuild, tasks::java::Provider, CLIENT};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
-use launcher::models::java::JavaBuild;
-use launcher::models::Environment;
+use launcher::models::{java::JavaBuild, Environment};
 use platforms::{Arch, OS};
 use url::Url;
 
@@ -44,7 +42,7 @@ pub struct Adoptium;
 
 #[async_trait]
 impl Provider for Adoptium {
-    async fn fetch(version: u8, env: Environment) -> Result<JavaBuild> {
+    async fn fetch(version: u8, env: &Environment) -> Result<JavaBuild> {
         let url = &format!("{}/{}/hotspot", ADOPTIUM_BASE, version);
         let (os, arch) = map(env.os, env.arch);
         let params = &[
@@ -56,20 +54,13 @@ impl Provider for Adoptium {
 
         let url = Url::parse_with_params(url, params)?;
         let resp = CLIENT.get(url).send().await?.error_for_status()?;
-        let build: Vec<AdoptiumBuild> = resp.json().await?;
-
-        let mut build: Vec<JavaBuild> = build
-            .into_iter()
-            .map(<AdoptiumBuild as Into<JavaBuild>>::into)
-            .filter(|b| b.environment.env == env.env)
-            .collect();
+        let mut build: Vec<AdoptiumBuild> = resp.json().await?;
 
         if build.is_empty() {
             bail!("Build not found");
         }
 
-        // This is the one part of Rust I don't like
-        // https://stackoverflow.com/questions/27904864/what-does-cannot-move-out-of-index-of-mean
-        Ok(build.swap_remove(0))
+        let build = build.swap_remove(0);
+        Ok(build.into())
     }
 }

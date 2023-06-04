@@ -30,55 +30,55 @@ pub struct ZuluBuild {
 
 #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum ZuluPackageOS {
+pub enum _ZuluPackageOS {
     Linux,
     MacOS,
     Windows,
 }
 
 #[allow(clippy::from_over_into)]
-impl Into<OS> for ZuluPackageOS {
+impl Into<OS> for _ZuluPackageOS {
     fn into(self) -> OS {
         match self {
-            ZuluPackageOS::Linux => OS::Linux,
-            ZuluPackageOS::MacOS => OS::MacOS,
-            ZuluPackageOS::Windows => OS::Windows,
+            _ZuluPackageOS::Linux => OS::Linux,
+            _ZuluPackageOS::MacOS => OS::MacOS,
+            _ZuluPackageOS::Windows => OS::Windows,
         }
     }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum ZuluPackageArch {
+pub enum _ZuluPackageArch {
     Arm,
     X64,
 }
 
 #[allow(clippy::from_over_into)]
-impl Into<Arch> for ZuluPackageArch {
+impl Into<Arch> for _ZuluPackageArch {
     fn into(self) -> Arch {
         match self {
-            ZuluPackageArch::Arm => Arch::AArch64,
-            ZuluPackageArch::X64 => Arch::X86_64,
+            _ZuluPackageArch::Arm => Arch::AArch64,
+            _ZuluPackageArch::X64 => Arch::X86_64,
         }
     }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum ZuluPackageCLib {
+pub enum _ZuluPackageCLib {
     Glibc,
     UClibc,
     Musl,
 }
 
 #[allow(clippy::from_over_into)]
-impl Into<Env> for ZuluPackageCLib {
+impl Into<Env> for _ZuluPackageCLib {
     fn into(self) -> Env {
         match self {
-            ZuluPackageCLib::Glibc => Env::Gnu,
-            ZuluPackageCLib::UClibc => Env::UClibc,
-            ZuluPackageCLib::Musl => Env::Musl,
+            _ZuluPackageCLib::Glibc => Env::Gnu,
+            _ZuluPackageCLib::UClibc => Env::UClibc,
+            _ZuluPackageCLib::Musl => Env::Musl,
         }
     }
 }
@@ -87,20 +87,13 @@ impl Into<Env> for ZuluPackageCLib {
 pub struct ZuluPackage {
     pub sha256_hash: String,
     pub size: u64,
-    pub os: ZuluPackageOS,
-    pub lib_c_type: Option<ZuluPackageCLib>,
-    pub arch: ZuluPackageArch,
+    pub os: _ZuluPackageOS,
+    pub lib_c_type: Option<_ZuluPackageCLib>,
+    pub arch: _ZuluPackageArch,
 }
 
+/// Converts a Zulu build and package struct into a unified JavaBuild struct.
 pub fn into_java_build(build: ZuluBuild, package: ZuluPackage) -> JavaBuild {
-    let env = if package.os == ZuluPackageOS::Windows {
-        Env::Msvc
-    } else if package.os == ZuluPackageOS::Linux {
-        package.lib_c_type.unwrap_or(ZuluPackageCLib::Glibc).into()
-    } else {
-        Env::None
-    };
-
     JavaBuild {
         provider: JavaProvider::Zulu,
         version: Version::new(
@@ -111,7 +104,6 @@ pub fn into_java_build(build: ZuluBuild, package: ZuluPackage) -> JavaBuild {
         environment: Environment {
             os: package.os.into(),
             arch: package.arch.into(),
-            env,
         },
         name: build.name,
         size: package.size,
