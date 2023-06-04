@@ -16,9 +16,11 @@
 use serde::{Deserialize, Serialize};
 
 pub mod legacy;
+pub mod v17w43a;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum GameManifest {
     Legacy(legacy::GameManifestLegacy),
+    Modern(v17w43a::GameManifest17w43a),
 }

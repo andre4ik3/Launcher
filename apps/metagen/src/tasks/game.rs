@@ -14,23 +14,25 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::models::game::legacy::GameManifestLegacy;
+use crate::models::game::v17w43a::GameManifest17w43a;
 use crate::models::game::{GameManifest, GameVersionInfoIndex};
 use crate::CLIENT;
 use anyhow::Result;
+use chrono::NaiveDate;
 
 const INDEX_URL: &str = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 
 pub async fn run() -> Result<()> {
     let resp = CLIENT.get(INDEX_URL).send().await?.error_for_status()?;
+    let time = NaiveDate::from_ymd_opt(2018, 06, 14).unwrap();
     let mut resp: GameVersionInfoIndex = resp.json().await?;
 
     resp.versions.reverse();
 
-    #[allow(clippy::never_loop)]
     for version in resp.versions {
         println!("{}: {}", version.id, version.url);
         let data = CLIENT.get(version.url).send().await?.error_for_status()?;
-        let data: GameManifestLegacy = data.json().await?;
+        let data: GameManifest = data.json().await?;
         println!("{:?}", data);
     }
 

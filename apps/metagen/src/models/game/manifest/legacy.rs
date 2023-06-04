@@ -13,7 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::game::common::{Artifact, AssetIndex, Downloads, JavaVersion, Rule, Stability};
+use crate::models::game::common::{
+    Artifact, AssetIndex, Downloads, JavaVersion, Logging, Rule, Stability,
+};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -27,6 +29,7 @@ pub struct CommonLibraryDownloads {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct NativeLibraryDownloads {
+    pub artifact: Option<Artifact>,
     pub classifiers: HashMap<String, Artifact>,
 }
 
@@ -41,9 +44,9 @@ pub struct CommonLibrary {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct NativeKeys {
-    pub linux: String,
-    pub osx: String,
-    pub windows: String,
+    pub linux: Option<String>,
+    pub osx: Option<String>,
+    pub windows: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -76,8 +79,8 @@ pub struct GameManifestLegacy {
     pub downloads: Downloads,
     #[serde(rename = "type")]
     pub stability: Stability,
-    pub java_version: JavaVersion,
-    pub compliance_level: u8,
+    pub java_version: Option<JavaVersion>,
+    pub compliance_level: Option<u8>,
     pub assets: String,
     pub asset_index: AssetIndex,
     pub libraries: Vec<Library>,
@@ -86,4 +89,5 @@ pub struct GameManifestLegacy {
     pub minimum_launcher_version: u64,
     pub release_time: DateTime<Utc>,
     pub time: DateTime<Utc>,
+    pub logging: Option<Logging>,
 }

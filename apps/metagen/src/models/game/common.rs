@@ -19,6 +19,30 @@ use std::collections::HashMap;
 use url::Url;
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct LoggingFile {
+    pub id: String,
+    pub sha1: String,
+    pub size: u64,
+    pub url: Url,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClientLogging {
+    pub argument: String,
+    pub file: LoggingFile,
+    #[serde(rename = "type")]
+    pub logging_type: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Logging {
+    pub client: ClientLogging,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Stability {
     Release,
@@ -72,6 +96,7 @@ pub struct Artifact {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(untagged)]
 pub enum MaybeArray<T> {
     Single(T),
     Multiple(Vec<T>),
@@ -87,6 +112,7 @@ pub enum RuleAction {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RuleOS {
+    pub arch: Option<String>,
     pub name: Option<String>,
     pub version: Option<String>,
 }
@@ -103,5 +129,12 @@ pub struct Rule {
 #[serde(deny_unknown_fields)]
 pub struct RuleConditional<T> {
     pub rules: Vec<Rule>,
-    pub value: MaybeArray<T>,
+    pub value: T,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum MaybeConditional<T> {
+    Unconditional(T),
+    Conditional(RuleConditional<T>),
 }
