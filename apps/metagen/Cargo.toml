@@ -1,0 +1,22 @@
+[package]
+name = "metagen"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+
+[dependencies]
+launcher = { path = "../../libs/core", version = "*" }
+
+# Core dependencies
+reqwest = { version = "0.11", features = ["json"] }
+ron = "0.8"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+
+# Utilities
+anyhow = "1"
+async-trait = "0.1"
+once_cell = "1"
+platforms = { version = "3", features = ["serde"] }
+semver = { version = "1", features = ["serde"] }
+url = { version = "2", features = ["serde"] }

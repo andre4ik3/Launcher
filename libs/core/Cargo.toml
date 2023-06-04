@@ -1,0 +1,20 @@
+[package]
+name = "launcher"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+
+[dependencies]
+# Core dependencies
+serde = { version = "1", features = ["derive"] }
+ron = "0.8"
+
+# Utilities
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+hex = { version = "0.4", features = ["serde"] }
+platforms = { version = "3", features = ["serde"] }
+semver = { version = "1", features = ["serde"] }
+sha1 = "0.10"
+sha2 = "0.10"
+url = { version = "2", features = ["serde"] }
