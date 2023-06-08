@@ -11,7 +11,7 @@ ron = "0.8"
 
 # Utilities
 anyhow = "1"
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4", default-features = false, features = ["serde"] }
 hex = { version = "0.4", features = ["serde"] }
 os_info = "3"
 platforms = { version = "3", features = ["serde"] }
