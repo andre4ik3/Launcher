@@ -14,63 +14,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::models::game::common::{
-    Artifact, AssetIndex, Downloads, JavaVersion, Logging, Rule, Stability,
+    AssetIndex, Downloads, JavaVersion, Library, Logging, Stability,
 };
 use chrono::{DateTime, Utc};
+use launcher::models::game::{GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct CommonLibraryDownloads {
-    pub artifact: Artifact,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct NativeLibraryDownloads {
-    pub artifact: Option<Artifact>,
-    pub classifiers: HashMap<String, Artifact>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct CommonLibrary {
-    pub name: String,
-    pub downloads: CommonLibraryDownloads,
-    pub rules: Option<Vec<Rule>>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct NativeKeys {
-    pub linux: Option<String>,
-    pub osx: Option<String>,
-    pub windows: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct ExtractOptions {
-    pub exclude: Vec<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct NativeLibrary {
-    pub name: String,
-    pub downloads: NativeLibraryDownloads,
-    pub natives: NativeKeys,
-    pub extract: Option<ExtractOptions>,
-    pub rules: Option<Vec<Rule>>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(untagged)]
-pub enum Library {
-    Common(CommonLibrary),
-    Native(NativeLibrary),
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -90,4 +38,45 @@ pub struct GameManifestLegacy {
     pub release_time: DateTime<Utc>,
     pub time: DateTime<Utc>,
     pub logging: Option<Logging>,
+}
+
+#[allow(clippy::from_over_into)]
+impl Into<GameVersion> for GameManifestLegacy {
+    fn into(self) -> GameVersion {
+        let arguments: Box<[GameMaybeConditional<String>]> = self
+            .minecraft_arguments
+            .split(' ')
+            .map(|a| GameMaybeConditional::Unconditional(a.to_string()))
+            .collect();
+
+        let libraries = self
+            .libraries
+            .into_iter()
+            .flat_map::<Vec<GameMaybeConditional<GameLibrary>>, _>(Library::into)
+            .collect();
+
+        GameVersion {
+            stability: self.stability.into(),
+            java: self
+                .java_version
+                .unwrap_or(JavaVersion {
+                    major_version: 8,
+                    component: "unknown".to_owned(),
+                })
+                .into(),
+            entrypoint: self.main_class,
+            released: self.release_time,
+            arguments,
+            arguments_java: Box::new([]),
+            assets: self.asset_index.into(),
+            libraries,
+            client: GameDownloadable {
+                path: format!("{}.jar", self.id),
+                checksum: self.downloads.client.sha1,
+                size: self.downloads.client.size,
+                url: self.downloads.client.url,
+            },
+            version: self.id,
+        }
+    }
 }

@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use launcher::models::game::GameVersion;
 use serde::{Deserialize, Serialize};
 
 pub mod legacy;
@@ -23,4 +24,14 @@ pub mod v17w43a;
 pub enum GameManifest {
     Legacy(legacy::GameManifestLegacy),
     Modern(v17w43a::GameManifest17w43a),
+}
+
+#[allow(clippy::from_over_into)]
+impl Into<GameVersion> for GameManifest {
+    fn into(self) -> GameVersion {
+        match self {
+            GameManifest::Legacy(manifest) => manifest.into(),
+            GameManifest::Modern(manifest) => manifest.into(),
+        }
+    }
 }

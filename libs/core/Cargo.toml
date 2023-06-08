@@ -13,6 +13,7 @@ ron = "0.8"
 anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
 hex = { version = "0.4", features = ["serde"] }
+os_info = "3"
 platforms = { version = "3", features = ["serde"] }
 semver = { version = "1", features = ["serde"] }
 sha1 = "0.10"

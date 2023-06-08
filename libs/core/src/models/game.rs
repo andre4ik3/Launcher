@@ -15,19 +15,88 @@
 
 use chrono::{DateTime, Utc};
 use platforms::{Arch, OS};
-use semver::VersionReq;
+use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
+use std::{env::consts, str::FromStr};
 use url::Url;
 
 /// Condition for inclusion of arguments and libraries.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub enum Condition {
     Feature(String),
-    OS(OS),
+    OS((OS, VersionReq)),
     Arch(Arch),
-    And(Vec<Condition>),
-    Or(Vec<Condition>),
-    Not(Vec<Condition>),
+    And(Box<[Condition]>),
+    Or(Box<[Condition]>),
+    Not(Box<Condition>),
+}
+
+impl Condition {
+    /// Evaluates a condition to true or false.
+    pub fn eval(&self, features: &[String]) -> bool {
+        match self {
+            Self::Feature(feat) => features.contains(feat),
+            Self::OS((os, req)) => {
+                let os_matches = os == &OS::from_str(consts::OS).unwrap();
+                let ver_matches = match os_info::get().version() {
+                    os_info::Version::Semantic(major, minor, patch) => {
+                        req.matches(&Version::new(*major, *minor, *patch))
+                    }
+                    _ => true, // Unimplemented
+                };
+                os_matches && ver_matches
+            }
+            Self::Arch(arch) => arch == &Arch::from_str(consts::ARCH).unwrap(),
+            Self::And(vals) => vals.iter().map(|v| v.eval(features)).all(|v| v),
+            Self::Or(vals) => vals.iter().map(|v| v.eval(features)).any(|v| v),
+            Self::Not(val) => !val.eval(features),
+        }
+    }
+
+    /// Checks if a condition is empty (aka a no-op). Used to simplify expressions.
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::And(vals) | Self::Or(vals) => vals.is_empty(),
+            Self::Not(val) => val.is_empty(),
+            _ => false,
+        }
+    }
+
+    /// Simplifies a condition.
+    pub fn simplify(self) -> Self {
+        match self {
+            Self::And(vals) => {
+                let vals: Box<[Condition]> = vals
+                    .iter()
+                    .cloned()
+                    .filter(|condition| !condition.is_empty())
+                    .map(Self::simplify)
+                    .collect();
+
+                if vals.len() == 1 {
+                    vals[0].clone()
+                } else {
+                    Self::And(vals)
+                }
+            }
+            Self::Or(vals) => {
+                let vals: Box<[Condition]> = vals
+                    .iter()
+                    .cloned()
+                    .filter(|condition| !condition.is_empty())
+                    .map(Self::simplify)
+                    .collect();
+
+                if vals.len() == 1 {
+                    vals[0].clone()
+                } else {
+                    Self::Or(vals)
+                }
+            }
+            Self::Not(val) => Self::Not(Box::from(val.simplify())),
+            _ => self,
+        }
+    }
 }
 
 /// A condition for including game arguments and libraries, similar to an `if` statement.
@@ -36,7 +105,18 @@ pub struct GameConditional<T> {
     /// The condition to match.
     pub when: Condition,
     /// The structs to include when the condition is matched.
-    pub then: Vec<T>,
+    pub then: Box<[T]>,
+}
+
+impl<T> GameConditional<T> {
+    /// Evaluates a condition, collapsing it to the inner value or None.
+    pub fn eval(self, features: &[String]) -> Option<Box<[T]>> {
+        if self.when.eval(features) {
+            Some(self.then)
+        } else {
+            None
+        }
+    }
 }
 
 /// Helper for including both conditional and unconditional types in one type.
@@ -89,19 +169,6 @@ pub struct GameLibrary {
     pub file: GameDownloadable,
 }
 
-/// The main game files - client, server, and their mappings.
-#[derive(Debug, Deserialize, Serialize)]
-pub struct GameFiles {
-    /// The client.jar file.
-    pub client: GameDownloadable,
-    /// Mappings for the client.jar file.
-    pub client_mappings: GameDownloadable,
-    /// The server.jar file.
-    pub server: GameDownloadable,
-    /// Mappings for the server.jar file.
-    pub server_mappings: GameDownloadable,
-}
-
 /// Information needed to launch a particular game version.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GameVersion {
@@ -116,13 +183,13 @@ pub struct GameVersion {
     /// Date and time of release of this version.
     pub released: DateTime<Utc>,
     /// Arguments to be passed to the game.
-    pub arguments: Vec<GameMaybeConditional<String>>,
+    pub arguments: Box<[GameMaybeConditional<String>]>,
     /// Arguments to be passed to the Java virtual machine.
-    pub arguments_java: Vec<GameMaybeConditional<String>>,
+    pub arguments_java: Box<[GameMaybeConditional<String>]>,
     /// Information about the game's asset index.
     pub assets: GameAssetIndex,
     /// The libraries that the game depends on.
-    pub libraries: Vec<GameMaybeConditional<GameLibrary>>,
+    pub libraries: Box<[GameMaybeConditional<GameLibrary>]>,
     /// Downloads for the main game files.
-    pub files: GameFiles,
+    pub client: GameDownloadable,
 }

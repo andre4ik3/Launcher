@@ -14,16 +14,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::models::game::common::{
-    AssetIndex, Downloads, JavaVersion, Logging, MaybeArray, MaybeConditional, Stability,
+    AssetIndex, Downloads, JavaVersion, Library, Logging, MaybeConditional, Stability,
 };
-use crate::models::game::legacy::Library;
 use chrono::{DateTime, Utc};
+use launcher::models::game::{GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct Arguments {
-    pub game: Vec<MaybeConditional<MaybeArray<String>>>,
-    pub jvm: Vec<MaybeConditional<MaybeArray<String>>>,
+pub struct _Arguments {
+    pub game: Vec<MaybeConditional<String>>,
+    pub jvm: Vec<MaybeConditional<String>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -33,15 +33,44 @@ pub struct GameManifest17w43a {
     pub downloads: Downloads,
     #[serde(rename = "type")]
     pub stability: Stability,
-    pub java_version: Option<JavaVersion>,
+    pub java_version: JavaVersion,
     pub compliance_level: Option<u8>,
     pub assets: String,
     pub asset_index: AssetIndex,
     pub libraries: Vec<Library>,
     pub main_class: String,
-    pub arguments: Arguments,
+    pub arguments: _Arguments,
     pub minimum_launcher_version: u64,
     pub release_time: DateTime<Utc>,
     pub time: DateTime<Utc>,
     pub logging: Option<Logging>,
+}
+
+#[allow(clippy::from_over_into)]
+impl Into<GameVersion> for GameManifest17w43a {
+    fn into(self) -> GameVersion {
+        let libraries = self
+            .libraries
+            .into_iter()
+            .flat_map::<Vec<GameMaybeConditional<GameLibrary>>, _>(Library::into)
+            .collect();
+
+        GameVersion {
+            stability: self.stability.into(),
+            java: self.java_version.into(),
+            entrypoint: self.main_class,
+            released: self.release_time,
+            arguments: Box::new([]),
+            arguments_java: Box::new([]),
+            assets: self.asset_index.into(),
+            libraries,
+            client: GameDownloadable {
+                path: format!("{}.jar", self.id),
+                checksum: self.downloads.client.sha1,
+                size: self.downloads.client.size,
+                url: self.downloads.client.url,
+            },
+            version: self.id,
+        }
+    }
 }
