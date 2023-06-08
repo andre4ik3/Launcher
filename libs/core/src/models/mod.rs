@@ -13,10 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use platforms::{Arch, OS};
-use serde::{Deserialize, Serialize};
 use std::env::consts;
 use std::str::FromStr;
+
+use platforms::{Arch, OS};
+use serde::{Deserialize, Serialize};
 
 pub mod game;
 pub mod java;

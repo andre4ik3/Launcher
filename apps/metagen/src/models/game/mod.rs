@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+pub use manifest::*;
+pub use version::*;
+
 pub mod common;
 mod manifest;
 mod version;
-
-pub use manifest::*;
-pub use version::*;

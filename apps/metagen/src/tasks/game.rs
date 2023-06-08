@@ -13,13 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::collections::HashSet;
+
+use anyhow::Result;
+use indicatif::ProgressBar;
+
+use launcher::models::game::{GameVersion, GameVersionIndex};
+
 use crate::models::game::{GameManifest, GameVersionInfoIndex};
 use crate::utils::{dump, prog_style};
 use crate::CLIENT;
-use anyhow::Result;
-use indicatif::ProgressBar;
-use launcher::models::game::{GameVersion, GameVersionIndex};
-use std::collections::HashSet;
 
 const INDEX_URL: &str = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 

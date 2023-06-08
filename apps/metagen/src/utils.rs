@@ -13,11 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::path::Path;
+
 use anyhow::{anyhow, Result};
 use indicatif::ProgressStyle;
 use ron::ser::{to_string_pretty, PrettyConfig};
 use serde::Serialize;
-use std::path::Path;
 use tokio::fs::{create_dir_all, write};
 
 /// Base path where all files are written.

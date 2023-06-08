@@ -13,14 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::utils::{dump, prog_style};
+use std::collections::HashSet;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use indicatif::ProgressBar;
+use platforms::{Arch, OS};
+
 use launcher::models::java::JavaBuild;
 use launcher::models::Environment;
-use platforms::{Arch, OS};
-use std::collections::HashSet;
+
+use crate::utils::{dump, prog_style};
 
 mod adoptium;
 mod zulu;

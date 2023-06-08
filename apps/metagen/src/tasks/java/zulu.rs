@@ -13,16 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use anyhow::{bail, Result};
+use async_trait::async_trait;
+use platforms::{Arch, OS};
+use url::Url;
+
+use launcher::models::{java::JavaBuild, Environment};
+
 use crate::{
     models::java::{into_java_build, ZuluBuild, ZuluPackage},
     tasks::java::Provider,
     CLIENT,
 };
-use anyhow::{bail, Result};
-use async_trait::async_trait;
-use launcher::models::{java::JavaBuild, Environment};
-use platforms::{Arch, OS};
-use url::Url;
 
 const ZULU_BASE: &str = "https://api.azul.com/metadata/v1/zulu/packages";
 

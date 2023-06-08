@@ -13,10 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::ops::Deref;
+
 use anyhow::Result;
 use sha1::Sha1;
 use sha2::{Digest, Sha256};
-use std::ops::Deref;
 
 /// Calculates a SHA256 checksum from some data.
 pub fn sha256(data: impl Deref<Target = [u8]>) -> Result<impl AsRef<[u8]>> {

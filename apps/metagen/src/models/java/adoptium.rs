@@ -13,12 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use launcher::models::java::{JavaBuild, JavaProvider};
-use launcher::models::Environment;
 use platforms::{Arch, Env, OS};
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use url::Url;
+
+use launcher::models::{
+    java::{JavaBuild, JavaProvider},
+    Environment,
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct _AdoptiumBuildDownloadable {

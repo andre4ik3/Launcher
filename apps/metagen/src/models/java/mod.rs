@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-mod adoptium;
-mod zulu;
-
 pub use adoptium::*;
 pub use zulu::*;
+
+mod adoptium;
+mod zulu;

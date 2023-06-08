@@ -13,12 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
+
+use launcher::models::game::{GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion};
+
 use crate::models::game::common::{
     AssetIndex, Downloads, JavaVersion, Library, Logging, MaybeConditional, Stability,
 };
-use chrono::{DateTime, Utc};
-use launcher::models::game::{GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion};
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]

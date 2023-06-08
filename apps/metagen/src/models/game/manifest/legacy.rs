@@ -13,12 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::{DateTime, Utc};
+use platforms::{Arch, OS};
+use semver::VersionReq;
+use serde::{Deserialize, Serialize};
+
+use launcher::models::game::{
+    Condition, GameConditional, GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion,
+};
+
 use crate::models::game::common::{
     AssetIndex, Downloads, JavaVersion, Library, Logging, Stability,
 };
-use chrono::{DateTime, Utc};
-use launcher::models::game::{GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion};
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -67,7 +73,34 @@ impl Into<GameVersion> for GameManifestLegacy {
             entrypoint: self.main_class,
             released: self.release_time,
             arguments,
-            arguments_java: Box::new([]), // TODO
+            arguments_java: Box::new([
+                GameMaybeConditional::Conditional(GameConditional {
+                    when: Condition::OS((OS::MacOS, VersionReq::STAR)),
+                    then: Box::new([
+                        "-XstartOnFirstThread".to_string(),
+                    ]),
+                }),
+                GameMaybeConditional::Conditional(GameConditional {
+                    when: Condition::OS((OS::Windows, VersionReq::STAR)),
+                    then: Box::new([
+                        "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump".to_string(),
+                    ]),
+                }),
+                GameMaybeConditional::Conditional(GameConditional {
+                    when: Condition::Arch(Arch::X86),
+                    then: Box::new([
+                        "-Xss1M".to_string(),
+                    ]),
+                }),
+                GameMaybeConditional::Unconditional("-Djava.library.path=${natives_directory}".to_string()),
+                GameMaybeConditional::Unconditional("-Djna.tmpdir=${natives_directory}".to_string()),
+                GameMaybeConditional::Unconditional("-Dorg.lwjgl.system.SharedLibraryExtractPath=${natives_directory}".to_string()),
+                GameMaybeConditional::Unconditional("-Dio.netty.native.workdir=${natives_directory}".to_string()),
+                GameMaybeConditional::Unconditional("-Dminecraft.launcher.brand=${launcher_name}".to_string()),
+                GameMaybeConditional::Unconditional("-Dminecraft.launcher.version=${launcher_version}".to_string()),
+                GameMaybeConditional::Unconditional("-cp".to_string()),
+                GameMaybeConditional::Unconditional("${classpath}".to_string())
+            ]),
             assets: self.asset_index.into(),
             libraries,
             client: GameDownloadable {

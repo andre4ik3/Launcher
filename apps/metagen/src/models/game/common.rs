@@ -13,16 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::collections::HashMap;
+use std::iter::once;
+
+use platforms::{Arch, OS};
+use semver::{Comparator, Op, Prerelease, VersionReq};
+use serde::{Deserialize, Serialize};
+use url::Url;
+
 use launcher::models::game::{
     Condition, GameAssetIndex, GameConditional, GameDownloadable, GameLibrary,
     GameMaybeConditional, GameVersionStability,
 };
-use platforms::{Arch, OS};
-use semver::{Comparator, Op, Prerelease, VersionReq};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::iter::once;
-use url::Url;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]

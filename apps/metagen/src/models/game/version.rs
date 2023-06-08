@@ -13,11 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::game::common::Stability;
 use chrono::{DateTime, Utc};
-use launcher::models::game::{GameVersionIndex, GameVersionSnippet};
 use serde::{Deserialize, Serialize};
 use url::Url;
+
+use launcher::models::game::{GameVersionIndex, GameVersionSnippet};
+
+use crate::models::game::common::Stability;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

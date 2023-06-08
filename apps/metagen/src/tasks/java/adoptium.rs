@@ -13,12 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::{models::java::AdoptiumBuild, tasks::java::Provider, CLIENT};
 use anyhow::{bail, Result};
 use async_trait::async_trait;
-use launcher::models::{java::JavaBuild, Environment};
 use platforms::{Arch, OS};
 use url::Url;
+
+use launcher::models::{java::JavaBuild, Environment};
+
+use crate::{models::java::AdoptiumBuild, tasks::java::Provider, CLIENT};
 
 const ADOPTIUM_BASE: &str = "https://api.adoptium.net/v3/assets/latest";
 

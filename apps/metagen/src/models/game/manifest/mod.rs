@@ -13,8 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use launcher::models::game::GameVersion;
 use serde::{Deserialize, Serialize};
+
+use launcher::models::game::GameVersion;
 
 pub mod legacy;
 pub mod v17w43a;

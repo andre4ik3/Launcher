@@ -13,10 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::Environment;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use url::Url;
+
+use crate::models::Environment;
 
 /// An enum for currently defined providers of Java builds, subject to change in the future.
 #[non_exhaustive]

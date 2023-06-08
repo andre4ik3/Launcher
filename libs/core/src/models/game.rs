@@ -13,11 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::{env::consts, str::FromStr};
+
 use chrono::{DateTime, Utc};
 use platforms::{Arch, OS};
 use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
-use std::{env::consts, str::FromStr};
 use url::Url;
 
 /// Condition for inclusion of arguments and libraries.
