@@ -123,6 +123,8 @@ impl Into<Vec<GameMaybeConditional<GameLibrary>>> for NativeLibrary {
                 None => continue,
             };
 
+            // TODO: In some cases, there are two conditions back-to-back, e.g. (macos, *) and (macos, =10.5).
+            // They should be de-duped. Preferably in Condition::simplify.
             let condition = Condition::OS((os, VersionReq::STAR));
             let when = match when.clone() {
                 Some(when) => {
@@ -192,7 +194,7 @@ pub struct Logging {
     pub client: ClientLogging,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Stability {
     Release,
@@ -225,7 +227,10 @@ impl Into<VersionReq> for JavaVersion {
     fn into(self) -> VersionReq {
         VersionReq {
             comparators: vec![Comparator {
-                op: Op::GreaterEq,
+                op: match self.major_version {
+                    8 => Op::Exact, // Versions on Java 8 don't tend to play nice with modern versions
+                    _ => Op::GreaterEq,
+                },
                 major: self.major_version as u64,
                 minor: None,
                 patch: None,
@@ -373,7 +378,7 @@ impl Into<Condition> for Rule {
             .unwrap_or_default();
 
         let conditions = features.into_iter().chain(os.into_iter()).collect();
-        let condition = Condition::And(conditions);
+        let condition = Condition::And(conditions).simplify();
 
         match self.action {
             RuleAction::Allow => condition,
@@ -393,7 +398,7 @@ pub struct RuleConditional<T> {
 impl<T> Into<GameConditional<T>> for RuleConditional<T> {
     fn into(self) -> GameConditional<T> {
         GameConditional {
-            when: Condition::And(self.rules.into_iter().map(Rule::into).collect()),
+            when: Condition::And(self.rules.into_iter().map(Rule::into).collect()).simplify(),
             then: match self.value {
                 MaybeArray::Single(v) => Box::from([v]),
                 MaybeArray::Multiple(v) => v,

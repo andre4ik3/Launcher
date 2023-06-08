@@ -21,6 +21,7 @@ use launcher::models::game::{GameDownloadable, GameLibrary, GameMaybeConditional
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct _Arguments {
     pub game: Vec<MaybeConditional<String>>,
     pub jvm: Vec<MaybeConditional<String>>,
@@ -55,13 +56,27 @@ impl Into<GameVersion> for GameManifest17w43a {
             .flat_map::<Vec<GameMaybeConditional<GameLibrary>>, _>(Library::into)
             .collect();
 
+        let arguments: Box<[GameMaybeConditional<String>]> = self
+            .arguments
+            .game
+            .into_iter()
+            .map(|arg| arg.into())
+            .collect();
+
+        let arguments_java: Box<[GameMaybeConditional<String>]> = self
+            .arguments
+            .jvm
+            .into_iter()
+            .map(|arg| arg.into())
+            .collect();
+
         GameVersion {
             stability: self.stability.into(),
             java: self.java_version.into(),
             entrypoint: self.main_class,
             released: self.release_time,
-            arguments: Box::new([]),
-            arguments_java: Box::new([]),
+            arguments,
+            arguments_java,
             assets: self.asset_index.into(),
             libraries,
             client: GameDownloadable {

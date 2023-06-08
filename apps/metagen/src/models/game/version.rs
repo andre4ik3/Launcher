@@ -15,10 +15,11 @@
 
 use crate::models::game::common::Stability;
 use chrono::{DateTime, Utc};
+use launcher::models::game::{GameVersionIndex, GameVersionSnippet};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct _GameVersionInfo {
     pub id: String,
@@ -31,14 +32,40 @@ pub struct _GameVersionInfo {
     pub compliance_level: u8,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[allow(clippy::from_over_into)]
+impl Into<GameVersionSnippet> for _GameVersionInfo {
+    fn into(self) -> GameVersionSnippet {
+        GameVersionSnippet {
+            version: self.id,
+            stability: self.stability.into(),
+            released: self.release_time,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct _GameVersionInfoIndexLatest {
     pub release: String,
     pub snapshot: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct GameVersionInfoIndex {
     pub latest: _GameVersionInfoIndexLatest,
     pub versions: Vec<_GameVersionInfo>,
+}
+
+#[allow(clippy::from_over_into)]
+impl Into<GameVersionIndex> for GameVersionInfoIndex {
+    fn into(self) -> GameVersionIndex {
+        GameVersionIndex {
+            latest_release: self.latest.release,
+            latest_snapshot: self.latest.snapshot,
+            versions: self
+                .versions
+                .into_iter()
+                .map(_GameVersionInfo::into)
+                .collect(),
+        }
+    }
 }

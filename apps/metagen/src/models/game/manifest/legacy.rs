@@ -67,7 +67,7 @@ impl Into<GameVersion> for GameManifestLegacy {
             entrypoint: self.main_class,
             released: self.release_time,
             arguments,
-            arguments_java: Box::new([]),
+            arguments_java: Box::new([]), // TODO
             assets: self.asset_index.into(),
             libraries,
             client: GameDownloadable {

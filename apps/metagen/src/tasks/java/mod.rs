@@ -13,11 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::utils::{dump, prog_style};
 use anyhow::Result;
 use async_trait::async_trait;
+use indicatif::ProgressBar;
 use launcher::models::java::JavaBuild;
 use launcher::models::Environment;
 use platforms::{Arch, OS};
+use std::collections::HashSet;
 
 mod adoptium;
 mod zulu;
@@ -55,16 +58,27 @@ pub trait Provider {
     async fn fetch(version: u8, env: &Environment) -> Result<JavaBuild>;
 }
 
-pub async fn run() -> Result<()> {
+pub async fn run(versions: HashSet<u8>) -> Result<()> {
+    println!("Generating Java metadata...");
+
+    let pb = ProgressBar::new((JAVA_TARGETS.len() * versions.len()) as u64);
+    pb.set_style(prog_style());
+
     for target in JAVA_TARGETS {
-        let build = {
-            if let Ok(build) = adoptium::Adoptium::fetch(17, &target).await {
-                build
-            } else {
-                zulu::Zulu::fetch(17, &target).await?
+        for version in versions.iter() {
+            pb.inc(1);
+            pb.set_message(format!("Java {} {}-{}", version, target.arch, target.os));
+
+            let adoptium_build = adoptium::Adoptium::fetch(*version, &target).await.ok();
+            let zulu_build = zulu::Zulu::fetch(*version, &target).await.ok();
+
+            let build = adoptium_build.or(zulu_build);
+            if let Some(build) = build {
+                let path = format!("java/{}/{}/{}.ron", target.arch, target.os, version);
+                dump(path, &build).await?;
             }
-        };
-        println!("{:?}", build);
+        }
     }
+
     Ok(())
 }

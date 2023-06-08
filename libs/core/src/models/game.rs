@@ -21,7 +21,7 @@ use std::{env::consts, str::FromStr};
 use url::Url;
 
 /// Condition for inclusion of arguments and libraries.
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub enum Condition {
     Feature(String),
     OS((OS, VersionReq)),
@@ -192,4 +192,26 @@ pub struct GameVersion {
     pub libraries: Box<[GameMaybeConditional<GameLibrary>]>,
     /// Downloads for the main game files.
     pub client: GameDownloadable,
+}
+
+/// Surface-level information about a game version.
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GameVersionSnippet {
+    /// The unique game version. Note: doesn't follow SemVer.
+    pub version: String,
+    /// The stability of this game version.
+    pub stability: GameVersionStability,
+    /// Date and time of release of this version.
+    pub released: DateTime<Utc>,
+}
+
+/// Information about available game versions.
+#[derive(Debug, Deserialize, Serialize)]
+pub struct GameVersionIndex {
+    /// The latest available version ID with "Release" stability.
+    pub latest_release: String,
+    /// The latest available version ID with "Snapshot" stability.
+    pub latest_snapshot: String,
+    /// All game versions in order of release date (newest on top).
+    pub versions: Box<[GameVersionSnippet]>,
 }

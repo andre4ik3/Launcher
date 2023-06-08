@@ -14,26 +14,48 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use crate::models::game::{GameManifest, GameVersionInfoIndex};
+use crate::utils::{dump, prog_style};
 use crate::CLIENT;
 use anyhow::Result;
-use launcher::models::game::GameVersion;
+use indicatif::ProgressBar;
+use launcher::models::game::{GameVersion, GameVersionIndex};
+use std::collections::HashSet;
 
 const INDEX_URL: &str = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 
-pub async fn run() -> Result<()> {
+/// Collects metadata about *all* available game versions and writes them to disk to respective
+/// files. Also collects the Java requirement for each version and returns them as a [HashSet].
+pub async fn run(skip: &[String]) -> Result<HashSet<u8>> {
+    println!("Generating game metadata...");
     let resp = CLIENT.get(INDEX_URL).send().await?.error_for_status()?;
     let mut resp: GameVersionInfoIndex = resp.json().await?;
 
-    resp.versions.reverse();
-    let opts = ron::Options::default();
-    let pretty = ron::ser::PrettyConfig::default().struct_names(true);
+    let index: GameVersionIndex = resp.clone().into();
+    dump("versions.ron", &index).await?;
+
+    resp.versions.reverse(); // Oldest -> newest
+    let mut versions: HashSet<u8> = HashSet::new();
+
+    let pb = ProgressBar::new(resp.versions.len() as u64);
+    pb.set_style(prog_style());
 
     for version in resp.versions {
+        pb.inc(1);
+        pb.set_message(format!("Game {}", version.id));
+
+        if skip.contains(&version.id) {
+            continue;
+        }
+
         let data = CLIENT.get(version.url).send().await?.error_for_status()?;
         let data: GameManifest = data.json().await?;
         let data: GameVersion = data.into();
-        let data = opts.to_string_pretty(&data, pretty.clone()).unwrap();
+
+        // Hopefully there's not more than 255 Java versions
+        versions.insert(data.java.comparators[0].major as u8);
+        dump(format!("versions/{}.ron", version.id), &data).await?;
     }
 
-    Ok(())
+    pb.finish_and_clear();
+    Ok(versions)
 }
