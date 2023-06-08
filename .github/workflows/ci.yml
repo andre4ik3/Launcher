@@ -1,0 +1,65 @@
+#file: noinspection SpellCheckingInspection
+
+name: CI
+on:
+  - push
+  - workflow_dispatch
+
+jobs:
+  changes:
+    name: Check file changes
+    runs-on: ubuntu-latest
+    outputs:
+      cargo: ${{ steps.changes.outputs.cargo }}
+      meta: ${{ steps.changes.outputs.meta }}
+
+    steps:
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            cargo: ['Cargo.*', 'Deny.toml', '**/*/Cargo.*']
+            meta: ['Cargo.*', 'apps/metagen/**/*', 'libs/core/**/*']
+
+  check:
+    name: Check code
+    needs: [ changes ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - if: needs.changes.outputs.cargo == 'true'
+        run: |
+          cargo install cargo-deny
+          cargo deny check bans licenses sources
+
+      - uses: olix0r/cargo-action-fmt/setup@v2
+      - run: cargo check --message-format=json | cargo action-fmt
+
+  metadata:
+    name: Deploy metadata site
+    needs: [ check, changes ]
+    if: (github.event_name == 'push' && needs.changes.outputs.meta == 'true') || (github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    concurrency: Metadata Site
+    environment:
+      name: Metadata Site
+      url: ${{ steps.deployment.outputs.url }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo run --bin metagen
+      - id: deployment
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: launchermeta
+          directory: _site
+          wranglerVersion: '3'
