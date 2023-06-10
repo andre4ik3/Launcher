@@ -13,7 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod models;
-pub mod net;
-pub mod store;
-pub mod utils;
+use anyhow::Result;
+use futures_util::StreamExt;
+use reqwest::Client;
+use sha2::{Digest, Sha256};
+
+use crate::models::java::JavaBuild;
+
+pub async fn download_java(client: &Client, build: JavaBuild) -> Result<()> {
+    let resp = client.get(build.url).send().await?;
+    let mut resp = resp.bytes_stream();
+    let mut hasher = Sha256::new();
+
+    while let Some(chunk) = resp.next().await {
+        let chunk = chunk?;
+        println!("Got a chunk of {} bytes", chunk.len());
+        hasher.update(chunk);
+    }
+
+    println!("Finalizing");
+    println!("{}", build.checksum);
+    let hash = hasher.finalize();
+    println!("{}", hex::encode(hash));
+
+    Ok(())
+}

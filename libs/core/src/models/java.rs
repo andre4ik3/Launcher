@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::path::PathBuf;
+
 use semver::Version;
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -34,25 +36,20 @@ pub struct JavaBuild {
     pub provider: JavaProvider,
     /// The version of this build.
     pub version: Version,
+    /// Location of the `java` (or `javaw`) executable relative to the root of the archive file.
+    pub executable: PathBuf,
     /// Environment (OS, Arch, Env) that the build is for.
     pub environment: Environment,
-    /// Name of the installer file.
+    /// Name of the archive file.
     pub name: String,
-    /// Size of the installer file in bytes.
+    /// Size of the archive file in bytes.
     pub size: u64,
-    /// URL of the installer file.
+    /// URL of the archive file.
     pub url: Url,
-    /// SHA256 checksum of the installer file.
+    /// SHA256 checksum of the archive file.
     pub checksum: String,
 }
 
-/// Information about an installed build of Java, stored in the `Java.toml` file.
+/// Information about available Java builds.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct JavaInfo {
-    /// The provider that distributes this build.
-    pub provider: JavaProvider,
-    /// The version of the build.
-    pub version: Version,
-    /// Size of the uncompressed install in bytes.
-    pub size: u64,
-}
+pub struct JavaBuildIndex {}

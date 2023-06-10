@@ -14,10 +14,20 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::ops::Deref;
+use std::sync::OnceLock;
 
 use anyhow::Result;
+use directories::ProjectDirs;
 use sha1::Sha1;
 use sha2::{Digest, Sha256};
+
+static PROJECT_DIRS: OnceLock<ProjectDirs> = OnceLock::new();
+
+/// Gets project dirs where files should be stored.
+pub fn get_dirs<'a>() -> &'a ProjectDirs {
+    // `.unwrap()` only panics here if home directory is not found, which shouldn't happen.
+    PROJECT_DIRS.get_or_init(|| ProjectDirs::from("dev", "andre4ik3", "Launcher").unwrap())
+}
 
 /// Calculates a SHA256 checksum from some data.
 pub fn sha256(data: impl Deref<Target = [u8]>) -> Result<impl AsRef<[u8]>> {

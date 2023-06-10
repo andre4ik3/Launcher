@@ -13,9 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::utils::dump;
 use anyhow::Result;
+
 use launcher::models::MetadataIndex;
+
+use crate::utils::dump;
 
 /// Generates a metadata index file containing announcements.
 pub async fn run() -> Result<()> {

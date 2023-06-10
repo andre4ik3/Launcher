@@ -104,6 +104,11 @@ pub fn into_java_build(build: ZuluBuild, package: ZuluPackage) -> JavaBuild {
             build.java_version.1,
             build.java_version.2,
         ),
+        executable: match package.os {
+            _ZuluPackageOS::Linux => "bin/java".into(),
+            _ZuluPackageOS::Windows => "bin\\javaw.exe".into(),
+            _ZuluPackageOS::MacOS => "Contents/Home/bin/java".into(),
+        },
         environment: Environment {
             os: package.os.into(),
             arch: package.arch.into(),

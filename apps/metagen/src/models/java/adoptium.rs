@@ -111,6 +111,11 @@ impl Into<JavaBuild> for AdoptiumBuild {
         JavaBuild {
             provider: JavaProvider::Adoptium,
             version: self.version.semver,
+            executable: match self.binary.os {
+                _AdoptiumBuildOS::Linux => "bin/java".into(),
+                _AdoptiumBuildOS::Windows => "bin\\javaw.exe".into(),
+                _AdoptiumBuildOS::Mac => "Contents/Home/bin/java".into(),
+            },
             environment: Environment {
                 os: self.binary.os.into(),
                 arch: self.binary.architecture.into(),
