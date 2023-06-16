@@ -13,23 +13,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::env::consts;
 use std::str::FromStr;
 
+use platforms::{Arch, OS};
 use serde::{Deserialize, Serialize};
-use url::Url;
 
-/// Version 1 of the launcher configuration format.
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(default)]
-pub struct ConfigV1 {
-    /// The URL where game and Java metadata will be fetched from.
-    pub metadata_server: Url,
+/// A struct that describes the environment the binary is running in.
+/// (Somewhat similar to a target triple)
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Environment {
+    pub os: OS,
+    pub arch: Arch,
 }
 
-impl Default for ConfigV1 {
+impl Default for Environment {
     fn default() -> Self {
-        ConfigV1 {
-            metadata_server: Url::from_str("https://master.launchermeta.pages.dev").unwrap(),
+        Environment {
+            os: OS::from_str(consts::OS).unwrap(),
+            arch: Arch::from_str(consts::ARCH).unwrap(),
         }
     }
 }

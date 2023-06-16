@@ -20,8 +20,7 @@ use async_trait::async_trait;
 use indicatif::ProgressBar;
 use platforms::{Arch, OS};
 
-use launcher::models::java::JavaBuild;
-use launcher::models::Environment;
+use launcher::models::{Environment, JavaBuild};
 
 use crate::utils::{dump, prog_style};
 

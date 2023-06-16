@@ -13,8 +13,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod ffi;
-pub mod models;
-pub mod net;
-pub mod store;
-pub mod utils;
+use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
+use url::Url;
+
+/// Version 1 of the launcher configuration format.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(default)]
+pub struct ConfigV1 {
+    /// The URL where game and Java metadata will be fetched from.
+    pub metadata_server: Url,
+}
+
+impl Default for ConfigV1 {
+    fn default() -> Self {
+        ConfigV1 {
+            metadata_server: Url::from_str("https://launchermeta.pages.dev").unwrap(),
+        }
+    }
+}

@@ -21,6 +21,10 @@ use directories::ProjectDirs;
 use sha1::Sha1;
 use sha2::{Digest, Sha256};
 
+pub use crypto::*;
+
+mod crypto;
+
 static PROJECT_DIRS: OnceLock<ProjectDirs> = OnceLock::new();
 
 /// Gets project dirs where files should be stored.

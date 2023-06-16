@@ -13,8 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod ffi;
-pub mod models;
-pub mod net;
-pub mod store;
-pub mod utils;
+use clap::Parser;
+
+use crate::cli::Cli;
+
+mod cli;
+
+#[tokio::main]
+async fn main() {
+    let args = Cli::parse();
+
+    println!("Hello, mc cli!");
+}

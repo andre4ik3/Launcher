@@ -19,7 +19,7 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::models::Environment;
+use crate::models::environment::Environment;
 
 /// An enum for currently defined providers of Java builds, subject to change in the future.
 #[non_exhaustive]

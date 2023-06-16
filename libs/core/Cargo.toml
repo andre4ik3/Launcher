@@ -1,28 +1,45 @@
 [package]
 name = "launcher"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 license = "GPL-3.0-or-later"
+publish = false
+
+[features]
+ffi-swift = ["dep:swift-bridge"]
 
 [dependencies]
 # Core dependencies
+aes-gcm = "0.10"
+keyring = "2"
 reqwest = { version = "0.11", features = ["stream"] }
 ron = "0.8"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 toml = "0.7"
 
+# FFI
+swift-bridge = { version = "0.1", optional = true, features = ["async"] }
+
 # Utilities
 anyhow = "1"
 async_once = "0.2.6"
+async-trait = "0.1"
+bytes = "1"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 directories = "5"
 futures-util = "0.3"
 hex = { version = "0.4", features = ["serde"] }
 lazy_static = "1"
+log = "0.4"
 os_info = "3"
 platforms = { version = "3", features = ["serde"] }
 sha1 = "0.10"
 sha2 = "0.10"
 semver = { version = "1", features = ["serde"] }
 url = { version = "2", features = ["serde"] }
+# uuid = { version = "1", features = ["serde"] }
+zeroize = "1"
+
+[build-dependencies]
+swift-bridge-build = "0.1"

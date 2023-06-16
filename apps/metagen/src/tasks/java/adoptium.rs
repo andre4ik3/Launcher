@@ -18,7 +18,7 @@ use async_trait::async_trait;
 use platforms::{Arch, OS};
 use url::Url;
 
-use launcher::models::{java::JavaBuild, Environment};
+use launcher::models::{Environment, JavaBuild};
 
 use crate::{models::java::AdoptiumBuild, tasks::java::Provider, CLIENT};
 

@@ -18,7 +18,7 @@ use platforms::{Arch, OS};
 use semver::VersionReq;
 use serde::{Deserialize, Serialize};
 
-use launcher::models::game::{
+use launcher::models::{
     Condition, GameConditional, GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion,
 };
 

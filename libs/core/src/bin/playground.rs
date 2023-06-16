@@ -13,35 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use reqwest::Client;
+use aes_gcm::aead::{Aead, OsRng};
+use aes_gcm::{AeadCore, Aes256Gcm, KeyInit};
 
-use launcher::net::java::download_java;
-use launcher::net::meta::{get_game_index, get_game_version, get_index, get_java};
-use launcher::store::config::CONFIG;
-use launcher::utils::get_dirs;
+use launcher::store::credentials::CREDENTIALS;
+use launcher::store::StoreHolder;
 
 #[tokio::main]
 async fn main() {
-    let path = get_dirs().config_dir().join("Config.toml");
-    println!("Config: {:?}", path);
-
-    let config = CONFIG.get().await;
-    let data = config.get().await;
-    println!("Config: {:?}", data);
-
-    let client = Client::default();
-
-    let data = get_index(&client).await.unwrap();
-    println!("{:?}", data);
-
-    let data = get_game_index(&client).await.unwrap();
-    println!("{:?}", data);
-
-    let data = get_game_version(&client, "1.20").await.unwrap();
-    println!("{:?}", data);
-
-    let data = get_java(&client, 8).await.unwrap();
-    println!("{:?}", data);
-
-    download_java(&client, data).await.unwrap();
+    let credentials = CREDENTIALS.get().await;
+    let value = credentials.get().await;
+    println!("{:?}", value);
+    credentials.flush();
 }

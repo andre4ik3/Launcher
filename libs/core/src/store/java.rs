@@ -20,7 +20,7 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 use tokio::fs::{read_dir, read_to_string};
 
-use crate::models::java::{JavaBuild, JavaProvider};
+use crate::models::{JavaBuild, JavaProvider};
 use crate::utils::get_dirs;
 
 /// Information about an installed build of Java, stored in the `Java.toml` file.

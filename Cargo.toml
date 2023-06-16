@@ -1,2 +1,3 @@
 [workspace]
-members = ["apps/metagen", "libs/core"]
+members = ["apps/*", "libs/*"]
+resolver = "2"

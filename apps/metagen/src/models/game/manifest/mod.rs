@@ -15,7 +15,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use launcher::models::game::GameVersion;
+use launcher::models::GameVersion;
 
 pub mod legacy;
 pub mod v17w43a;

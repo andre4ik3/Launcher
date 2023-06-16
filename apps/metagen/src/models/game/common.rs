@@ -21,7 +21,7 @@ use semver::{Comparator, Op, Prerelease, VersionReq};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use launcher::models::game::{
+use launcher::models::{
     Condition, GameAssetIndex, GameConditional, GameDownloadable, GameLibrary,
     GameMaybeConditional, GameVersionStability,
 };

@@ -13,8 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod ffi;
-pub mod models;
-pub mod net;
-pub mod store;
-pub mod utils;
+#[cfg(feature = "ffi-swift")]
+#[swift_bridge::bridge]
+mod swift {
+    extern "Rust" {
+        type RustApp;
+
+        #[swift_bridge(init)]
+        fn new() -> RustApp;
+
+        fn do_something(&self) -> u8;
+    }
+}
+
+pub struct RustApp {}
+
+impl RustApp {
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        RustApp {}
+    }
+
+    pub fn do_something(&self) -> u8 {
+        123
+    }
+}

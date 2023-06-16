@@ -18,7 +18,7 @@ use std::collections::HashSet;
 use anyhow::Result;
 use indicatif::ProgressBar;
 
-use launcher::models::game::{GameVersion, GameVersionIndex};
+use launcher::models::{GameVersion, GameVersionIndex};
 
 use crate::models::game::{GameManifest, GameVersionInfoIndex};
 use crate::utils::{dump, prog_style};

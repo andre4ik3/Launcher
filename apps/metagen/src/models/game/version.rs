@@ -17,7 +17,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use launcher::models::game::{GameVersionIndex, GameVersionSnippet};
+use launcher::models::{GameVersionIndex, GameVersionSnippet};
 
 use crate::models::game::common::Stability;
 

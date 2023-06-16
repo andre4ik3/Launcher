@@ -13,6 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+//! Launcher - Config Store
+//! This module handles general, unencrypted configuration for the launcher.
+
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Result};
@@ -21,7 +24,6 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use tokio::fs::{create_dir_all, read_to_string, write};
 use tokio::sync::{OnceCell, RwLock, RwLockReadGuard, RwLockWriteGuard};
-
 pub use v1::ConfigV1;
 
 use crate::utils::get_dirs;
@@ -71,7 +73,7 @@ impl ConfigHolder {
             let data: ConfigV1 = data.into();
             Ok(data)
         })()
-        .await;
+            .await;
 
         HAS_INITIALIZED.set(true).expect("Already initialized!");
         Self {

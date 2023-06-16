@@ -18,10 +18,7 @@ use semver::Version;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use launcher::models::{
-    java::{JavaBuild, JavaProvider},
-    Environment,
-};
+use launcher::models::{Environment, JavaBuild, JavaProvider};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct _AdoptiumBuildDownloadable {

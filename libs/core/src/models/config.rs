@@ -13,8 +13,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod ffi;
-pub mod models;
-pub mod net;
-pub mod store;
-pub mod utils;
+use serde::{Deserialize, Serialize};
+use url::Url;
+
+/// Default URL for the metadata server.
+const METADATA_SERVER: &str = "https://master.launchermeta.pages.dev/v1";
+
+/// Configuration for the launcher. Saved as `Config.toml` in platform-appropriate directory.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Config {
+    /// The URL where game and Java metadata will be fetched from.
+    pub metadata_server: Url,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            metadata_server: Url::parse(METADATA_SERVER).unwrap(),
+        }
+    }
+}

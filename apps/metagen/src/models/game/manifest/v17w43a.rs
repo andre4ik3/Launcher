@@ -16,7 +16,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use launcher::models::game::{GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion};
+use launcher::models::{GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion};
 
 use crate::models::game::common::{
     AssetIndex, Downloads, JavaVersion, Library, Logging, MaybeConditional, Stability,

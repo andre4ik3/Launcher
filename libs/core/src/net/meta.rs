@@ -19,10 +19,9 @@ use anyhow::Result;
 use reqwest::Client;
 use serde::Deserialize;
 
-use crate::models::game::{GameVersion, GameVersionIndex};
-use crate::models::java::JavaBuild;
-use crate::models::{Environment, MetadataIndex};
+use crate::models::{Environment, GameVersion, GameVersionIndex, JavaBuild, MetadataIndex};
 use crate::store::config::CONFIG;
+use crate::store::StoreHolder;
 
 /// Helper function to run a request to a URL and decode the result.
 async fn get<T: for<'a> Deserialize<'a>>(client: &Client, path: impl Display) -> Result<T> {

@@ -13,8 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod ffi;
-pub mod models;
-pub mod net;
-pub mod store;
-pub mod utils;
+//! Launcher - Secure Store
+//! This module handles storage of secure information for the launcher - primary credentials.
+//! Rundown of how it works:
+//! 1. Generate an encryption key once on startup.
+//! 2. Store it in the system's keychain (e.g. macOS Keychain). Read it from there in the future.
+//! 3. Use said key to encrypt and decrypt another config file with all the credentials.
+//! 4. If the credential is ever lost for some reason, do everything again.
