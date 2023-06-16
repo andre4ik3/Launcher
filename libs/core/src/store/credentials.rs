@@ -22,7 +22,7 @@ use zeroize::Zeroize;
 
 use crate::models::Credentials;
 use crate::store::StoreHolder;
-use crate::utils::{get_credentials, write_credentials, write_key, CKey};
+use crate::utils::{get_credentials, write_credentials, write_key, CKey, Status};
 
 lazy_static! {
     /// A global instance of [CredentialsHolder].
@@ -50,9 +50,12 @@ impl Drop for CredentialsHolder {
 #[async_trait]
 impl StoreHolder<Credentials> for CredentialsHolder {
     async fn init() -> Self {
-        let (_status, data, key) = get_credentials().await;
+        let (status, data, key) = get_credentials().await;
 
-        // TODO: Warn if status == [Status::Overwritten]
+        // TODO: expose this to GUIs
+        if status == Status::Overwritten {
+            log::warn!("Failed to decrypt credential store. A new one has been created. You have been logged out.");
+        }
 
         // Panic if already initialized
         HAS_INITIALIZED.set(true).expect("Already initialized!");

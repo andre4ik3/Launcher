@@ -13,9 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use aes_gcm::aead::{Aead, OsRng};
-use aes_gcm::{AeadCore, Aes256Gcm, KeyInit};
-
 use launcher::store::credentials::CREDENTIALS;
 use launcher::store::StoreHolder;
 
@@ -24,5 +21,5 @@ async fn main() {
     let credentials = CREDENTIALS.get().await;
     let value = credentials.get().await;
     println!("{:?}", value);
-    credentials.flush();
+    credentials.flush().await.unwrap();
 }

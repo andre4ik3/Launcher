@@ -31,6 +31,7 @@ const ENTRY_NAME: &str = "Launcher Credentials Store";
 const DATAFILE: &str = "Credentials.dat";
 const KEYFILE: &str = "Credentials.key";
 
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
 pub enum Status {
     /// An existing credential store was decrypted and returned.
     Decrypted,
@@ -52,6 +53,7 @@ async fn get_credentials_keychain() -> Result<CKey> {
 }
 
 /// Retrieves the credentials decryption key from a side-by-side file.
+/// This is "insecure" (as in not encrypted) on purpose, and designed as a fallback.
 async fn get_credentials_keyfile() -> Result<CKey> {
     let key = get_dirs().config_dir().join(KEYFILE);
     let key = hex::decode(fs::read_to_string(key).await?)?;
@@ -97,7 +99,7 @@ pub async fn write_credentials(data: &Credentials, key: &CKey) -> Result<()> {
         .encrypt(&nonce, data.as_slice())
         .map_err(|_| anyhow!("Encryption failed"))?;
 
-    let data: Vec<u8> = data.into_iter().chain(nonce.into_iter()).collect();
+    let data: Vec<u8> = nonce.into_iter().chain(data.into_iter()).collect();
     let path = get_dirs().config_dir().join(DATAFILE);
 
     fs::create_dir_all(&path.parent().ok_or(anyhow!("No parent"))?).await?;
@@ -114,6 +116,7 @@ fn write_keychain(key: &CKey) -> Result<()> {
 }
 
 /// Writes a key to the keyfile.
+/// This is "insecure" (as in not encrypted) on purpose, and designed as a fallback.
 async fn write_keyfile(key: &CKey) -> Result<()> {
     fs::write(get_dirs().config_dir().join(KEYFILE), key).await?;
     Ok(())

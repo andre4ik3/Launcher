@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::collections::HashSet;
 use std::{env::consts, str::FromStr};
 
 use chrono::{DateTime, Utc};
@@ -22,7 +23,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 /// Condition for inclusion of arguments and libraries.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Deserialize, Serialize)]
 pub enum Condition {
     Feature(String),
     OS((OS, VersionReq)),
@@ -67,13 +68,14 @@ impl Condition {
     pub fn simplify(self) -> Self {
         match self {
             Self::And(vals) => {
-                let vals: Box<[Condition]> = vals
+                let vals: HashSet<Condition> = vals
                     .iter()
                     .cloned()
                     .filter(|condition| !condition.is_empty())
                     .map(Self::simplify)
                     .collect();
 
+                let vals: Box<[Condition]> = vals.into_iter().collect();
                 if vals.len() == 1 {
                     vals[0].clone()
                 } else {
@@ -81,13 +83,14 @@ impl Condition {
                 }
             }
             Self::Or(vals) => {
-                let vals: Box<[Condition]> = vals
+                let vals: HashSet<Condition> = vals
                     .iter()
                     .cloned()
                     .filter(|condition| !condition.is_empty())
                     .map(Self::simplify)
                     .collect();
 
+                let vals: Box<[Condition]> = vals.into_iter().collect();
                 if vals.len() == 1 {
                     vals[0].clone()
                 } else {

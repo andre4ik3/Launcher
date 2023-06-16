@@ -17,4 +17,4 @@ pub mod ffi;
 pub mod models;
 pub mod net;
 pub mod store;
-pub mod utils;
+pub(crate) mod utils;
