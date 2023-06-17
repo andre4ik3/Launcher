@@ -13,13 +13,35 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use launcher::store::credentials::CREDENTIALS;
-use launcher::store::StoreHolder;
+use launcher::net::auth::{
+    get_game_token, get_ms_token, get_profile, get_xbl_token, get_xsts_token,
+};
+use reqwest::redirect::Policy;
 
 #[tokio::main]
 async fn main() {
-    let credentials = CREDENTIALS.get().await;
-    let value = credentials.get().await;
-    println!("{:?}", value);
-    credentials.flush().await.unwrap();
+    let client = reqwest::Client::builder()
+        .redirect(Policy::none())
+        .build()
+        .unwrap();
+
+    // let code = "morbius";
+    // println!("Code is {}", code);
+    //
+    // let (token, refresh) = get_ms_token(&client, code).await.unwrap();
+    // println!("Token is {}", token);
+    // println!("Refresh is {}", refresh);
+    //
+    // let xbl = get_xbl_token(&client, &token).await.unwrap();
+    // println!("XBL is {}", xbl);
+    //
+    // let (xsts, uhs) = get_xsts_token(&client, &xbl).await.unwrap();
+    // println!("XSTS is {}", xsts);
+    // println!("UHS is {}", uhs);
+    //
+    // let game = get_game_token(&client, &uhs, &xsts).await.unwrap();
+    // println!("Game token is {}", game);
+
+    let game = "sus";
+    get_profile(&client, game).await.unwrap();
 }

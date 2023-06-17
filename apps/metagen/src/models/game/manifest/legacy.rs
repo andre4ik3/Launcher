@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::{DateTime, Utc};
 use platforms::{Arch, OS};
 use semver::VersionReq;
 use serde::{Deserialize, Serialize};
@@ -41,8 +40,8 @@ pub struct GameManifestLegacy {
     pub main_class: String,
     pub minecraft_arguments: String,
     pub minimum_launcher_version: u64,
-    pub release_time: DateTime<Utc>,
-    pub time: DateTime<Utc>,
+    pub release_time: String,
+    pub time: String,
     pub logging: Option<Logging>,
 }
 

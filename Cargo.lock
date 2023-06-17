@@ -59,12 +59,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "android-tzdata"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e999941b234f3131b00bc13c22d06e8c5ff726d1b6318ac7eb276997bbb4fef0"
-
-[[package]]
 name = "anstream"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -330,17 +324,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "chrono"
-version = "0.4.26"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec837a71355b28f6556dbd569b37b3f363091c0bd4b2e735674521b4c5fd9bc5"
-dependencies = [
- "android-tzdata",
- "num-traits",
- "serde",
-]
-
-[[package]]
 name = "cipher"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -596,6 +579,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e51093e27b0797c359783294ca4f0a911c270184cb10f85783b118614a1501be"
 dependencies = [
  "instant",
+]
+
+[[package]]
+name = "ffi"
+version = "0.0.1"
+dependencies = [
+ "launcher",
+ "swift-bridge",
+ "swift-bridge-build",
 ]
 
 [[package]]
@@ -997,7 +989,6 @@ dependencies = [
  "async-trait",
  "async_once",
  "bytes",
- "chrono",
  "directories",
  "futures-util",
  "hex",
@@ -1012,8 +1003,6 @@ dependencies = [
  "serde",
  "sha1",
  "sha2",
- "swift-bridge",
- "swift-bridge-build",
  "tokio",
  "toml",
  "url",
@@ -1093,7 +1082,6 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "async-trait",
- "chrono",
  "indicatif",
  "launcher",
  "once_cell",
@@ -1815,10 +1803,8 @@ version = "0.1.51"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b8fa07c7cd2b2d7ca48d96f5abd159e3fd3eee3457e7bd03adc1994bfbdabd2f"
 dependencies = [
- "once_cell",
  "swift-bridge-build",
  "swift-bridge-macro",
- "tokio",
 ]
 
 [[package]]

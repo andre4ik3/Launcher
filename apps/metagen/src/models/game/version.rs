@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -28,8 +27,8 @@ pub struct _GameVersionInfo {
     #[serde(rename = "type")]
     pub stability: Stability,
     pub url: Url,
-    pub time: DateTime<Utc>,
-    pub release_time: DateTime<Utc>,
+    pub time: String,
+    pub release_time: String,
     pub sha1: String,
     pub compliance_level: u8,
 }
