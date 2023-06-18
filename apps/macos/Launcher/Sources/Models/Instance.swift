@@ -13,28 +13,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#[cfg(feature = "ffi-swift")]
-#[swift_bridge::bridge]
-mod swift {
-    extern "Rust" {
-        type RustApp;
+import SwiftUI
 
-        #[swift_bridge(init)]
-        fn new() -> RustApp;
+struct Instance: View {
+    let label: any StringProtocol
+    let selected: Bool
 
-        fn do_something(&self) -> u8;
+    var body: some View {
+        VStack {
+            Image(systemName: "plus").frame(width: 64.0, height: 64.0)
+            Text(label)
+        }.contextMenu {
+            Button {
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
     }
 }
 
-pub struct RustApp {}
-
-impl RustApp {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        RustApp {}
-    }
-
-    pub fn do_something(&self) -> u8 {
-        123
+struct Instance_Previews: PreviewProvider {
+    static var previews: some View {
+        HStack {
+            Instance(label: "Instance Name", selected: true)
+            Instance(label: "Instance Name", selected: false)
+            Instance(label: "Instance Name", selected: false)
+        }.padding()
     }
 }

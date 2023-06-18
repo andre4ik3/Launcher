@@ -1,0 +1,48 @@
+name: "Launcher"
+
+packages:
+  Sparkle: { url: https://github.com/sparkle-project/Sparkle, majorVersion: 2.0.0 }
+
+targets:
+  Launcher:
+    type: "application"
+    platform: "macOS"
+    deploymentTarget: { macOS: "12.0" }
+    sources:
+      - Sources
+      - Generated
+      - path: Resources
+        buildPhase: none
+      - name: Rust
+        path: ../src
+        type: folder
+        buildPhase: none
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: dev.andre4ik3.Launcher
+        PRODUCT_NAME: $(TARGET_NAME)
+        MARKETING_VERSION: "${VERSION}"
+        CURRENT_PROJECT_VERSION: "${BUILD}"
+        DEVELOPMENT_ASSET_PATHS: "\"Resources/Preview\ Content\""
+        ENABLE_PREVIEWS: true
+        INFOPLIST_FILE: $(PROJECT_DIR)/Resources/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: $(PROJECT_DIR)/Resources/Launcher.entitlements
+        ENABLE_HARDENED_RUNTIME: true
+        SWIFT_VERSION: '5.5'
+        SWIFT_OBJC_BRIDGING_HEADER: $(PROJECT_DIR)/Sources/BridgingHeader.h
+        SWIFT_PRECOMPILE_BRIDGING_HEADER: false
+      configs:
+        debug: { "LIBRARY_SEARCH_PATHS[arch=*]": "$(PROJECT_DIR)/../../../target/universal/debug" }
+        release: { "LIBRARY_SEARCH_PATHS[arch=*]": "$(PROJECT_DIR)/../../../target/universal/release" }
+    preBuildScripts:
+      - name: "Compile Rust Sources"
+        shell: /bin/zsh
+        script: ./build-rust.sh
+        basedOnDependencyAnalysis: false
+    dependencies:
+      - sdk: Foundation.framework
+      - sdk: SwiftUI.framework
+      - framework: $(PROJECT_DIR)/../../../target/universal/release/liblauncher_macos.a
+        embed: false
+      - package: Sparkle

@@ -13,4 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod swift;
+#ifndef BridgingHeader_h
+#define BridgingHeader_h
+
+#include "../Generated/SwiftBridgeCore.h"
+#include "../Generated/launcher-macos/launcher-macos.h"
+
+#endif /* BridgingHeader_h */

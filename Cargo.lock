@@ -610,15 +610,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ffi"
-version = "0.0.1"
-dependencies = [
- "launcher",
- "swift-bridge",
- "swift-bridge-build",
-]
-
-[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1060,6 +1051,17 @@ dependencies = [
  "url",
  "uuid",
  "zeroize",
+]
+
+[[package]]
+name = "launcher-macos"
+version = "0.0.1"
+dependencies = [
+ "launcher",
+ "reqwest",
+ "swift-bridge",
+ "swift-bridge-build",
+ "tokio",
 ]
 
 [[package]]
@@ -1856,8 +1858,10 @@ version = "0.1.51"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b8fa07c7cd2b2d7ca48d96f5abd159e3fd3eee3457e7bd03adc1994bfbdabd2f"
 dependencies = [
+ "once_cell",
  "swift-bridge-build",
  "swift-bridge-macro",
+ "tokio",
 ]
 
 [[package]]
