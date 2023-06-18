@@ -13,17 +13,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use anyhow::Result;
+use async_trait::async_trait;
 use reqwest::Client;
 
-use launcher::net::auth::{AuthenticationService, MicrosoftAuthenticationService};
+pub use microsoft::{get_auth_url, MicrosoftAuthenticationService};
+pub use offline::OfflineAuthenticationService;
 
-#[tokio::main]
-async fn main() {
-    let client = Client::new();
-    let code = "epic microsoft auth code".to_string();
-    let account = MicrosoftAuthenticationService::authenticate(&client, code)
-        .await
-        .unwrap();
+use crate::models::Account;
 
-    println!("{:?}", account);
+mod microsoft;
+mod offline;
+
+/// A generic interface for interacting with an authentication service.
+#[async_trait]
+pub trait AuthenticationService<T> {
+    /// Authenticates with the service, giving back an account struct.
+    async fn authenticate(client: &Client, credentials: T) -> Result<Account>;
+
+    /// Refreshes an account for a new game token.
+    async fn refresh(client: &Client, account: Account) -> Result<Account>;
 }

@@ -13,21 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 /// The different types of accounts and their credentials.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum AccountCredentials {
     /// MSA (Microsoft Authentication) accounts.
-    Microsoft {
-        // todo
-    },
+    Microsoft { access: String, refresh: String },
 
-    /// Mojang and Minecraft.net accounts.
-    Yggdrasil { username: String, password: String },
-
-    /// Offline-mode / demo-mode accounts.
-    Offline { username: String },
+    /// Offline-mode / demo-mode accounts. Uses random token and ID.
+    Offline,
 }
 
 /// An account used for logging into the game.
@@ -35,6 +31,14 @@ pub enum AccountCredentials {
 pub struct Account {
     /// The UUID of the account.
     pub id: String,
+    /// The in-game username of the account.
+    pub username: String,
+    /// Whether the account has a profile (and therefore rights to play the game).
+    pub has_profile: bool,
+    /// The last received game token belonging to the account.
+    pub token: String,
+    /// When the game token stored is set to expire.
+    pub expires: Option<DateTime<Utc>>,
     /// The login credentials to use for the account.
     pub credentials: AccountCredentials,
 }

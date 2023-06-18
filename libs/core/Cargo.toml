@@ -20,6 +20,7 @@ anyhow = "1"
 async_once = "0.2.6"
 async-trait = "0.1"
 bytes = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 directories = "5"
 futures-util = "0.3"
 hex = { version = "0.4", features = ["serde"] }
@@ -31,5 +32,5 @@ sha1 = "0.10"
 sha2 = "0.10"
 semver = { version = "1", features = ["serde"] }
 url = { version = "2", features = ["serde"] }
-# uuid = { version = "1", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
 zeroize = "1"

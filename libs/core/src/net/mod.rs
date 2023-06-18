@@ -16,3 +16,4 @@
 pub mod auth;
 pub mod java;
 pub mod meta;
+pub mod mojang;
