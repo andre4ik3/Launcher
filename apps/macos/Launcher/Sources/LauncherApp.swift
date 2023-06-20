@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import SwiftUI
 import Sparkle
+import SwiftUI
 
 final class CheckForUpdatesViewModel: ObservableObject {
     @Published var canCheckForUpdates = false
@@ -27,6 +27,7 @@ final class CheckForUpdatesViewModel: ObservableObject {
 @main
 struct LauncherApp: App {
     @ObservedObject private var checkForUpdatesViewModel: CheckForUpdatesViewModel
+    @State private var url = URL(string: "https://echo.paw.cloud")!
     private let updaterController: SPUStandardUpdaterController
 
     init() {
@@ -37,7 +38,7 @@ struct LauncherApp: App {
 
     var body: some Scene {
         Window("Launcher", id: "main") {
-            ContentView().environmentObject(RustAppWrapper(rust: RustApp()))
+            ContentView().environmentObject(Bridge(LauncherBridge()))
         }
         .windowToolbarStyle(.unifiedCompact)
         .commands {
@@ -53,9 +54,9 @@ struct LauncherApp: App {
     }
 }
 
-class RustAppWrapper: ObservableObject {
-    var rust: RustApp
-    init (rust: RustApp) {
+class Bridge: ObservableObject {
+    var rust: LauncherBridge
+    init(_ rust: LauncherBridge) {
         self.rust = rust
     }
 }

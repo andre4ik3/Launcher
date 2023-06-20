@@ -43,6 +43,6 @@ targets:
     dependencies:
       - sdk: Foundation.framework
       - sdk: SwiftUI.framework
+      - package: Sparkle
       - framework: $(PROJECT_DIR)/../../../target/universal/release/liblauncher_macos.a
         embed: false
-      - package: Sparkle

@@ -13,16 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use anyhow::Result;
+import SwiftUI
 
-pub async fn extract_zip() -> Result<()> {
-    todo!()
+struct ContentView: View {
+    @EnvironmentObject var bridge: Bridge
+
+    var body: some View {
+        InstancesView()
+    }
 }
 
-pub async fn extract_tar_gz() -> Result<()> {
-    todo!()
-}
-
-pub async fn extract_lzma() -> Result<()> {
-    todo!()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView().environmentObject(Bridge(LauncherBridge()))
+    }
 }

@@ -15,21 +15,24 @@
 
 import SwiftUI
 
-struct SettingsView: View {
+struct InstancesView: View {
+    @State private var code = ""
+    @EnvironmentObject var bridge: Bridge
+
     var body: some View {
-        TabView {
-            SettingsContainer(name: "General", icon: "gear") {
-                Text("General")
+        VStack {
+            TextField("Auth code", text: $code)
+            Button("Do login") {
+                Task {
+                    await bridge.rust.do_login(code)
+                }
             }
-            SettingsContainer(name: "Advanced", icon: "star") {
-                Text("Advanced")
-            }
-        }
+        }.padding()
     }
 }
 
-struct SettingsView_Previews: PreviewProvider {
+struct InstancesView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsView()
+        InstancesView().environmentObject(Bridge(LauncherBridge()))
     }
 }

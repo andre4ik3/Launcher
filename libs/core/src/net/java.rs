@@ -18,6 +18,7 @@ use bytes::{BufMut, BytesMut};
 use futures_util::StreamExt;
 use reqwest::Client;
 use sha2::{Digest, Sha256};
+use std::path::PathBuf;
 
 use crate::models::JavaBuild;
 
@@ -27,8 +28,6 @@ pub async fn install(client: &Client, build: JavaBuild) -> Result<()> {
     let mut hasher = Sha256::new();
 
     // Store the entire archive in memory. Should be OK since Java builds are at most 200MB-ish.
-    // TODO: Figure out a way to download, verify checksum, and expand archive only after successful
-    // TODO: verification, if it's even possible?
     let mut data = BytesMut::new();
     data.reserve(build.size as usize);
 
@@ -44,6 +43,13 @@ pub async fn install(client: &Client, build: JavaBuild) -> Result<()> {
     if build_hash != hash.to_vec() {
         bail!("Failed verification");
     }
+
+    let path = PathBuf::from(build.name);
+
+    // match path.extension() {
+    //     Some(&"zip") => todo!(),
+    //     None => unreachable!(),
+    // };
 
     Ok(())
 }

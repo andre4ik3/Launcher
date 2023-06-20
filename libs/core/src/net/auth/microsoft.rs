@@ -158,7 +158,7 @@ impl AuthenticationService<String> for MicrosoftAuthenticationService {
         let has_profile = profile.is_ok();
         let (id, username) = profile
             .map(|p| (p.id, p.username))
-            .unwrap_or_else(|_| (Uuid::new_v4().to_string(), "Player".to_string()));
+            .unwrap_or_else(|_| (account.id, account.username));
 
         Ok(Account {
             id,
@@ -191,7 +191,16 @@ async fn exchange(client: &Client, code: String) -> Result<(String, String)> {
 
 /// Refreshes an expired Microsoft token for another one.
 async fn refresh(client: &Client, refresh_token: String) -> Result<(String, String)> {
-    todo!()
+    let params = [
+        ("client_id", AUTH_CLIENT_ID),
+        ("grant_type", "refresh_token"),
+        ("refresh_token", &refresh_token),
+        ("scope", AUTH_SCOPE),
+    ];
+
+    let data = client.post(AUTH_MS_TOKEN_URL).form(&params).send().await?;
+    let data: data::AuthCodeExchangeResponse = data.error_for_status()?.json().await?;
+    Ok((data.access_token, data.refresh_token))
 }
 
 /// MS -> XBL -> XSTS -> Game Token (and when it expires)

@@ -13,8 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use launcher::net::auth::AuthenticationService;
+use launcher::store::config::{ConfigHolder, CONFIG};
+use launcher::store::credentials::{CredentialsHolder, CREDENTIALS};
+use launcher::store::StoreHolder;
 use reqwest::Client;
-use std::process::Command;
 
 const PACKAGE_NAME: &str = env!("CARGO_PKG_NAME");
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -24,35 +27,55 @@ const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[swift_bridge::bridge]
 mod ffi {
     extern "Rust" {
-        type RustApp;
+        type LauncherBridge;
 
         #[swift_bridge(init)]
-        fn new() -> RustApp;
+        fn new() -> LauncherBridge;
+        async fn setup(&mut self);
 
-        fn say_hello(&self, who: &str) -> String;
-        async fn do_something(&self);
+        fn get_login_url(&self) -> String;
+        async fn do_login(&self, code: String);
+
+        async fn get_accounts(&mut self);
     }
 }
 
-pub struct RustApp;
+pub struct LauncherBridge {
+    client: Client,
+    config: Option<&'static ConfigHolder>,
+    credentials: Option<&'static CredentialsHolder>,
+}
 
-impl RustApp {
+impl LauncherBridge {
     fn new() -> Self {
-        RustApp {}
+        LauncherBridge {
+            client: Client::new(),
+            config: None,
+            credentials: None,
+        }
     }
 
-    fn say_hello(&self, who: &str) -> String {
-        format!(
-            "Hello, {}! This is {} version {}.",
-            who, PACKAGE_NAME, PACKAGE_VERSION
-        )
+    async fn setup(&mut self) {
+        self.config = Some(CONFIG.get().await);
+        self.credentials = Some(CREDENTIALS.get().await);
     }
 
-    async fn do_something(&self) {
-        println!("This is rust!");
-        let client = Client::new();
-        let build = launcher::net::meta::get_java(&client, 17).await.unwrap();
-        launcher::net::java::install(&client, build).await.unwrap();
-        println!("End of rust!");
+    fn get_login_url(&self) -> String {
+        let url = launcher::net::auth::get_auth_url();
+        url.to_string()
+    }
+
+    async fn do_login(&self, code: String) {
+        let account =
+            launcher::net::auth::MicrosoftAuthenticationService::authenticate(&self.client, code)
+                .await
+                .unwrap();
+
+        println!("{:?}", account);
+    }
+
+    async fn get_accounts(&self) {
+        let credentials = self.credentials.unwrap().get().await;
+        println!("{:?}", credentials);
     }
 }
