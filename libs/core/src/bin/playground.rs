@@ -13,17 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use reqwest::Client;
-
-use launcher::net::auth::{AuthenticationService, MicrosoftAuthenticationService};
+use launcher::store::{StoreHolder, CREDENTIALS};
 
 #[tokio::main]
-async fn main() {
-    let client = Client::new();
-    let code = "epic microsoft auth code".to_string();
-    let account = MicrosoftAuthenticationService::authenticate(&client, code)
-        .await
-        .unwrap();
-
-    println!("{:?}", account);
-}
+async fn main() {}

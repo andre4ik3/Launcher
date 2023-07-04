@@ -16,21 +16,32 @@
 use anyhow::Result;
 use once_cell::sync::Lazy;
 use reqwest::Client;
+use std::time::Duration;
 
 mod models;
 mod tasks;
 mod utils;
 
 /// Client for HTTP requests.
-pub static CLIENT: Lazy<Client> = Lazy::new(Client::new);
+pub static CLIENT: Lazy<Client> = Lazy::new(|| {
+    Client::builder()
+        .brotli(true)
+        .timeout(Duration::from_secs(30))
+        .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+        .build()
+        .expect("Failed to build client")
+});
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // Run a task to collect game metadata first. Then get Java versions based on what the different
     // game versions require.
-    let java_versions = tasks::game::run(&[]).await?;
-    tasks::java::run(java_versions).await?;
-    tasks::index::run().await?;
+    tasks::loaders::run().await?;
+    // let (java_versions, assets) = tasks::game::run().await?;
+
+    // tasks::java::run(java_versions).await?;
+    // tasks::assets::run(assets).await?;
+    // tasks::index::run().await?;
 
     println!("Done.");
     Ok(())

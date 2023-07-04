@@ -50,6 +50,34 @@ pub struct JavaBuild {
     pub checksum: String,
 }
 
+/// Information about an installed build of Java, stored in a `Java.toml` file.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct JavaInfo {
+    /// The provider that distributes this build.
+    pub provider: JavaProvider,
+    /// The version of the build.
+    pub version: Version,
+    /// Size of the uncompressed install in bytes.
+    pub size: u64,
+    /// Location of the `java` (or `javaw`) executable relative to a `Java.toml` file.
+    pub executable: PathBuf,
+}
+
+#[allow(clippy::from_over_into)]
+impl Into<JavaInfo> for JavaBuild {
+    fn into(self) -> JavaInfo {
+        JavaInfo {
+            provider: self.provider,
+            version: self.version,
+            size: self.size,
+            executable: self.executable,
+        }
+    }
+}
+
 /// Information about available Java builds.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct JavaBuildIndex {}
+pub struct JavaBuildIndex {
+    /// The available major versions of Java.
+    pub versions: Box<[u8]>,
+}

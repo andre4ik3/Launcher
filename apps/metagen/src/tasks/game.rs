@@ -20,7 +20,7 @@ use indicatif::ProgressBar;
 
 use launcher::models::{GameVersion, GameVersionIndex};
 
-use crate::models::game::{GameManifest, GameVersionInfoIndex};
+use crate::models::game::{AssetIndex, GameManifest, GameVersionInfoIndex};
 use crate::utils::{dump, prog_style};
 use crate::CLIENT;
 
@@ -28,16 +28,17 @@ const INDEX_URL: &str = "https://launchermeta.mojang.com/mc/game/version_manifes
 
 /// Collects metadata about *all* available game versions and writes them to disk to respective
 /// files. Also collects the Java requirement for each version and returns them as a [HashSet].
-pub async fn run(skip: &[String]) -> Result<HashSet<u8>> {
+pub async fn run() -> Result<(HashSet<u8>, HashSet<AssetIndex>)> {
     println!("Generating game metadata...");
     let resp = CLIENT.get(INDEX_URL).send().await?.error_for_status()?;
     let mut resp: GameVersionInfoIndex = resp.json().await?;
 
     let index: GameVersionIndex = resp.clone().into();
-    dump("versions.ron", &index).await?;
+    dump("game.ron", &index).await?;
 
     resp.versions.reverse(); // Oldest -> newest
     let mut versions: HashSet<u8> = HashSet::new();
+    let mut assets: HashSet<AssetIndex> = HashSet::new();
 
     let pb = ProgressBar::new(resp.versions.len() as u64);
     pb.set_style(prog_style());
@@ -45,20 +46,16 @@ pub async fn run(skip: &[String]) -> Result<HashSet<u8>> {
     for version in resp.versions {
         pb.inc(1);
         pb.set_message(format!("Game {}", version.id));
-
-        if skip.contains(&version.id) {
-            continue;
-        }
-
         let data = CLIENT.get(version.url).send().await?.error_for_status()?;
         let data: GameManifest = data.json().await?;
+        assets.insert(data.asset_index());
         let data: GameVersion = data.into();
 
         // Hopefully there's not more than 255 Java versions
         versions.insert(data.java.comparators[0].major as u8);
-        dump(format!("versions/{}.ron", version.id), &data).await?;
+        dump(format!("game/{}.ron", version.id), &data).await?;
     }
 
     pb.finish_and_clear();
-    Ok(versions)
+    Ok((versions, assets))
 }

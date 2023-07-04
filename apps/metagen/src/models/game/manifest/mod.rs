@@ -17,6 +17,8 @@ use serde::{Deserialize, Serialize};
 
 use launcher::models::GameVersion;
 
+use crate::models::game::common::AssetIndex;
+
 pub mod legacy;
 pub mod v17w43a;
 
@@ -25,6 +27,16 @@ pub mod v17w43a;
 pub enum GameManifest {
     Legacy(legacy::GameManifestLegacy),
     Modern(v17w43a::GameManifest17w43a),
+}
+
+#[allow(clippy::from_over_into)]
+impl GameManifest {
+    pub fn asset_index(&self) -> AssetIndex {
+        match self {
+            GameManifest::Legacy(manifest) => manifest.asset_index.clone(),
+            GameManifest::Modern(manifest) => manifest.asset_index.clone(),
+        }
+    }
 }
 
 #[allow(clippy::from_over_into)]

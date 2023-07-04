@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use launcher::models::{GameDownloadable, GameLibrary, GameMaybeConditional, GameVersion};
@@ -43,8 +44,8 @@ pub struct GameManifest17w43a {
     pub main_class: String,
     pub arguments: _Arguments,
     pub minimum_launcher_version: u64,
-    pub release_time: String,
-    pub time: String,
+    pub release_time: DateTime<Utc>,
+    pub time: DateTime<Utc>,
     pub logging: Option<Logging>,
 }
 

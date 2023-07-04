@@ -13,9 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+pub use assets::*;
+pub use common::*;
 pub use manifest::*;
 pub use version::*;
 
-pub mod common;
+mod assets;
+mod common;
 mod manifest;
 mod version;

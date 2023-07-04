@@ -13,21 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use anyhow::Result;
-use async_trait::async_trait;
-use tokio::sync::{RwLockReadGuard, RwLockWriteGuard};
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-pub use config::{ConfigHolder, CONFIG};
-pub use credentials::{CredentialsHolder, CREDENTIALS};
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AssetIndexObject {
+    pub hash: String,
+    pub size: u64,
+}
 
-mod config;
-mod credentials;
-
-/// An object that holds type T. It is used as "global state" for the whole application.
-#[async_trait]
-pub trait StoreHolder<T> {
-    async fn get(&self) -> T;
-    async fn check(&self, func: impl FnOnce(RwLockReadGuard<T>) -> bool + Send) -> bool;
-    async fn change(&self, func: impl FnOnce(RwLockWriteGuard<T>) + Send) -> Result<()>;
-    async fn flush(&self) -> Result<()>;
+/// Asset index file downloaded from mojang.
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AssetIndexFile {
+    pub objects: HashMap<String, AssetIndexObject>,
+    pub map_to_resources: Option<bool>,
+    pub r#virtual: Option<bool>,
 }

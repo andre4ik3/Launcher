@@ -260,7 +260,7 @@ pub struct Downloads {
     pub windows_server: Option<Downloadable>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AssetIndex {
     pub id: String,

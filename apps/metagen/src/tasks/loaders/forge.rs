@@ -13,21 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::CLIENT;
 use anyhow::Result;
-use async_trait::async_trait;
-use tokio::sync::{RwLockReadGuard, RwLockWriteGuard};
+use indicatif::ProgressBar;
+use std::collections::HashMap;
 
-pub use config::{ConfigHolder, CONFIG};
-pub use credentials::{CredentialsHolder, CREDENTIALS};
+const VERSIONS: &str =
+    "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
+const PROMOTIONS: &str =
+    "https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json";
 
-mod config;
-mod credentials;
+pub async fn collect() -> Result<()> {
+    let data = CLIENT.get(VERSIONS).send().await?;
+    let data: HashMap<String, Vec<String>> = data.error_for_status()?.json().await?;
+    println!("{:?}", data.get("1.20.1"));
 
-/// An object that holds type T. It is used as "global state" for the whole application.
-#[async_trait]
-pub trait StoreHolder<T> {
-    async fn get(&self) -> T;
-    async fn check(&self, func: impl FnOnce(RwLockReadGuard<T>) -> bool + Send) -> bool;
-    async fn change(&self, func: impl FnOnce(RwLockWriteGuard<T>) + Send) -> Result<()>;
-    async fn flush(&self) -> Result<()>;
+    Ok(())
 }

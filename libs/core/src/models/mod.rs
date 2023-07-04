@@ -25,4 +25,5 @@ mod credentials;
 mod environment;
 mod game;
 mod java;
+mod loader;
 mod meta;

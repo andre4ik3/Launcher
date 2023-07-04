@@ -49,7 +49,7 @@ struct LauncherApp: App {
         }
 
         Settings {
-            SettingsView()
+            SettingsView().environmentObject(Bridge(LauncherBridge()))
         }
     }
 }

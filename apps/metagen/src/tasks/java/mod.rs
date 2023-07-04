@@ -20,7 +20,7 @@ use async_trait::async_trait;
 use indicatif::ProgressBar;
 use platforms::{Arch, OS};
 
-use launcher::models::{Environment, JavaBuild};
+use launcher::models::{Environment, JavaBuild, JavaBuildIndex};
 
 use crate::utils::{dump, prog_style};
 
@@ -81,6 +81,12 @@ pub async fn run(versions: HashSet<u8>) -> Result<()> {
             }
         }
     }
+
+    let data = JavaBuildIndex {
+        versions: versions.into_iter().collect(),
+    };
+
+    dump("java.ron", &data).await?;
 
     Ok(())
 }

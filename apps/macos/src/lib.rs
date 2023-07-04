@@ -13,14 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use launcher::net::auth::AuthenticationService;
-use launcher::store::config::{ConfigHolder, CONFIG};
-use launcher::store::credentials::{CredentialsHolder, CREDENTIALS};
-use launcher::store::StoreHolder;
 use reqwest::Client;
 
-const PACKAGE_NAME: &str = env!("CARGO_PKG_NAME");
-const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
+use launcher::net::auth::AuthenticationService;
+use launcher::store::{ConfigHolder, CredentialsHolder, StoreHolder, CONFIG, CREDENTIALS};
 
 // Rust extension freaks out here, "extern types is experimental"
 // Use VSC w/ rust-analyzer for good experience

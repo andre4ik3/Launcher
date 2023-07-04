@@ -19,9 +19,10 @@ use anyhow::Result;
 use reqwest::Client;
 use serde::Deserialize;
 
-use crate::models::{Environment, GameVersion, GameVersionIndex, JavaBuild, MetadataIndex};
-use crate::store::config::CONFIG;
-use crate::store::StoreHolder;
+use crate::models::{
+    Environment, GameVersion, GameVersionIndex, JavaBuild, JavaBuildIndex, MetadataIndex,
+};
+use crate::store::{StoreHolder, CONFIG};
 
 /// Helper function to run a request to a URL and decode the result.
 async fn get<T: for<'a> Deserialize<'a>>(client: &Client, path: impl Display) -> Result<T> {
@@ -36,6 +37,11 @@ pub async fn get_index(client: &Client) -> Result<MetadataIndex> {
     get(client, "index.ron").await
 }
 
+/// Gets the Java version index from the metadata server.
+pub async fn get_java_index(client: &Client) -> Result<JavaBuildIndex> {
+    get(client, "java.ron").await
+}
+
 /// Gets information about a Java version from the metadata server.
 pub async fn get_java(client: &Client, version: u8) -> Result<JavaBuild> {
     let env = Environment::default();
@@ -45,10 +51,10 @@ pub async fn get_java(client: &Client, version: u8) -> Result<JavaBuild> {
 
 /// Gets the game version index from the metadata server.
 pub async fn get_game_index(client: &Client) -> Result<GameVersionIndex> {
-    get(client, "versions.ron").await
+    get(client, "game.ron").await
 }
 
 /// Gets a specific game version from the metadata server.
 pub async fn get_game_version(client: &Client, version: &str) -> Result<GameVersion> {
-    get(client, format!("versions/{version}.ron")).await
+    get(client, format!("game/{version}.ron")).await
 }

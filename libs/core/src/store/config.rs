@@ -20,7 +20,7 @@ use async_once::AsyncOnce;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
 use tokio::fs;
-use tokio::sync::{OnceCell, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::models::Config;
 use crate::store::StoreHolder;
@@ -31,19 +31,13 @@ lazy_static! {
     pub static ref CONFIG: AsyncOnce<ConfigHolder> = AsyncOnce::new(ConfigHolder::init());
 }
 
-/// A boolean that dictates whether the holder has already been initialized.
-static HAS_INITIALIZED: OnceCell<bool> = OnceCell::const_new();
-
 /// Facilitates parallel reading and writing to the configuration. Access via [CONFIG].
 pub struct ConfigHolder {
-    /// An internal lock for controlling read/write access.
     lock: RwLock<Config>,
-    /// Path to the file that is read from and written to.
     path: PathBuf,
 }
 
-#[async_trait]
-impl StoreHolder<Config> for ConfigHolder {
+impl ConfigHolder {
     async fn init() -> Self {
         let path = get_dirs().config_dir().join("Config.toml");
 
@@ -53,13 +47,13 @@ impl StoreHolder<Config> for ConfigHolder {
             .map_err(|e| e.into()) // ⬅ convert to anyhow::Result ⬇
             .and_then(|s| toml::from_str(&s).map_err(|e| e.into()));
 
-        // Panic if already initialized
-        HAS_INITIALIZED.set(true).expect("Already initialized!");
-
         let lock = RwLock::new(data.unwrap_or_default());
         Self { lock, path }
     }
+}
 
+#[async_trait]
+impl StoreHolder<Config> for ConfigHolder {
     async fn get(&self) -> Config {
         let lock = self.lock.read().await;
         (*lock).clone()

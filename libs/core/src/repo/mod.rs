@@ -15,19 +15,18 @@
 
 use anyhow::Result;
 use async_trait::async_trait;
-use tokio::sync::{RwLockReadGuard, RwLockWriteGuard};
 
-pub use config::{ConfigHolder, CONFIG};
-pub use credentials::{CredentialsHolder, CREDENTIALS};
+pub use java::JavaRepo;
 
-mod config;
-mod credentials;
+mod java;
 
-/// An object that holds type T. It is used as "global state" for the whole application.
+/// A repo is a place where multiple versions of something (Java, game versions) are stored.
+/// In a way, it is similar to a store holder, but instead of only holding one, it holds multiple.
+/// T is the type being stored (JavaInfo), U is the type needed for download (JavaBuild).
 #[async_trait]
-pub trait StoreHolder<T> {
-    async fn get(&self) -> T;
-    async fn check(&self, func: impl FnOnce(RwLockReadGuard<T>) -> bool + Send) -> bool;
-    async fn change(&self, func: impl FnOnce(RwLockWriteGuard<T>) + Send) -> Result<()>;
-    async fn flush(&self) -> Result<()>;
+pub trait Repo<T, U> {
+    async fn get(&self, id: impl AsRef<str> + Send) -> Option<T>;
+    async fn list(&self) -> Vec<T>;
+    async fn install(&mut self, data: &U) -> Result<T>;
+    async fn delete(&mut self, id: impl AsRef<str> + Send) -> Result<()>;
 }

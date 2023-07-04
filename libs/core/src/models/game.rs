@@ -16,6 +16,7 @@
 use std::collections::HashSet;
 use std::{env::consts, str::FromStr};
 
+use chrono::{DateTime, Utc};
 use platforms::{Arch, OS};
 use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
@@ -184,7 +185,7 @@ pub struct GameVersion {
     /// The Java class that serves as the entry point for this version.
     pub entrypoint: String,
     /// UTC date and time of release of this version.
-    pub released: String,
+    pub released: DateTime<Utc>,
     /// Arguments to be passed to the game.
     pub arguments: Box<[GameMaybeConditional<String>]>,
     /// Arguments to be passed to the Java virtual machine.
@@ -197,7 +198,7 @@ pub struct GameVersion {
     pub client: GameDownloadable,
 }
 
-/// Surface-level information about a game version.
+/// Surface-level information about a [GameVersion].
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GameVersionSnippet {
     /// The unique game version. Note: doesn't follow SemVer.
@@ -205,7 +206,7 @@ pub struct GameVersionSnippet {
     /// The stability of this game version.
     pub stability: GameVersionStability,
     /// UTC date and time of release of this version.
-    pub released: String,
+    pub released: DateTime<Utc>,
 }
 
 /// Information about available game versions.

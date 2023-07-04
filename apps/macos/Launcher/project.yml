@@ -11,8 +11,7 @@ targets:
     sources:
       - Sources
       - Generated
-      - path: Resources
-        buildPhase: none
+      - Resources
       - name: Rust
         path: ../src
         type: folder
@@ -29,9 +28,10 @@ targets:
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: $(PROJECT_DIR)/Resources/Launcher.entitlements
         ENABLE_HARDENED_RUNTIME: true
-        SWIFT_VERSION: '5.5'
+        SWIFT_VERSION: "5.5"
         SWIFT_OBJC_BRIDGING_HEADER: $(PROJECT_DIR)/Sources/BridgingHeader.h
         SWIFT_PRECOMPILE_BRIDGING_HEADER: false
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
       configs:
         debug: { "LIBRARY_SEARCH_PATHS[arch=*]": "$(PROJECT_DIR)/../../../target/universal/debug" }
         release: { "LIBRARY_SEARCH_PATHS[arch=*]": "$(PROJECT_DIR)/../../../target/universal/release" }

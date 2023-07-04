@@ -17,7 +17,7 @@ use anyhow::Result;
 use async_once::AsyncOnce;
 use async_trait::async_trait;
 use lazy_static::lazy_static;
-use tokio::sync::{OnceCell, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use zeroize::Zeroize;
 
 use crate::models::Credentials;
@@ -29,15 +29,24 @@ lazy_static! {
     pub static ref CREDENTIALS: AsyncOnce<CredentialsHolder> = AsyncOnce::new(CredentialsHolder::init());
 }
 
-/// A boolean that dictates whether the holder has already been initialized.
-static HAS_INITIALIZED: OnceCell<bool> = OnceCell::const_new();
-
 /// Facilitates parallel reading and writing to the configuration. Access via [CONFIG].
 pub struct CredentialsHolder {
-    /// An internal lock for controlling read/write access.
     lock: RwLock<Credentials>,
-    /// Key used for encryption and decryption.
     key: CKey,
+}
+
+impl CredentialsHolder {
+    async fn init() -> Self {
+        let (status, data, key) = get_credentials().await;
+
+        // TODO: expose this to GUIs
+        if status == Status::Overwritten {
+            log::warn!("Failed to decrypt credential store. A new one has been created. You have been logged out.");
+        }
+
+        let lock = RwLock::new(data);
+        Self { lock, key }
+    }
 }
 
 impl Drop for CredentialsHolder {
@@ -49,32 +58,23 @@ impl Drop for CredentialsHolder {
 
 #[async_trait]
 impl StoreHolder<Credentials> for CredentialsHolder {
-    async fn init() -> Self {
-        let (status, data, key) = get_credentials().await;
-
-        // TODO: expose this to GUIs
-        if status == Status::Overwritten {
-            log::warn!("Failed to decrypt credential store. A new one has been created. You have been logged out.");
-        }
-
-        // Panic if already initialized
-        HAS_INITIALIZED.set(true).expect("Already initialized!");
-
-        let lock = RwLock::new(data);
-        Self { lock, key }
-    }
-
     async fn get(&self) -> Credentials {
         let lock = self.lock.read().await;
         (*lock).clone()
     }
 
-    async fn check(&self, func: impl FnOnce(RwLockReadGuard<Credentials>) -> bool + Send) -> bool {
+    async fn check(
+        &self,
+        func: impl FnOnce(RwLockReadGuard<Credentials>) -> bool + Send,
+    ) -> bool {
         let lock = self.lock.read().await;
         func(lock)
     }
 
-    async fn change(&self, func: impl FnOnce(RwLockWriteGuard<Credentials>) + Send) -> Result<()> {
+    async fn change(
+        &self,
+        func: impl FnOnce(RwLockWriteGuard<Credentials>) + Send,
+    ) -> Result<()> {
         let lock = self.lock.write().await;
         func(lock); // Dropped after this, lock released, safe to write.
         self.flush().await

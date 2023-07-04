@@ -14,20 +14,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use anyhow::Result;
-use async_trait::async_trait;
-use tokio::sync::{RwLockReadGuard, RwLockWriteGuard};
+use indicatif::ProgressBar;
 
-pub use config::{ConfigHolder, CONFIG};
-pub use credentials::{CredentialsHolder, CREDENTIALS};
-
-mod config;
-mod credentials;
-
-/// An object that holds type T. It is used as "global state" for the whole application.
-#[async_trait]
-pub trait StoreHolder<T> {
-    async fn get(&self) -> T;
-    async fn check(&self, func: impl FnOnce(RwLockReadGuard<T>) -> bool + Send) -> bool;
-    async fn change(&self, func: impl FnOnce(RwLockWriteGuard<T>) + Send) -> Result<()>;
-    async fn flush(&self) -> Result<()>;
+pub async fn collect() -> Result<()> {
+    Ok(())
 }

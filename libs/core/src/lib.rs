@@ -15,5 +15,6 @@
 
 pub mod models;
 pub mod net;
+pub mod repo;
 pub mod store;
 pub(crate) mod utils;
