@@ -25,8 +25,9 @@ use tokio::sync::RwLock;
 use uuid::Uuid;
 
 use crate::models::{JavaBuild, JavaInfo};
+use crate::net::download::DownloadedArchive;
 use crate::repo::Repo;
-use crate::utils::get_dirs;
+use crate::utils::{extract, get_dirs};
 
 lazy_static! {
     pub static ref JAVA: AsyncOnce<JavaRepo> = AsyncOnce::new(JavaRepo::init());
@@ -48,11 +49,16 @@ impl JavaRepo {
 
 #[async_trait]
 impl Repo<JavaInfo, JavaBuild> for JavaRepo {
-    async fn add(&mut self, data: &JavaBuild) -> Result<JavaInfo> {
+    async fn add(&mut self, archive: DownloadedArchive<JavaBuild>) -> Result<JavaInfo> {
         let lock = self.lock.write().await;
         let path = (*lock).join(Uuid::new_v4().to_string());
 
-        todo!()
+        let metadata: JavaInfo = archive.metadata.into();
+
+        extract(archive.data, archive.format, &path).await?;
+        fs::write(path.join("Java.toml"), toml::to_string(&metadata)?).await?;
+
+        Ok(metadata)
     }
 
     async fn delete(&mut self, id: impl AsRef<str> + Send) -> Result<()> {

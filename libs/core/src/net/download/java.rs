@@ -23,7 +23,7 @@ use sha2::{Digest, Sha256};
 
 use crate::models::JavaBuild;
 
-pub async fn install(client: &Client, build: JavaBuild) -> Result<()> {
+pub async fn download(client: &Client, build: JavaBuild) -> Result<()> {
     let resp = client.get(build.url).send().await?;
     let mut resp = resp.bytes_stream();
     let mut hasher = Sha256::new();

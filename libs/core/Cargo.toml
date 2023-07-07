@@ -23,7 +23,6 @@ zip = "0.6"
 anyhow = "1"
 async_once = "0.2.6"
 async-trait = "0.1"
-atomicwrites = "0.4"
 bytes = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 directories = "5"

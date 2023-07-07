@@ -13,8 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use aes_gcm::aead::{Aead, OsRng};
-use aes_gcm::{aead::Nonce, AeadCore, Aes256Gcm, Key, KeyInit};
+use aes_gcm::{
+    aead::{Aead, Nonce, OsRng},
+    AeadCore, Aes256Gcm, Key, KeyInit,
+};
 use anyhow::{anyhow, bail, Result};
 use keyring::Entry;
 use tokio::fs;

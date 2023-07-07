@@ -13,7 +13,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod auth;
-pub mod download;
-pub mod meta;
-pub mod mojang;
+use bytes::Bytes;
+
+pub mod java;
+
+/// The different possible archive formats.
+#[non_exhaustive]
+pub enum ArchiveFormat {
+    TarGz,
+    TarXz,
+    Zip,
+}
+
+/// A downloaded archive is something that was downloaded by the network code and is now handed off
+/// to the actual download implementation for installation.
+pub struct DownloadedArchive<T> {
+    /// The format of the archive for decompression purposes.
+    pub format: ArchiveFormat,
+    /// The additional metadata attached to this archive.
+    pub metadata: T,
+    /// The archive data.
+    pub data: Bytes,
+}

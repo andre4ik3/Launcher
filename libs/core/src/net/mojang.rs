@@ -13,11 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::utils::try_request;
 use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use url::Url;
+
+use crate::utils::try_request;
 
 const PROFILE_URL: &str = "https://api.minecraftservices.com/minecraft/profile";
 
