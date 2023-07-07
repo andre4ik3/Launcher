@@ -23,7 +23,8 @@ struct Instance: View {
         VStack {
             Image(systemName: "plus").frame(width: 64.0, height: 64.0)
             Text(label)
-        }.contextMenu {
+        }
+        .contextMenu {
             Button {
             } label: {
                 Label("Delete", systemImage: "trash")
@@ -38,6 +39,7 @@ struct Instance_Previews: PreviewProvider {
             Instance(label: "Instance Name", selected: true)
             Instance(label: "Instance Name", selected: false)
             Instance(label: "Instance Name", selected: false)
-        }.padding()
+        }
+        .padding()
     }
 }

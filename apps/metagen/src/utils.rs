@@ -19,7 +19,7 @@ use anyhow::{anyhow, Result};
 use indicatif::ProgressStyle;
 use ron::ser::{to_string_pretty, PrettyConfig};
 use serde::Serialize;
-use tokio::fs::{create_dir_all, write};
+use tokio::fs;
 
 /// Base path where all files are written.
 const BASE_PATH: &str = "_site/v1";
@@ -38,12 +38,12 @@ pub async fn dump(path: impl AsRef<Path>, data: &impl Serialize) -> Result<()> {
 
     // Ensure parent directories exist
     let parent = path.parent().ok_or(anyhow!("No parent"))?;
-    create_dir_all(parent).await?;
+    fs::create_dir_all(parent).await?;
 
     let config = PrettyConfig::default().struct_names(true);
     let mut data = to_string_pretty(data, config)?;
     data.push('\n'); // Trailing newline >:)
 
-    write(path, data).await?;
+    fs::write(path, data).await?;
     Ok(())
 }

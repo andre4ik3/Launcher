@@ -15,21 +15,30 @@
 
 use std::fmt::Display;
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use reqwest::Client;
 use serde::Deserialize;
+use tokio::fs;
 
 use crate::models::{
     Environment, GameVersion, GameVersionIndex, JavaBuild, JavaBuildIndex, MetadataIndex,
 };
 use crate::store::{StoreHolder, CONFIG};
+use crate::utils::try_request;
 
 /// Helper function to run a request to a URL and decode the result.
 async fn get<T: for<'a> Deserialize<'a>>(client: &Client, path: impl Display) -> Result<T> {
     let base = CONFIG.get().await.get().await.metadata_server;
-    let resp = client.get(format!("{base}/{path}")).send().await?;
-    let resp = resp.error_for_status()?.text().await?;
-    Ok(ron::from_str(&resp)?)
+    let data = match base.scheme() {
+        "file" => fs::read_to_string(base.path()).await?,
+        "https" => {
+            let request = client.get(format!("{base}/{path}")).build()?;
+            try_request(client, request).await?.text().await?
+        }
+        _ => bail!("Unsupported scheme {}", base.scheme()),
+    };
+
+    Ok(ron::from_str(&data)?)
 }
 
 /// Gets the metadata index from the metadata server.

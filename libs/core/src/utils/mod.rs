@@ -23,9 +23,11 @@ use sha2::{Digest, Sha256};
 
 pub use archive::*;
 pub use crypto::*;
+pub use net::*;
 
 mod archive;
 mod crypto;
+mod net;
 
 static PROJECT_DIRS: OnceLock<ProjectDirs> = OnceLock::new();
 

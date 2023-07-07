@@ -13,7 +13,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::path::Path;
+
 use anyhow::Result;
+
+/// Extracts an archive into a directory.
+pub async fn extract(from: impl AsRef<Path>, to: impl AsRef<Path>) -> Result<()> {
+    let from = from.as_ref();
+    let to = to.as_ref();
+
+    if from.to_string_lossy().ends_with(".tar.gz") {
+        println!("tar.gz");
+    } else if from.to_string_lossy().ends_with(".tar.xz") {
+        println!("tar.xz");
+    } else if from.to_string_lossy().ends_with(".zip") {
+        println!("zip");
+    }
+
+    todo!()
+}
 
 pub async fn extract_zip() -> Result<()> {
     todo!()

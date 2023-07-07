@@ -23,6 +23,7 @@ use uuid::Uuid;
 use crate::models::{Account, AccountCredentials};
 use crate::net::auth::AuthenticationService;
 use crate::net::mojang::get_profile;
+use crate::utils::try_request;
 
 // Web URLs
 const AUTH_LOG_IN_URL: &str = "https://login.live.com/oauth20_authorize.srf";
@@ -184,8 +185,9 @@ async fn exchange(client: &Client, code: String) -> Result<(String, String)> {
         ("scope", AUTH_SCOPE),
     ];
 
-    let data = client.post(AUTH_MS_TOKEN_URL).form(&params).send().await?;
-    let data: data::AuthCodeExchangeResponse = data.error_for_status()?.json().await?;
+    let request = client.post(AUTH_MS_TOKEN_URL).form(&params).build()?;
+    let data = try_request(client, request).await?;
+    let data: data::AuthCodeExchangeResponse = data.json().await?;
     Ok((data.access_token, data.refresh_token))
 }
 
@@ -198,8 +200,9 @@ async fn refresh(client: &Client, refresh_token: String) -> Result<(String, Stri
         ("scope", AUTH_SCOPE),
     ];
 
-    let data = client.post(AUTH_MS_TOKEN_URL).form(&params).send().await?;
-    let data: data::AuthCodeExchangeResponse = data.error_for_status()?.json().await?;
+    let request = client.post(AUTH_MS_TOKEN_URL).form(&params).build()?;
+    let data = try_request(client, request).await?;
+    let data: data::AuthCodeExchangeResponse = data.json().await?;
     Ok((data.access_token, data.refresh_token))
 }
 
@@ -216,8 +219,9 @@ async fn authenticate(client: &Client, token: String) -> Result<(String, DateTim
         token_type: "JWT",
     };
 
-    let data = client.post(AUTH_XBL_TOKEN_URL).json(&body).send().await?;
-    let data: data::AuthXboxTokenResponse = data.error_for_status()?.json().await?;
+    let request = client.post(AUTH_XBL_TOKEN_URL).json(&body).build()?;
+    let data = try_request(client, request).await?;
+    let data: data::AuthXboxTokenResponse = data.json().await?;
     let xbl = data.token;
 
     // XBL -> XSTS
@@ -230,8 +234,9 @@ async fn authenticate(client: &Client, token: String) -> Result<(String, DateTim
         token_type: "JWT",
     };
 
-    let data = client.post(AUTH_XSTS_TOKEN_URL).json(&body).send().await?;
-    let data: data::AuthXboxTokenResponse = data.error_for_status()?.json().await?;
+    let request = client.post(AUTH_XSTS_TOKEN_URL).json(&body).build()?;
+    let data = try_request(client, request).await?;
+    let data: data::AuthXboxTokenResponse = data.json().await?;
 
     let xsts = data.token;
     let uhs = data
@@ -249,8 +254,9 @@ async fn authenticate(client: &Client, token: String) -> Result<(String, DateTim
         xtoken: format!("XBL3.0 x={};{}", uhs, xsts),
     };
 
-    let data = client.post(AUTH_GAME_TOKEN_URL).json(&body).send().await?;
-    let data: data::AuthGameTokenResponse = data.error_for_status()?.json().await?;
+    let request = client.post(AUTH_GAME_TOKEN_URL).json(&body).build()?;
+    let data = try_request(client, request).await?;
+    let data: data::AuthGameTokenResponse = data.json().await?;
 
     let expires = Utc::now() + Duration::seconds(data.expires_in);
     Ok((data.access_token, expires))

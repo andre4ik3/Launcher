@@ -13,10 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::CLIENT;
+use std::collections::HashMap;
+
 use anyhow::Result;
 use indicatif::ProgressBar;
-use std::collections::HashMap;
+
+use crate::CLIENT;
 
 const VERSIONS: &str =
     "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";

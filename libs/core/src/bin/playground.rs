@@ -13,7 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use launcher::store::{StoreHolder, CREDENTIALS};
+use tokio::fs;
 
 #[tokio::main]
-async fn main() {}
+async fn main() {
+    let dir1 = tempfile::tempdir().unwrap();
+    let dir2 = tempfile::tempdir().unwrap();
+    fs::rename("/tmp/swap1", dir1.path()).await.unwrap();
+    fs::rename("/tmp/swap2", dir2.path()).await.unwrap();
+    fs::rename(dir1.path(), "/tmp/swap2").await.unwrap();
+    fs::rename(dir2.path(), "/tmp/swap1").await.unwrap();
+}

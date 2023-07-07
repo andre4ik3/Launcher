@@ -63,18 +63,12 @@ impl StoreHolder<Credentials> for CredentialsHolder {
         (*lock).clone()
     }
 
-    async fn check(
-        &self,
-        func: impl FnOnce(RwLockReadGuard<Credentials>) -> bool + Send,
-    ) -> bool {
+    async fn check(&self, func: impl FnOnce(RwLockReadGuard<Credentials>) -> bool + Send) -> bool {
         let lock = self.lock.read().await;
         func(lock)
     }
 
-    async fn change(
-        &self,
-        func: impl FnOnce(RwLockWriteGuard<Credentials>) + Send,
-    ) -> Result<()> {
+    async fn change(&self, func: impl FnOnce(RwLockWriteGuard<Credentials>) + Send) -> Result<()> {
         let lock = self.lock.write().await;
         func(lock); // Dropped after this, lock released, safe to write.
         self.flush().await

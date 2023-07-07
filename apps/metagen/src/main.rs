@@ -13,10 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::env::args;
+use std::time::Duration;
+
 use anyhow::Result;
 use once_cell::sync::Lazy;
 use reqwest::Client;
-use std::time::Duration;
 
 mod models;
 mod tasks;
@@ -36,12 +38,18 @@ pub static CLIENT: Lazy<Client> = Lazy::new(|| {
 async fn main() -> Result<()> {
     // Run a task to collect game metadata first. Then get Java versions based on what the different
     // game versions require.
-    tasks::loaders::run().await?;
-    // let (java_versions, assets) = tasks::game::run().await?;
+    let (java_versions, assets) = tasks::game::run().await?;
 
-    // tasks::java::run(java_versions).await?;
-    // tasks::assets::run(assets).await?;
-    // tasks::index::run().await?;
+    tasks::loaders::run().await?;
+    tasks::java::run(java_versions).await?;
+    tasks::index::run().await?;
+
+    if args().any(|arg| arg == "--do-really-long-and-stupid-assets-download") {
+        // this runs for like 2 hours and uses 7gb of space
+        // it also frequently 429's and crashes so you'll have to delete most recent file
+        // and replace it again. TODO: make it not shit
+        tasks::assets::run(assets).await?;
+    }
 
     println!("Done.");
     Ok(())

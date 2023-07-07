@@ -23,7 +23,9 @@ struct SettingsContainer<Content>: View where Content: View {
     var body: some View {
         content()
             .padding()
-            .tabItem { Label(name, systemImage: icon) }
+            .tabItem {
+                Label(name, systemImage: icon)
+            }
             .frame(width: 500.0, height: 300.0)
     }
 }

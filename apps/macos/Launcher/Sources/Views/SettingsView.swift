@@ -27,15 +27,18 @@ struct SettingsView: View {
         TabView(selection: $selection) {
             SettingsContainer(name: "General", icon: "gear") {
                 Text("General").foregroundStyle(Color.accentColor)
-            }.tag("General")
+            }
+            .tag("General")
 
             SettingsContainer(name: "Accounts", icon: icon(selection, "Accounts", "person.2")) {
                 Text("Accounts")
-            }.tag("Accounts")
+            }
+            .tag("Accounts")
 
             SettingsContainer(name: "Java", icon: icon(selection, "Java", "cup.and.saucer")) {
                 Text("Java")
-            }.tag("Java")
+            }
+            .tag("Java")
         }
     }
 }

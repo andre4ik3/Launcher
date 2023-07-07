@@ -279,6 +279,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1181e1e0d1fce796a03db1ae795d67167da795f9cf4a39c37589e85ef57f26d3"
 
 [[package]]
+name = "atomicwrites"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1163d9d7c51de51a2b79d6df5e8888d11e9df17c752ce4a285fb6ca1580734e"
+dependencies = [
+ "rustix",
+ "tempfile",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1186,6 +1197,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "async_once",
+ "atomicwrites",
  "bytes 1.4.0",
  "chrono",
  "directories",
@@ -1204,6 +1216,7 @@ dependencies = [
  "sha1",
  "sha2",
  "tar",
+ "tempfile",
  "tokio",
  "toml",
  "url",

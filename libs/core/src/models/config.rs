@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use url::Url;
 
 /// Default URL for the metadata server.
-const METADATA_SERVER: &str = "https://master.launchermeta.pages.dev/v1";
+const METADATA_SERVER: &str = "https://launchermeta.pages.dev/v1";
 
 /// Configuration for the launcher. Saved as `Config.toml` in platform-appropriate directory.
 #[derive(Clone, Debug, Deserialize, Serialize)]

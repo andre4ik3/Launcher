@@ -27,7 +27,8 @@ struct InstancesView: View {
                     await bridge.rust.do_login(code)
                 }
             }
-        }.padding()
+        }
+        .padding()
     }
 }
 

@@ -13,11 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use swift_bridge_build::parse_bridges;
+
 const OUT_DIR: &str = "Launcher/Generated";
 const BRIDGE_FILE: &str = "src/lib.rs";
 const CRATE_NAME: &str = env!("CARGO_PKG_NAME");
-
-use swift_bridge_build::parse_bridges;
 
 fn main() {
     println!("cargo:rerun-if-changed={}", BRIDGE_FILE);

@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::utils::try_request;
 use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -81,7 +82,8 @@ pub struct UserProfile {
 
 /// Gets a user's profile from a game token.
 pub async fn get_profile(client: &Client, token: &str) -> Result<UserProfile> {
-    let data = client.get(PROFILE_URL).bearer_auth(token).send().await?;
+    let request = client.get(PROFILE_URL).bearer_auth(token).build()?;
+    let data = try_request(client, request).await?;
     let data: UserProfile = data.error_for_status()?.json().await?;
     Ok(data)
 }

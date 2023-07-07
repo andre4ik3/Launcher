@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::collections::HashMap;
+
 use anyhow::Result;
 use async_trait::async_trait;
 
@@ -25,8 +27,8 @@ mod java;
 /// T is the type being stored (JavaInfo), U is the type needed for download (JavaBuild).
 #[async_trait]
 pub trait Repo<T, U> {
-    async fn get(&self, id: impl AsRef<str> + Send) -> Option<T>;
-    async fn list(&self) -> Vec<T>;
-    async fn install(&mut self, data: &U) -> Result<T>;
+    async fn add(&mut self, data: &U) -> Result<T>;
     async fn delete(&mut self, id: impl AsRef<str> + Send) -> Result<()>;
+    async fn get(&self, id: impl AsRef<str> + Send) -> Option<Box<T>>;
+    async fn list(&self) -> Result<HashMap<String, T>>;
 }

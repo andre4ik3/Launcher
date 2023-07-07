@@ -18,6 +18,7 @@ import SwiftUI
 
 final class CheckForUpdatesViewModel: ObservableObject {
     @Published var canCheckForUpdates = false
+
     init(updater: SPUUpdater) {
         updater.publisher(for: \.canCheckForUpdates)
             .assign(to: &$canCheckForUpdates)
@@ -56,6 +57,7 @@ struct LauncherApp: App {
 
 class Bridge: ObservableObject {
     var rust: LauncherBridge
+
     init(_ rust: LauncherBridge) {
         self.rust = rust
     }

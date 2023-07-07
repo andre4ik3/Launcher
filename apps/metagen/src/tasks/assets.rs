@@ -18,7 +18,6 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::CLIENT;
 use anyhow::Result;
 use indicatif::ProgressBar;
 use tokio::fs::create_dir_all;
@@ -27,6 +26,7 @@ use xz2::write::XzEncoder;
 
 use crate::models::game::{AssetIndex, AssetIndexFile};
 use crate::utils::prog_style;
+use crate::CLIENT;
 
 const RESOURCES_BASE: &str = "https://resources.download.minecraft.net";
 

@@ -13,9 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use crate::models::{GameLibrary, GameMaybeConditional};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
+
+use crate::models::{GameLibrary, GameMaybeConditional};
 
 /// Supported mod loaders.
 #[derive(Debug, Deserialize, Serialize)]
@@ -59,4 +61,3 @@ pub struct LoaderVersionIndex {
     /// A map of game versions to Fabric loader versions available.
     pub fabric: HashMap<String, Box<[LoaderVersionSnippet]>>,
 }
-

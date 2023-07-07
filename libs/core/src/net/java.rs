@@ -13,12 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::path::PathBuf;
+
 use anyhow::{bail, Result};
 use bytes::{BufMut, BytesMut};
 use futures_util::StreamExt;
 use reqwest::Client;
 use sha2::{Digest, Sha256};
-use std::path::PathBuf;
 
 use crate::models::JavaBuild;
 
