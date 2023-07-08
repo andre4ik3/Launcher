@@ -13,25 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::path::PathBuf;
-
 use anyhow::{bail, Result};
 use bytes::{BufMut, BytesMut};
 use futures_util::StreamExt;
 use reqwest::Client;
 use sha2::{Digest, Sha256};
 
-use crate::models::JavaBuild;
+use crate::models::{JavaBuild, JavaInfo};
+use crate::net::download::{ArchiveFormat, DownloadedArchive};
+use crate::utils::try_request;
 
-pub async fn download(client: &Client, build: JavaBuild) -> Result<()> {
-    let resp = client.get(build.url).send().await?;
+pub async fn download(client: &Client, build: JavaBuild) -> Result<DownloadedArchive<JavaBuild>> {
+    // TODO: Resume interrupted downloads
+    let request = client.get(build.url.clone()).build()?;
+    let resp = try_request(client, request).await?;
     let mut resp = resp.bytes_stream();
-    let mut hasher = Sha256::new();
 
     // Store the entire archive in memory. Should be OK since Java builds are at most 200MB-ish.
-    let mut data = BytesMut::new();
-    data.reserve(build.size as usize);
+    let mut hasher = Sha256::new();
+    let mut data = BytesMut::with_capacity(build.size as usize);
 
+    // This calculates the hash _as the data is coming in_ so it should be smoother.
+    // TODO: am I absolutely positively sure that hasher.update() doesn't block? Could cause hitches
     while let Some(chunk) = resp.next().await {
         let chunk = chunk?;
         hasher.update(&chunk);
@@ -39,18 +42,25 @@ pub async fn download(client: &Client, build: JavaBuild) -> Result<()> {
     }
 
     let hash = hasher.finalize();
-    let build_hash = hex::decode(build.checksum)?;
+    let build_hash = hex::decode(&build.checksum)?;
 
     if build_hash != hash.to_vec() {
         bail!("Failed verification");
     }
 
-    let path = PathBuf::from(build.name);
+    let format = if build.name.ends_with(".tar.gz") {
+        ArchiveFormat::TarGz
+    } else if build.name.ends_with(".tar.xz") {
+        ArchiveFormat::TarXz
+    } else if build.name.ends_with(".zip") {
+        ArchiveFormat::Zip
+    } else {
+        bail!("Could not determine archive format: {}", build.name);
+    };
 
-    // match path.extension() {
-    //     Some(&"zip") => todo!(),
-    //     None => unreachable!(),
-    // };
-
-    Ok(())
+    Ok(DownloadedArchive {
+        data: data.into(),
+        metadata: build,
+        format,
+    })
 }

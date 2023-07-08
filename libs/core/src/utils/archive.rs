@@ -20,7 +20,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{bail, Result};
 use bytes::{Buf, Bytes};
 use flate2::read::GzDecoder;
-use tar::Archive as TarArchive;
+use tar::{Archive as TarArchive, EntryType};
 use tokio::task;
 use xz2::read::XzDecoder;
 use zip::ZipArchive;
@@ -44,31 +44,8 @@ async fn extract_tar<T: Read + Send + 'static>(
     mut archive: TarArchive<T>,
     dest: PathBuf,
 ) -> Result<()> {
-    // run the whole thing on a blocking thread because the tar operation is blocking and for some
-    // random rust lifetime reason it doesn't let me wrap just the unpack() call.
-    task::spawn_blocking(move || {
-        for mut entry in archive.entries()?.flatten() {
-            let path = dest.join(entry.path()?.as_ref()).canonicalize()?;
-
-            // === CRITICAL SECURITY CHECK ===
-            // This prevents path traversal exploits (zip files can contain paths like ..)
-            // It's also critical that .canonicalize() runs before this. (to resolve the ..)
-            let safe = path.ancestors().any(|p| p == dest);
-            if !safe {
-                bail!(
-                    "Path of {} is outside the destination {}. Aborting!",
-                    path.to_string_lossy(),
-                    dest.to_string_lossy()
-                );
-            }
-
-            fs::create_dir_all(path.parent().unwrap())?;
-            entry.unpack(path)?;
-        }
-
-        Ok(())
-    })
-    .await?
+    task::spawn_blocking(move || archive.unpack(dest)).await??;
+    Ok(())
 }
 
 async fn extract_tar_gz(data: Bytes, dest: PathBuf) -> Result<()> {

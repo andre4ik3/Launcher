@@ -49,19 +49,33 @@ impl JavaRepo {
 
 #[async_trait]
 impl Repo<JavaInfo, JavaBuild> for JavaRepo {
-    async fn add(&mut self, archive: DownloadedArchive<JavaBuild>) -> Result<JavaInfo> {
+    async fn add(&self, archive: DownloadedArchive<JavaBuild>) -> Result<JavaInfo> {
         let lock = self.lock.write().await;
-        let path = (*lock).join(Uuid::new_v4().to_string());
+
+        let self_id = Uuid::new_v4().to_string();
+        let path = (*lock).join(&self_id);
 
         let metadata: JavaInfo = archive.metadata.into();
 
         extract(archive.data, archive.format, &path).await?;
         fs::write(path.join("Java.toml"), toml::to_string(&metadata)?).await?;
 
+        drop(lock); // release the lock
+
+        // Delete other builds with the same major version and provider
+        for (id, build) in self.list().await? {
+            if self_id != id
+                && build.version.major == metadata.version.major
+                && build.provider == metadata.provider
+            {
+                self.delete(id).await?;
+            }
+        }
+
         Ok(metadata)
     }
 
-    async fn delete(&mut self, id: impl AsRef<str> + Send) -> Result<()> {
+    async fn delete(&self, id: impl AsRef<str> + Send) -> Result<()> {
         let lock = self.lock.write().await;
         let path = (*lock).join(id.as_ref());
         fs::remove_dir_all(path).await?;
@@ -84,12 +98,11 @@ impl Repo<JavaInfo, JavaBuild> for JavaRepo {
         while let Some(entry) = dir.next_entry().await? {
             let path = entry.path().join("Java.toml");
             if path.exists() {
-                let _: Result<()> = {
-                    let data = fs::read_to_string(path).await?;
-                    let data: JavaInfo = toml::from_str(&data)?;
-                    results.insert(entry.file_name().to_string_lossy().to_string(), data);
-                    Ok(())
-                };
+                if let Ok(data) = fs::read_to_string(path).await {
+                    if let Ok(data) = toml::from_str(&data) {
+                        results.insert(entry.file_name().to_string_lossy().to_string(), data);
+                    }
+                }
             }
         }
 

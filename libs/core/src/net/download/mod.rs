@@ -19,6 +19,7 @@ pub mod java;
 
 /// The different possible archive formats.
 #[non_exhaustive]
+#[derive(Debug)]
 pub enum ArchiveFormat {
     TarGz,
     TarXz,
@@ -27,6 +28,7 @@ pub enum ArchiveFormat {
 
 /// A downloaded archive is something that was downloaded by the network code and is now handed off
 /// to the actual download implementation for installation.
+#[derive(Debug)]
 pub struct DownloadedArchive<T> {
     /// The format of the archive for decompression purposes.
     pub format: ArchiveFormat,

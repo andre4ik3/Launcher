@@ -13,14 +13,27 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use tokio::fs;
+use anyhow::Result;
+use reqwest::Client;
+
+use launcher::net::download::java::download;
+use launcher::net::meta::get_java;
+use launcher::repo::{Repo, JAVA};
 
 #[tokio::main]
-async fn main() {
-    let dir1 = tempfile::tempdir().unwrap();
-    let dir2 = tempfile::tempdir().unwrap();
-    fs::rename("/tmp/swap1", dir1.path()).await.unwrap();
-    fs::rename("/tmp/swap2", dir2.path()).await.unwrap();
-    fs::rename(dir1.path(), "/tmp/swap2").await.unwrap();
-    fs::rename(dir2.path(), "/tmp/swap1").await.unwrap();
+async fn main() -> Result<()> {
+    let client = Client::new();
+    let repo = JAVA.get().await;
+
+    let build = get_java(&client, 8).await?;
+    println!("{:#?}", build);
+
+    let archive = download(&client, build).await?;
+    println!("{:#?}", archive.metadata);
+
+    repo.add(archive).await?;
+    println!("i think it worked?");
+
+    println!("{:#?}", repo.list().await?);
+    Ok(())
 }

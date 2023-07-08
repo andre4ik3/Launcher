@@ -23,7 +23,7 @@ use crate::models::environment::Environment;
 
 /// An enum for currently defined providers of Java builds, subject to change in the future.
 #[non_exhaustive]
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum JavaProvider {
     Adoptium,
     Zulu,
@@ -66,10 +66,10 @@ pub struct JavaInfo {
     pub provider: JavaProvider,
     /// The version of the build.
     pub version: Version,
+    /// Environment (OS, Arch, Env) that the build is for.
+    pub environment: Environment,
     /// Size of the uncompressed install in bytes.
     pub size: u64,
-    /// Location of the `java` (or `javaw`) executable relative to a `Java.toml` file.
-    pub executable: PathBuf,
 }
 
 #[allow(clippy::from_over_into)]
@@ -79,7 +79,7 @@ impl Into<JavaInfo> for JavaBuild {
             provider: self.provider,
             version: self.version,
             size: self.size,
-            executable: self.executable,
+            environment: self.environment,
         }
     }
 }

@@ -30,7 +30,7 @@ use crate::utils::try_request;
 async fn get<T: for<'a> Deserialize<'a>>(client: &Client, path: impl Display) -> Result<T> {
     let base = CONFIG.get().await.get().await.metadata_server;
     let data = match base.scheme() {
-        "file" => fs::read_to_string(base.path()).await?,
+        "file" => fs::read_to_string(format!("{}/{path}", base.path())).await?,
         "https" => {
             let request = client.get(format!("{base}/{path}")).build()?;
             try_request(client, request).await?.text().await?

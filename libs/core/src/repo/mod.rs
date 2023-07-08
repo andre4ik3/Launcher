@@ -18,7 +18,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use async_trait::async_trait;
 
-pub use java::JavaRepo;
+pub use java::{JavaRepo, JAVA};
 
 use crate::net::download::DownloadedArchive;
 
@@ -29,8 +29,8 @@ mod java;
 /// T is the type being stored (JavaInfo), U is the type needed for download (JavaBuild).
 #[async_trait]
 pub trait Repo<T, U> {
-    async fn add(&mut self, archive: DownloadedArchive<U>) -> Result<T>;
-    async fn delete(&mut self, id: impl AsRef<str> + Send) -> Result<()>;
+    async fn add(&self, archive: DownloadedArchive<U>) -> Result<T>;
+    async fn delete(&self, id: impl AsRef<str> + Send) -> Result<()>;
     async fn get(&self, id: impl AsRef<str> + Send) -> Option<Box<T>>;
     async fn list(&self) -> Result<HashMap<String, T>>;
 }
