@@ -11,7 +11,8 @@ targets:
     sources:
       - Sources
       - Generated
-      - Resources
+      - path: Resources
+        excludes: [ "Info.plist" ]
       - name: Rust
         path: ../src
         type: folder
@@ -24,6 +25,7 @@ targets:
         CURRENT_PROJECT_VERSION: "${BUILD}"
         DEVELOPMENT_ASSET_PATHS: "\"Resources/Preview\ Content\""
         ENABLE_PREVIEWS: true
+        DEAD_CODE_STRIPPING: true
         INFOPLIST_FILE: $(PROJECT_DIR)/Resources/Info.plist
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: $(PROJECT_DIR)/Resources/Launcher.entitlements

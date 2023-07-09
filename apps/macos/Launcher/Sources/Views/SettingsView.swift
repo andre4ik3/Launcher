@@ -36,7 +36,7 @@ struct SettingsView: View {
             .tag("Accounts")
 
             SettingsContainer(name: "Java", icon: icon(selection, "Java", "cup.and.saucer")) {
-                Text("Java")
+                JavaInstallationsView()
             }
             .tag("Java")
         }

@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 
 /// A struct that describes the environment the binary is running in.
 /// (Somewhat similar to a target triple)
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Environment {
     pub os: OS,
     pub arch: Arch,

@@ -13,14 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::fs;
 use std::io::{Cursor, Read};
 use std::path::{Path, PathBuf};
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use bytes::{Buf, Bytes};
 use flate2::read::GzDecoder;
-use tar::{Archive as TarArchive, EntryType};
+use tar::Archive as TarArchive;
 use tokio::task;
 use xz2::read::XzDecoder;
 use zip::ZipArchive;

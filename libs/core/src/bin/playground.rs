@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     let client = Client::new();
     let repo = JAVA.get().await;
 
-    let build = get_java(&client, 8).await?;
+    let build = get_java(&client, 17).await?;
     println!("{:#?}", build);
 
     let archive = download(&client, build).await?;

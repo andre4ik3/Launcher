@@ -23,7 +23,7 @@ use crate::models::environment::Environment;
 
 /// An enum for currently defined providers of Java builds, subject to change in the future.
 #[non_exhaustive]
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub enum JavaProvider {
     Adoptium,
     Zulu,
@@ -60,7 +60,7 @@ pub struct JavaBuild {
 }
 
 /// Information about an installed build of Java, stored in a `Java.toml` file.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Serialize, Deserialize)]
 pub struct JavaInfo {
     /// The provider that distributes this build.
     pub provider: JavaProvider,

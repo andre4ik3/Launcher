@@ -19,7 +19,7 @@ use futures_util::StreamExt;
 use reqwest::Client;
 use sha2::{Digest, Sha256};
 
-use crate::models::{JavaBuild, JavaInfo};
+use crate::models::JavaBuild;
 use crate::net::download::{ArchiveFormat, DownloadedArchive};
 use crate::utils::try_request;
 
