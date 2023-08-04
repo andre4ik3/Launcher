@@ -22,6 +22,7 @@ pub use java::{JavaRepo, JAVA};
 
 use crate::net::download::DownloadedArchive;
 
+mod assets;
 mod java;
 
 /// A repo is a place where multiple versions of something (Java, game versions) are stored.

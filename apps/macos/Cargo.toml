@@ -9,7 +9,7 @@ publish = false
 crate-type = ["staticlib"]
 
 [dependencies]
-launcher = { version = "*", path = "../../libs/core" }
+launcher = { version = "*", path = "../../core", package = "launcher-core" }
 swift-bridge = { version = "0.1", features = ["async"] }
 
 reqwest = "0.11"

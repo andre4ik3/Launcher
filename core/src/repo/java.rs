@@ -39,8 +39,6 @@ pub struct JavaRepo {
 
 impl JavaRepo {
     async fn init() -> Self {
-        // TODO: Make some global init() that does this. Maybe in swift-bridge ::new()?
-        // let _ = fs::create_dir_all(path()).await;
         Self {
             lock: RwLock::new(get_dirs().data_dir().join("Java")),
         }

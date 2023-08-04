@@ -1,11 +1,14 @@
 [package]
-name = "launcher"
+name = "launcher-core"
 version = "0.0.1"
 edition = "2021"
 license = "GPL-3.0-or-later"
 publish = false
 
 [dependencies]
+persistence = { path = "../modules/persistence", version = "*", package = "launcher-persistence" }
+util = { path = "../modules/util", version = "*", package = "launcher-util" }
+
 # Core dependencies
 aes-gcm = "0.10"
 flate2 = "1"
@@ -29,13 +32,13 @@ directories = "5"
 futures-util = "0.3"
 hex = { version = "0.4", features = ["serde"] }
 lazy_static = "1"
-log = "0.4"
 os_info = "3"
 platforms = { version = "3", features = ["serde"] }
 semver = { version = "1", features = ["serde"] }
 sha1 = "0.10"
 sha2 = "0.10"
 tempfile = "3"
+tracing = "0.1"
 url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }
 zeroize = "1"

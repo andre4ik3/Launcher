@@ -13,15 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use clap::Parser;
+pub use assets::*;
+pub use config::*;
+pub use credentials::*;
+pub use environment::*;
+pub use game::*;
+pub use java::*;
+pub use meta::*;
 
-use crate::cli::Cli;
-
-mod cli;
-
-#[tokio::main]
-async fn main() {
-    let args = Cli::parse();
-
-    println!("Hello, mc cli!");
-}
+mod assets;
+mod config;
+mod credentials;
+mod environment;
+mod game;
+mod java;
+mod loader;
+mod meta;

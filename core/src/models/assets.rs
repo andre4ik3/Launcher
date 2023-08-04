@@ -13,17 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub use config::*;
-pub use credentials::*;
-pub use environment::*;
-pub use game::*;
-pub use java::*;
-pub use meta::*;
-
-mod config;
-mod credentials;
-mod environment;
-mod game;
-mod java;
-mod loader;
-mod meta;
+/// A struct describing an already downloaded assets catalog.
+pub struct AssetCatalog {
+    /// The version of the assets catalog.
+    pub version: String,
+}

@@ -41,7 +41,7 @@ impl CredentialsHolder {
 
         // TODO: expose this to GUIs
         if status == Status::Overwritten {
-            log::warn!("Failed to decrypt credential store. A new one has been created. You have been logged out.");
+            // log::warn!("Failed to decrypt credential store. A new one has been created. You have been logged out.");
         }
 
         let lock = RwLock::new(data);

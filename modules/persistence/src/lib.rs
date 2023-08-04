@@ -13,27 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use bytes::Bytes;
+pub use registry::{directory::DirectoryRegistry, file::FileRegistry, RegistryError};
 
-pub mod java;
-
-/// The different possible archive formats.
-#[non_exhaustive]
-#[derive(Debug)]
-pub enum ArchiveFormat {
-    TarGz,
-    TarXz,
-    Zip,
-}
-
-/// A downloaded archive is something that was downloaded by the network code and is now handed off
-/// to the actual download implementation for installation.
-#[derive(Debug)]
-pub struct DownloadedArchive<T> {
-    /// The format of the archive for decompression purposes.
-    pub format: ArchiveFormat,
-    /// The additional metadata attached to this archive.
-    pub metadata: T,
-    /// The archive data.
-    pub data: Bytes,
-}
+mod registry;

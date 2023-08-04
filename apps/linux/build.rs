@@ -13,27 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use anyhow::Result;
-use reqwest::Client;
+use glib_build_tools::compile_resources;
 
-use launcher::net::download::java::download;
-use launcher::net::meta::get_java;
-use launcher::repo::{Repo, JAVA};
-
-#[tokio::main]
-async fn main() -> Result<()> {
-    let client = Client::new();
-    let repo = JAVA.get().await;
-
-    let build = get_java(&client, 17).await?;
-    println!("{:#?}", build);
-
-    let archive = download(&client, build).await?;
-    println!("{:#?}", archive.metadata);
-
-    repo.add(archive).await?;
-    println!("i think it worked?");
-
-    println!("{:#?}", repo.list().await?);
-    Ok(())
+fn main() {
+    compile_resources(
+        &["resources"],
+        "resources/gresource.xml",
+        "launcher.gresource",
+    )
 }

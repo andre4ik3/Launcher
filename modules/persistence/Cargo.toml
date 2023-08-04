@@ -1,0 +1,16 @@
+[package]
+name = "launcher-persistence"
+version = "0.0.1"
+edition = "2021"
+license = "GPL-3.0-or-later"
+publish = false
+
+[dependencies]
+util = { version = "*", path = "../util", package = "launcher-util" }
+
+aes-gcm = "0.10"
+serde = "1"
+thiserror = "1"
+tokio = { version = "1", features = ["fs", "sync"] }
+toml = "0.7"
+tracing = "0.1"
