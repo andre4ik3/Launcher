@@ -1,3 +1,3 @@
 [workspace]
-members = ["apps/macos", "apps/cli", "core", "modules/*"]
+members = ["core", "modules/*"]
 resolver = "2"

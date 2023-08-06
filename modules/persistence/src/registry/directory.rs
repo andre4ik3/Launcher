@@ -20,11 +20,11 @@ use serde::{Deserialize, Serialize};
 use tokio::fs;
 use tracing::{debug, error, instrument, trace};
 
-use util::directories;
+use utils::directories;
 
-use crate::registry::RegistryError;
+use crate::registry::Error;
 
-type Result<T> = core::result::Result<T, RegistryError>;
+type Result<T> = core::result::Result<T, Error>;
 
 /// A DirectoryRegistry stores a list of T. The type T is serialized and stored inside a unique
 /// directory in a sub-path of the data directory. You can configure the file name and top-level
@@ -45,11 +45,13 @@ impl<T> DirectoryRegistry<T>
 where
     T: for<'a> Deserialize<'a> + Serialize,
 {
-    /// Creates the registry and loads any existing entries into memory.
-    pub async fn create(base: impl AsRef<str>, file: &'static str) -> Result<DirectoryRegistry<T>> {
-        let base = directories::DATA.join(base.as_ref());
+    /// Creates a new directory registry and loads any existing entries from the base into memory.
+    #[instrument(name = "DirectoryRegistry::new")]
+    pub async fn new(base: &str, file: &'static str) -> Result<DirectoryRegistry<T>> {
+        let base = directories::DATA.join(base);
         fs::create_dir_all(&base).await?;
 
+        debug!("Creating new directory registry at {}", base.display());
         let mut registry = Self {
             base,
             file,
@@ -78,18 +80,33 @@ where
         Ok(())
     }
 
+    /// Deletes an entry with a specific ID from the in-memory cache *and the disk*. Use carefully!
+    pub async fn delete(&mut self, id: impl Into<String>) -> Result<()> {
+        let id = id.into();
+
+        if !self.entries.contains_key(&id) {
+            return Ok(());
+        }
+
+        let dir = self.base.join(&id);
+        fs::remove_dir_all(dir).await?;
+        self.entries.remove(&id);
+        Ok(())
+    }
+
     /// Reads all entries from disk into memory.
-    #[instrument(skip_all, fields(path = self.base.to_string_lossy().to_string()))]
+    #[instrument(name = "DirectoryRegistry::refresh", skip(self), fields(base = %self.base.display()))]
     pub async fn refresh(&mut self) -> Result<()> {
         debug!("Starting refresh.");
 
-        while let Some(entry) = fs::read_dir(&self.base).await?.next_entry().await? {
+        let mut stream = fs::read_dir(&self.base).await?;
+        while let Some(entry) = stream.next_entry().await? {
             if !entry.file_type().await?.is_dir() {
-                trace!("{} is not a directory! Skipping", entry.path().display());
                 continue;
             }
 
             let path = entry.path().join(self.file);
+            trace!("Considering path {}", path.display());
 
             // read file to string, continue with loop if failed
             let data = match fs::read_to_string(&path).await {
@@ -110,6 +127,7 @@ where
             };
 
             let id = entry.file_name().to_string_lossy().to_string();
+            trace!("Adding {id} to entries");
             self.entries.insert(id, data);
         }
 

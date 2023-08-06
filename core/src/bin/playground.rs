@@ -14,31 +14,46 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use anyhow::Result;
+use persistence::FileRegistry;
 use serde::{Deserialize, Serialize};
-
-use persistence::DirectoryRegistry;
+use tokio::sync::RwLock;
+use tracing::info;
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Testing {
     variable: String,
 }
 
+impl Default for Testing {
+    fn default() -> Self {
+        Self {
+            variable: "Hello, world!".to_string(),
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    util::setup_logging();
-    tracing::info!("Hello, world!");
+    let _guard = utils::setup_logging();
+    info!("Hello, world!");
 
-    let mut registry: DirectoryRegistry<Testing> =
-        persistence::DirectoryRegistry::create("Testing", "Test.toml").await?;
+    let registry: FileRegistry<Testing> = FileRegistry::new_encrypted("Testing.dat").await?;
 
-    registry
-        .insert(
-            "test-id",
-            Testing {
-                variable: "This is a test!".to_string(),
-            },
-        )
-        .await?;
+    let lock = RwLock::new(Testing {
+        variable: "nothing".to_string(),
+    });
+
+    let guard = lock.read().await;
+    info!("value is {}", guard.variable);
+    drop(guard);
+
+    *lock.write().await = Testing::default();
+
+    let guard = lock.read().await;
+    info!("value is {}", guard.variable);
+    drop(guard);
+
+    registry.save().await?;
 
     Ok(())
 }

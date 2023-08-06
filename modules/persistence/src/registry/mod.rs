@@ -19,7 +19,7 @@ pub mod directory;
 pub mod file;
 
 #[derive(Debug, Error)]
-pub enum RegistryError {
+pub enum Error {
     #[error("failed to serialize entry")]
     Serialize(#[from] toml::ser::Error),
 
@@ -28,4 +28,7 @@ pub enum RegistryError {
 
     #[error("failed to read/write entry")]
     Io(#[from] std::io::Error),
+
+    #[error("failed to perform crypto operation")]
+    Crypto(#[from] crate::crypto::Error),
 }
