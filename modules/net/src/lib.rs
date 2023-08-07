@@ -22,16 +22,19 @@
 
 use thiserror::Error;
 
-pub use queue::*;
+pub use client::*;
 
+pub(crate) mod client;
 pub(crate) mod queue;
-pub(crate) mod retry;
 
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("network error: {0}")]
     Network(#[from] reqwest::Error),
-
+    #[error("request failed after {0} attempts, last error: {1}")]
+    RequestAttemptsExhausted(u64, reqwest::Error),
+    #[error("request cannot be cloned (required for retrying)")]
+    RequestCloneFail,
     #[error("queue has been shut down")]
     QueueShutDown,
 }

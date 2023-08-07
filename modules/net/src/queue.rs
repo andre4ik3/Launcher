@@ -17,6 +17,7 @@ use std::time::Duration;
 
 use reqwest::{Client, Request, Response};
 use tokio::sync::{mpsc, oneshot};
+use tokio::task::JoinHandle;
 use tokio::time::{interval, Interval};
 use tracing::{debug, error, instrument, trace, warn};
 
@@ -25,26 +26,24 @@ use crate::Error;
 /// User-agent to be used for outgoing requests.
 const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36";
 
-type Result<T> = core::result::Result<T, Error>;
+/// Shorthand for the data received in a [Queue] job.
+pub type QueueJob = (Request, oneshot::Sender<reqwest::Result<Response>>);
 
-/// Shorthand for the data received in a NetQueue job.
-pub type NetQueueJob = (Request, oneshot::Sender<reqwest::Result<Response>>);
-
-/// A queue of network requests. The main method of this struct is [NetQueue::run], which listens
+/// A queue of network requests. The main method of this struct is [Queue::run], which listens
 /// for requests to be sent, picks them up from the queue with a rate limit, sends them, then sends
 /// the response back.
-pub struct NetQueue {
+pub struct Queue {
     /// The [Client] of the request queue.
     client: Client,
     /// An interval to rate-limit outgoing requests. One request will be processed every tick.
     interval: Interval,
     /// The receiving channel of the request queue.
-    rx: mpsc::Receiver<NetQueueJob>,
+    rx: mpsc::Receiver<QueueJob>,
 }
 
-impl NetQueue {
-    /// Creates a new NetQueue that will listen for incoming jobs on the supplied receiver.
-    pub fn new(rx: mpsc::Receiver<NetQueueJob>) -> Self {
+impl Queue {
+    /// Creates a new Queue that will listen for incoming jobs on the supplied receiver.
+    pub fn new(rx: mpsc::Receiver<QueueJob>) -> Self {
         Self {
             client: Client::builder().user_agent(USER_AGENT).build().unwrap(),
             interval: interval(Duration::from_secs(1)),
@@ -52,30 +51,22 @@ impl NetQueue {
         }
     }
 
-    /// Waits for the next job and processes it. Returns `true` if a job was processed, `false` if
-    /// the channel is closed. The `cancel` argument is a oneshot receiver that, upon being sent a
-    /// value, will cause the queue to be shut down.
-    #[instrument(name = "NetQueue", skip_all)]
-    pub async fn run(&mut self, mut cancel: oneshot::Receiver<()>) {
+    /// Waits for the next job and processes it. The `cancel` argument is a oneshot receiver that,
+    /// upon being sent a value, will cause the queue to be shut down.
+    #[instrument(name = "net::Queue", skip_all)]
+    pub async fn run(&mut self) {
         trace!("Running request queue.");
         loop {
             // Wait for ratelimit
             self.interval.tick().await;
-
-            // Check if we've been told to shutdown
-            match cancel.try_recv() {
-                Ok(()) | Err(oneshot::error::TryRecvError::Closed) => {
-                    debug!("Shutdown signal received, shutting down.");
-                    return;
-                }
-                _ => (),
-            };
 
             // Get the next request, or if all transmitters have been dropped, shut down.
             let Some((request, tx)) = self.rx.recv().await else {
                 debug!("Queue receive channel closed, shutting down.");
                 return;
             };
+
+            trace!("Processing request: {} {}", request.method(), request.url());
 
             // Execute the actual request.
             let result = self.client.execute(request).await;
@@ -93,19 +84,13 @@ impl NetQueue {
     }
 }
 
-/// A NetQueueClient is a simple wrapper around a NetQueue channel to allow for easy sending of
-/// requests, mimicking a standard reqwest [Client].
-pub struct NetQueueClient(mpsc::Sender<NetQueueJob>);
+/// A QueueClient is a simple wrapper around a [Queue] channel that allows easily sending requests.
+#[derive(Clone, Debug)]
+pub struct QueueClient(mpsc::Sender<QueueJob>);
 
-impl NetQueueClient {
-    /// Creates a new NetQueueClient around the specified sender.
-    pub fn new(tx: mpsc::Sender<NetQueueJob>) -> Self {
-        Self(tx)
-    }
-
+impl QueueClient {
     /// Executes a single request (no retry logic). Analogue of [Client::execute].
-    #[instrument(name = "NetQueueClient", skip_all)]
-    pub async fn execute(&self, request: Request) -> Result<Response> {
+    pub async fn execute(&self, request: Request) -> Result<Response, Error> {
         let (tx, rx) = oneshot::channel();
 
         debug!("--> {} {}", request.method(), request.url());
@@ -136,19 +121,19 @@ impl NetQueueClient {
     }
 }
 
-/// Creates a new queue and spawns it as a background task, returning the `tx` handle.
-pub async fn spawn_queue(cancel: oneshot::Receiver<()>) -> mpsc::Sender<NetQueueJob> {
-    trace!("Spawning off-thread NetQueue.");
+/// Creates a new queue and spawns it as a background task, returning a [QueueClient] and a
+/// [JoinHandle].
+pub async fn spawn_queue() -> (QueueClient, JoinHandle<()>) {
+    trace!("Spawning off-thread queue.");
 
-    // These are the channels used to interact with the background task.
+    // Channel used to interact with the background task.
     let (tx, rx) = mpsc::channel(20);
 
     // Create and spawn the queue.
-    let mut queue = NetQueue::new(rx);
-    tokio::spawn(async move {
-        queue.run(cancel).await;
+    let mut queue = Queue::new(rx);
+    let handle = tokio::spawn(async move {
+        queue.run().await;
     });
 
-    // Return the (only!) channel to communicate with the queue. (It can be cloned though)
-    tx
+    (QueueClient(tx), handle)
 }

@@ -13,21 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::time::Duration;
-
 use anyhow::Result;
+use async_once_cell::OnceCell;
 use reqwest::{Method, Request};
 use tracing::info;
+
+use net::Client;
+
+static CLIENT: OnceCell<Client> = OnceCell::new();
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let _guard = utils::log::setup();
     info!("Hello, world!");
 
-    let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel();
-
-    let tx = net::spawn_queue(cancel_rx).await;
-    let client = net::NetQueueClient::new(tx);
+    let client = CLIENT.get_or_init(Client::new()).await;
 
     let req = Request::new(Method::GET, "https://ipv4.icanhazip.com/".parse().unwrap());
     info!("Very epic request that we're gonna try execute: {req:?}");
@@ -38,14 +38,21 @@ async fn main() -> Result<()> {
     let ip = resp.text().await?;
     info!("Your ip address is {ip}");
 
-    info!("Trying to shutdown queue by dropping client...");
-    drop(client);
+    let _ = tokio::spawn(async move {
+        let req = Request::new(Method::GET, "https://ipv4.icanhazip.com/".parse().unwrap());
+        client.execute(req).await.expect("TODO: panic message")
+    })
+    .await;
 
-    // info!("Trying to shutdown queue by sending across oneshot channel...");
-    // cancel_tx.send(()).unwrap();
+    info!("Joining client...");
+    client.destroy().await;
 
-    info!("Sleeping a bit...");
-    tokio::time::sleep(Duration::from_secs(3)).await;
+    info!("Trying a request now...");
+    let req = Request::new(Method::GET, "https://ipv4.icanhazip.com/".parse().unwrap());
+    info!("Very epic request that we're gonna try execute: {req:?}");
+
+    let resp = client.execute(req).await?;
+    info!("Got a very epic response: {resp:?}");
 
     Ok(())
 }
