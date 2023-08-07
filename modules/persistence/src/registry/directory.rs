@@ -18,7 +18,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use tokio::fs;
-use tracing::{debug, error, instrument, trace};
+use tracing::{error, instrument, trace};
 
 use utils::directories;
 
@@ -51,7 +51,7 @@ where
         let base = directories::DATA.join(base);
         fs::create_dir_all(&base).await?;
 
-        debug!("Creating new directory registry at {}", base.display());
+        trace!("Creating new directory registry at {}", base.display());
         let mut registry = Self {
             base,
             file,
@@ -95,9 +95,9 @@ where
     }
 
     /// Reads all entries from disk into memory.
-    #[instrument(name = "DirectoryRegistry::refresh", skip(self), fields(base = %self.base.display()))]
+    #[instrument(name = "DirectoryRegistry::refresh", skip(self), fields(base = % self.base.display()))]
     pub async fn refresh(&mut self) -> Result<()> {
-        debug!("Starting refresh.");
+        trace!("Starting refresh.");
 
         let mut stream = fs::read_dir(&self.base).await?;
         while let Some(entry) = stream.next_entry().await? {
@@ -131,7 +131,7 @@ where
             self.entries.insert(id, data);
         }
 
-        debug!("Done refreshing.");
+        trace!("Done refreshing.");
         Ok(())
     }
 }

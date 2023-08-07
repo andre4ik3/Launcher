@@ -19,7 +19,7 @@ use aes_gcm::{Aes256Gcm, Key};
 use serde::{Deserialize, Serialize};
 use tokio::fs;
 use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
-use tracing::{debug, instrument, warn};
+use tracing::{instrument, trace, warn};
 
 use utils::directories;
 
@@ -53,7 +53,7 @@ where
         let data = RwLock::new(T::default());
         let path = directories::CONFIG.join(file);
 
-        debug!("Creating new file registry at {}", path.display());
+        trace!("Creating new file registry at {}", path.display());
         let registry = FileRegistry {
             data,
             path,
@@ -76,17 +76,17 @@ where
         let data = RwLock::new(T::default());
         let path = directories::CONFIG.join(file);
 
-        debug!("Creating new encrypted file registry at {}", path.display());
+        trace!("Creating new encrypted file registry at {}", path.display());
 
         // attempt to retrieve encryption key or make a new one
         let encryption_key = match crypto::read_key(&path).await {
             Some(key) => {
-                debug!("Successfully found existing encryption key");
+                trace!("Successfully found existing encryption key");
                 key
             }
             None => {
                 warn!("Could not find an encryption key, generating a new one...");
-                crypto::generate_key().await?
+                crypto::generate_key().await
             }
         };
 
@@ -121,7 +121,7 @@ where
     /// Loads the file from disk.
     #[instrument(name = "FileRegistry::load", skip(self), fields(file = % self.path.display()))]
     pub async fn load(&self) -> Result<()> {
-        debug!("Reading file...");
+        trace!("Reading file...");
         let mut lock = self.data.write().await;
 
         let data = match self.encryption_key {
@@ -138,7 +138,7 @@ where
     /// Saves the file to disk.
     #[instrument(name = "FileRegistry::save", skip(self), fields(file = % self.path.display()))]
     pub async fn save(&self) -> Result<()> {
-        debug!("Writing file...");
+        trace!("Writing file...");
         let lock = self.data.read().await;
 
         let data = toml::to_string(&*lock)?;

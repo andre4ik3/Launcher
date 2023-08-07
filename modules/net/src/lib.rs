@@ -13,6 +13,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod models;
-pub mod net;
-pub(crate) mod utils;
+//! Launcher Networking Module
+//! ==========================
+//!
+//! This module contains all network-related functionality. This crate is the only one that depends
+//! on the [reqwest] crate, providing safe wrappers around it that add a request queue, retry logic,
+//! download resuming, and some generally nice utilities.
+
+use thiserror::Error;
+
+pub use queue::*;
+
+pub(crate) mod queue;
+pub(crate) mod retry;
+
+#[derive(Debug, Error)]
+pub enum Error {
+    #[error("network error: {0}")]
+    Network(#[from] reqwest::Error),
+
+    #[error("queue has been shut down")]
+    QueueShutDown,
+}

@@ -13,47 +13,39 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::time::Duration;
+
 use anyhow::Result;
-use persistence::FileRegistry;
-use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
+use reqwest::{Method, Request};
 use tracing::info;
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Testing {
-    variable: String,
-}
-
-impl Default for Testing {
-    fn default() -> Self {
-        Self {
-            variable: "Hello, world!".to_string(),
-        }
-    }
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let _guard = utils::setup_logging();
+    let _guard = utils::log::setup();
     info!("Hello, world!");
 
-    let registry: FileRegistry<Testing> = FileRegistry::new_encrypted("Testing.dat").await?;
+    let (cancel_tx, cancel_rx) = tokio::sync::oneshot::channel();
 
-    let lock = RwLock::new(Testing {
-        variable: "nothing".to_string(),
-    });
+    let tx = net::spawn_queue(cancel_rx).await;
+    let client = net::NetQueueClient::new(tx);
 
-    let guard = lock.read().await;
-    info!("value is {}", guard.variable);
-    drop(guard);
+    let req = Request::new(Method::GET, "https://ipv4.icanhazip.com/".parse().unwrap());
+    info!("Very epic request that we're gonna try execute: {req:?}");
 
-    *lock.write().await = Testing::default();
+    let resp = client.execute(req).await?;
+    info!("Got a very epic response: {resp:?}");
 
-    let guard = lock.read().await;
-    info!("value is {}", guard.variable);
-    drop(guard);
+    let ip = resp.text().await?;
+    info!("Your ip address is {ip}");
 
-    registry.save().await?;
+    info!("Trying to shutdown queue by dropping client...");
+    drop(client);
+
+    // info!("Trying to shutdown queue by sending across oneshot channel...");
+    // cancel_tx.send(()).unwrap();
+
+    info!("Sleeping a bit...");
+    tokio::time::sleep(Duration::from_secs(3)).await;
 
     Ok(())
 }

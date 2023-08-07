@@ -19,16 +19,17 @@ use anyhow::{bail, Result};
 use reqwest::Client;
 use serde::Deserialize;
 use tokio::fs;
+use url::Url;
 
 use crate::models::{
     Environment, GameVersion, GameVersionIndex, JavaBuild, JavaBuildIndex, MetadataIndex,
 };
-use crate::store::{StoreHolder, CONFIG};
 use crate::utils::try_request;
 
 /// Helper function to run a request to a URL and decode the result.
 async fn get<T: for<'a> Deserialize<'a>>(client: &Client, path: impl Display) -> Result<T> {
-    let base = CONFIG.get().await.get().await.metadata_server;
+    // let base = CONFIG.get().await.get().await.metadata_server;
+    let base = Url::parse("https://meta.andre4ik3.dev/v1").unwrap();
     let data = match base.scheme() {
         "file" => fs::read_to_string(format!("{}/{path}", base.path())).await?,
         "https" => {

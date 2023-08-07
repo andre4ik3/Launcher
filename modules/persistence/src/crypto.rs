@@ -29,23 +29,20 @@ use tracing::{debug, error, instrument, warn};
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("failed to perform background operation: task join failed")]
-    Join(#[from] task::JoinError),
-
     #[error("failed to perform cryptographic operation")]
     Crypto,
     #[error("key is an invalid length, expected length 32 but found {0}")]
     KeySize(usize),
     #[error("nonce is an invalid length, expected length 12 but found {0}")]
     NonceSize(usize),
-    #[error("failed to parse stored string in encrypted file")]
+    #[error("failed to parse stored string in encrypted file: {0}")]
     Parse(#[from] std::string::FromUtf8Error),
 
-    #[error("failed to perform keyring operation")]
+    #[error("failed to perform keyring operation: {0}")]
     KeyringOp(#[from] keyring::Error),
-    #[error("failed to parse key in system keychain")]
+    #[error("failed to parse key in system keychain: {0}")]
     KeyringParse(#[from] hex::FromHexError),
-    #[error("failed to read/write keyfile")]
+    #[error("failed to read/write keyfile: {0}")]
     KeyfileIo(#[from] std::io::Error),
     #[error("no key was found")]
     KeyNotFound,
@@ -130,9 +127,8 @@ pub async fn read_key(file: impl AsRef<Path> + Debug) -> Option<Key<Aes256Gcm>> 
             .ok_or(Error::KeyNotFound)
             .and_then(keyring_read)
     })
-    .await // task::spawn_blocking gives a result, so we have a nested result here
-    .map_err(Error::from) // convert tokio's JoinError to Error::KeyringJoin
-    .and_then(|result| result); // hack to flatten result
+    .await
+    .expect("blocking thread panicked");
 
     debug!("Keyring key: {}", keyring_key.is_ok());
     debug!("Keyfile key: {}", keyfile_key.is_ok());
@@ -153,8 +149,7 @@ pub async fn write_key(file: impl AsRef<Path> + Debug, key: Key<Aes256Gcm>) -> R
             .and_then(|stem| keyring_write(stem, &key))
     })
     .await
-    .map_err(Error::from)
-    .and_then(|result| result);
+    .expect("blocking thread panicked");
 
     match keyring_result {
         Ok(()) => {
@@ -173,19 +168,19 @@ pub async fn write_key(file: impl AsRef<Path> + Debug, key: Key<Aes256Gcm>) -> R
 // === Cryptographic Operations ===
 
 /// Generates a new [Key\<Aes256Gcm\>].
-pub async fn generate_key() -> Result<Key<Aes256Gcm>> {
+pub async fn generate_key() -> Key<Aes256Gcm> {
     debug!("Generating a new key...");
     task::spawn_blocking(|| Aes256Gcm::generate_key(OsRng))
         .await
-        .map_err(Error::from)
+        .expect("blocking thread panicked")
 }
 
 /// Generates a new [Nonce\<Aes256Gcm\>].
-pub async fn generate_nonce() -> Result<Nonce<Aes256Gcm>> {
+pub async fn generate_nonce() -> Nonce<Aes256Gcm> {
     debug!("Generating a new nonce...");
     task::spawn_blocking(|| Aes256Gcm::generate_nonce(OsRng))
         .await
-        .map_err(Error::from)
+        .expect("blocking thread panicked")
 }
 
 /// Attempts to decrypt a read file. The first 12 bytes of the data are treated as the nonce (e.g.
@@ -206,8 +201,8 @@ pub async fn decrypt(mut data: Vec<u8>, key: Key<Aes256Gcm>) -> Result<String> {
     // Decrypt data using the nonce we just read
     let data = task::spawn_blocking(move || Aes256Gcm::new(&key).decrypt(&nonce, data.as_slice()))
         .await
-        .map_err(Error::from)
-        .and_then(|result| result.map_err(|_| Error::Crypto))?; // aes_gcm::Error is opaque anyway
+        .expect("blocking thread panicked")
+        .map_err(|_| Error::Crypto)?; // aes_gcm::Error is opaque anyway
 
     // Convert the data to a string
     let data = String::from_utf8(data)?;
@@ -223,11 +218,11 @@ pub async fn decrypt(mut data: Vec<u8>, key: Key<Aes256Gcm>) -> Result<String> {
 pub async fn encrypt(data: Vec<u8>, key: Key<Aes256Gcm>) -> Result<Vec<u8>> {
     debug!("Encrypting {} bytes of data", data.len());
 
-    let nonce = generate_nonce().await?;
+    let nonce = generate_nonce().await;
     let data = task::spawn_blocking(move || Aes256Gcm::new(&key).encrypt(&nonce, data.as_slice()))
         .await
-        .map_err(Error::from)
-        .and_then(|result| result.map_err(|_| Error::Crypto))?;
+        .expect("blocking thread panicked")
+        .map_err(|_| Error::Crypto)?;
 
     // chain the nonce and encrypted payload together
     let data: Vec<u8> = nonce.into_iter().chain(data.into_iter()).collect();

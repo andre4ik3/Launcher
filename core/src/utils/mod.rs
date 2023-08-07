@@ -21,12 +21,10 @@ use directories::ProjectDirs;
 use sha1::Sha1;
 use sha2::{Digest, Sha256};
 
+pub use self::net::*;
 pub use archive::*;
-pub use crypto::*;
-pub use net::*;
 
 mod archive;
-mod crypto;
 mod net;
 
 static PROJECT_DIRS: OnceLock<ProjectDirs> = OnceLock::new();

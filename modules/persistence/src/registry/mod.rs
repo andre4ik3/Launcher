@@ -20,15 +20,15 @@ pub mod file;
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("failed to serialize entry")]
+    #[error("failed to serialize entry: {0}")]
     Serialize(#[from] toml::ser::Error),
 
-    #[error("failed to deserialize entry")]
+    #[error("failed to deserialize entry: {0}")]
     Deserialize(#[from] toml::de::Error),
 
-    #[error("failed to read/write entry")]
+    #[error("failed to read/write entry: {0}")]
     Io(#[from] std::io::Error),
 
-    #[error("failed to perform crypto operation")]
+    #[error("failed to perform crypto operation: {0}")]
     Crypto(#[from] crate::crypto::Error),
 }
