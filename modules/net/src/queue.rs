@@ -21,7 +21,7 @@ use tokio::task::JoinHandle;
 use tokio::time::{interval, Interval};
 use tracing::{debug, error, instrument, trace, warn};
 
-use crate::Error;
+use crate::{Error, Result};
 
 /// User-agent to be used for outgoing requests.
 const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36";
@@ -90,7 +90,7 @@ pub struct QueueClient(mpsc::Sender<QueueJob>);
 
 impl QueueClient {
     /// Executes a single request (no retry logic). Analogue of [Client::execute].
-    pub async fn execute(&self, request: Request) -> Result<Response, Error> {
+    pub async fn execute(&self, request: Request) -> Result<Response> {
         let (tx, rx) = oneshot::channel();
 
         debug!("--> {} {}", request.method(), request.url());

@@ -13,36 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::ops::Deref;
+//! Launcher Data Module
+//! ====================
+//!
+//! This module contains data models for different APIs and services. The module itself is split
+//! into many sub-modules that categorize the data models based on where they are used:
+//!
+//! - [core::assets]
+//! - [core::conditional] - The [Conditional][core::conditional::Conditional] API.
+//!   (Evaluation requires `eval` feature).
+//! - [core::game]
+//! - [core::java]
+//! - [silo] - Models for APIs used during Silo data generation (feature = `silo`).
+//! - [web::auth] - Models relating to online account authentication.
 
-use anyhow::Result;
-use sha1::Sha1;
-use sha2::{Digest, Sha256};
-
-pub use self::net::*;
-pub use archive::*;
-
-mod archive;
-mod net;
-
-/// Calculates a SHA256 checksum from some data.
-pub fn sha256(data: impl Deref<Target = [u8]>) -> Result<impl AsRef<[u8]>> {
-    let mut hasher = Sha256::new();
-
-    for chunk in data.chunks(1024) {
-        hasher.update(chunk);
-    }
-
-    Ok(hasher.finalize())
-}
-
-/// Calculates a SHA1 checksum from some data.
-pub fn sha1(data: impl Deref<Target = [u8]>) -> Result<impl AsRef<[u8]>> {
-    let mut hasher = Sha1::new();
-
-    for chunk in data.chunks(1024) {
-        hasher.update(chunk);
-    }
-
-    Ok(hasher.finalize())
-}
+pub mod core;
+pub mod silo;
+pub mod web;

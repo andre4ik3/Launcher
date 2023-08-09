@@ -6,6 +6,7 @@ license = "GPL-3.0-or-later"
 publish = false
 
 [dependencies]
+data = { path = "../modules/data", version = "*", package = "launcher-data" }
 net = { path = "../modules/net", version = "*", package = "launcher-net" }
 persistence = { path = "../modules/persistence", version = "*", package = "launcher-persistence" }
 utils = { path = "../modules/utils", version = "*", package = "launcher-utils" }
@@ -28,7 +29,6 @@ async-once-cell = "0.5"
 async-trait = "0.1"
 bytes = "1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
-directories = "5"
 futures-util = "0.3"
 hex = { version = "0.4", features = ["serde"] }
 lazy_static = "1"
@@ -42,4 +42,3 @@ tempfile = "3"
 tracing = "0.1"
 url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }
-zeroize = "1"

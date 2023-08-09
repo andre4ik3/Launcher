@@ -17,11 +17,8 @@ use std::ffi::OsStr;
 use std::fmt::Debug;
 use std::path::Path;
 
-use aes_gcm::aead::Aead;
-use aes_gcm::{
-    aead::{Nonce, OsRng},
-    AeadCore, Aes256Gcm, Key, KeyInit,
-};
+use aes_gcm::aead::{Aead, Nonce, OsRng};
+use aes_gcm::{AeadCore, Aes256Gcm, Key, KeyInit};
 use keyring::Entry;
 use thiserror::Error;
 use tokio::{fs, task};

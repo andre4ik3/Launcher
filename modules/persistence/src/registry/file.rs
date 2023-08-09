@@ -23,8 +23,7 @@ use tracing::{instrument, trace, warn};
 
 use utils::directories;
 
-use crate::crypto;
-use crate::registry::Error;
+use crate::{crypto, registry::Error};
 
 type Result<T> = core::result::Result<T, Error>;
 

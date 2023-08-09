@@ -20,9 +20,11 @@
 //! on the [reqwest] crate, providing safe wrappers around it that add a request queue, retry logic,
 //! download resuming, and some generally nice utilities.
 
+use std::io;
+
 use thiserror::Error;
 
-pub use client::*;
+pub use client::Client;
 
 pub(crate) mod client;
 pub(crate) mod queue;
@@ -31,10 +33,54 @@ pub(crate) mod queue;
 pub enum Error {
     #[error("network error: {0}")]
     Network(#[from] reqwest::Error),
+    #[error("io error: {0}")]
+    Io(#[from] io::Error),
     #[error("request failed after {0} attempts, last error: {1}")]
-    RequestAttemptsExhausted(u64, reqwest::Error),
+    RequestAttemptsExhausted(u64, Box<Error>),
     #[error("request cannot be cloned (required for retrying)")]
     RequestCloneFail,
     #[error("queue has been shut down")]
     QueueShutDown,
+}
+
+pub type Result<T> = core::result::Result<T, Error>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_URL: &str = "https://httpbingo.org/base64/dGVzdGluZyBzdWNjZXNzZnVsCg==";
+    const TEST_RESPONSE: &str = "testing successful\n";
+
+    #[tokio::test]
+    async fn client() -> Result<()> {
+        let client = Client::new().await;
+
+        // Try a basic request
+        let res = client.get(TEST_URL).await?;
+        assert_eq!(res.status(), reqwest::StatusCode::OK);
+        assert_eq!(res.text().await?, TEST_RESPONSE);
+
+        // Try the same thing but using download method
+        let mut buf = Vec::<u8>::new();
+        client.download(TEST_URL, &mut buf).await?;
+
+        assert_eq!(buf.len(), TEST_RESPONSE.len());
+        assert_eq!(String::from_utf8(buf), Ok(TEST_RESPONSE.to_string()));
+
+        // Check that the client can destroy properly
+        assert_eq!(client.destroy().await, Some(()));
+        assert_eq!(client.destroy().await, None);
+
+        // Check that trying to run requests now returns an error
+        let Err(Error::QueueShutDown) = client.get(TEST_URL).await else {
+            panic!("Client::execute returned with the wrong error (or no error at all!)");
+        };
+
+        let Err(Error::QueueShutDown) = client.download(TEST_URL, &mut Vec::new()).await else {
+            panic!("Client::download returned with the wrong error (or no error at all!)");
+        };
+
+        Ok(())
+    }
 }

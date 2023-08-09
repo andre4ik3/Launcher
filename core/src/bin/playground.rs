@@ -15,7 +15,6 @@
 
 use anyhow::Result;
 use async_once_cell::OnceCell;
-use reqwest::{Method, Request};
 use tracing::info;
 
 use net::Client;
@@ -29,30 +28,19 @@ async fn main() -> Result<()> {
 
     let client = CLIENT.get_or_init(Client::new()).await;
 
-    let req = Request::new(Method::GET, "https://ipv4.icanhazip.com/".parse().unwrap());
-    info!("Very epic request that we're gonna try execute: {req:?}");
+    let mut bytes: Vec<u8> = Vec::new();
+    client
+        .download("https://httpbin.org/drip", &mut bytes)
+        .await?;
 
-    let resp = client.execute(req).await?;
-    info!("Got a very epic response: {resp:?}");
+    info!("Final length: {}", bytes.len());
 
-    let ip = resp.text().await?;
-    info!("Your ip address is {ip}");
-
-    let _ = tokio::spawn(async move {
-        let req = Request::new(Method::GET, "https://ipv4.icanhazip.com/".parse().unwrap());
-        client.execute(req).await.expect("TODO: panic message")
-    })
-    .await;
+    info!("RAW data: {:?}", bytes);
+    let string = String::from_utf8(bytes)?;
+    info!("String?: {string}");
 
     info!("Joining client...");
     client.destroy().await;
-
-    info!("Trying a request now...");
-    let req = Request::new(Method::GET, "https://ipv4.icanhazip.com/".parse().unwrap());
-    info!("Very epic request that we're gonna try execute: {req:?}");
-
-    let resp = client.execute(req).await?;
-    info!("Got a very epic response: {resp:?}");
 
     Ok(())
 }

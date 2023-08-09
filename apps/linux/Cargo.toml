@@ -4,8 +4,8 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-gtk = { version = "0.6.6", package = "gtk4", features = ["v4_10"] }
+gtk = { version = "0.6", package = "gtk4", features = ["v4_12"] }
 tokio = { version = "1", features = ["full"] }
 
 [build-dependencies]
-glib-build-tools = "0.17.10"
+glib-build-tools = "0.17"

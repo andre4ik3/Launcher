@@ -13,36 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::ops::Deref;
+pub use game_versions::TaskGameVersions;
 
-use anyhow::Result;
-use sha1::Sha1;
-use sha2::{Digest, Sha256};
+mod game_versions;
 
-pub use self::net::*;
-pub use archive::*;
+use async_trait::async_trait;
 
-mod archive;
-mod net;
+#[async_trait]
+pub trait Task {
+    /// The input of this task (allows the task to depend on other tasks).
+    type Input;
 
-/// Calculates a SHA256 checksum from some data.
-pub fn sha256(data: impl Deref<Target = [u8]>) -> Result<impl AsRef<[u8]>> {
-    let mut hasher = Sha256::new();
+    /// The output of this task (allows other tasks to depend on this task).
+    type Output;
 
-    for chunk in data.chunks(1024) {
-        hasher.update(chunk);
-    }
-
-    Ok(hasher.finalize())
-}
-
-/// Calculates a SHA1 checksum from some data.
-pub fn sha1(data: impl Deref<Target = [u8]>) -> Result<impl AsRef<[u8]>> {
-    let mut hasher = Sha1::new();
-
-    for chunk in data.chunks(1024) {
-        hasher.update(chunk);
-    }
-
-    Ok(hasher.finalize())
+    /// Runs the task to completion.
+    async fn run(input: Self::Input) -> anyhow::Result<Self::Output>;
 }
