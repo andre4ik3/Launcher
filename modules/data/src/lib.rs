@@ -20,11 +20,10 @@
 //! into many sub-modules that categorize the data models based on where they are used:
 //!
 //! - [core::assets]
-//! - [core::conditional] - The [Conditional][core::conditional::Conditional] API.
-//!   (Evaluation requires `eval` feature).
+//! - [core::conditional] - Data-driven condition API (evaluation requires `eval` feature).
 //! - [core::game]
 //! - [core::java]
-//! - [silo] - Models for APIs used during Silo data generation (feature = `silo`).
+//! - [silo] - Models for APIs used during Silo data generation (requires `silo` feature).
 //! - [web::auth] - Models relating to online account authentication.
 
 pub mod core;

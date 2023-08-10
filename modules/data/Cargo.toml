@@ -6,7 +6,6 @@ license = "GPL-3.0-or-later"
 publish = false
 
 [features]
-eval = ["dep:os_info"]
 silo = []
 
 [dependencies]
@@ -16,5 +15,3 @@ chrono = { version = "0.4", default-features = false, features = ["serde"] }
 platforms = { version = "3", features = ["serde"] }
 semver = { version = "1", features = ["serde"] }
 url = { version = "2", features = ["serde"] }
-
-os_info = { version = "3", optional = true }

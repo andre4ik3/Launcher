@@ -14,17 +14,12 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::backtrace::Backtrace;
-#[cfg(not(feature = "application"))]
-use std::env;
-#[cfg(feature = "application")]
-use std::fs;
-use std::io::Write;
-use std::{io, panic, thread};
+use std::io::{IsTerminal, Write};
+use std::{env, fs, io, panic, thread};
 
 use tracing::{error, Level};
 use tracing_appender::non_blocking::WorkerGuard;
 
-#[cfg(feature = "application")]
 use crate::directories;
 
 const LOG_FILE_NAME: &str = "Launcher.log";
@@ -55,15 +50,16 @@ fn panic_hook(panic_info: &panic::PanicInfo) {
     io::stderr().flush().expect("failed to flush stderr");
 }
 
-/// Sets up logs and panics to go through the [tracing] framework. If compiled for debug and a tty
-/// is attached on stderr, logs will be sent there. Otherwise, they will be sent to the log file.
-#[cfg(feature = "application")]
+/// Sets up logs and panics to go through the [tracing] framework. If compiled for debug and a TTY
+/// is attached on stderr (or running in CI), logs will be sent there. Otherwise, they will be sent
+/// to the log file.
 pub fn setup() -> WorkerGuard {
     let directory = directories::DATA.as_path();
-    let is_debug = cfg!(debug_assertions) && atty::is(atty::Stream::Stderr);
+    let is_debug = cfg!(debug_assertions) && io::stderr().is_terminal();
+    let is_ci = env::var("CI").is_ok();
 
     // if in development and stderr is attached, write there. otherwise write to log file
-    let (writer, guard) = match is_debug {
+    let (writer, guard) = match is_debug || is_ci {
         true => tracing_appender::non_blocking(io::stderr()),
         false => {
             let _ = fs::remove_file(directory.join(LOG_FILE_NAME));
@@ -73,27 +69,9 @@ pub fn setup() -> WorkerGuard {
     };
 
     tracing_subscriber::fmt()
-        .with_max_level(Level::DEBUG)
+        .with_max_level(if is_ci { Level::INFO } else { Level::DEBUG })
         .with_writer(writer)
-        .with_ansi(is_debug)
-        .init();
-
-    panic::set_hook(Box::new(panic_hook));
-
-    // it is important to return the guard, upon dropping the guard, pending logs will be flushed
-    guard
-}
-
-/// Sets up logs and panics to go through the [tracing] framework. If running in CI, logs will be
-/// filtered to [Level::INFO], otherwise to [Level::DEBUG]. Logs are sent to [io::stderr].
-#[cfg(not(feature = "application"))]
-pub fn setup() -> WorkerGuard {
-    let ci = env::var("CI").is_ok();
-    let (writer, guard) = tracing_appender::non_blocking(io::stderr());
-
-    tracing_subscriber::fmt()
-        .with_max_level(if ci { Level::INFO } else { Level::DEBUG })
-        .with_writer(writer)
+        .with_ansi(is_debug || is_ci)
         .init();
 
     panic::set_hook(Box::new(panic_hook));

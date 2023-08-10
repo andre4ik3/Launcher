@@ -39,6 +39,8 @@ jobs:
 
       - uses: olix0r/cargo-action-fmt/setup@v2
       - run: cargo check --locked --message-format=json | cargo-action-fmt
+      - run: cargo test --locked --no-run --message-format=json | cargo-action-fmt
+      - run: cargo test --locked
 
   metadata:
     name: Deploy metadata site
@@ -55,11 +57,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo run --locked --bin metagen
-      - id: deployment
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: launchermeta
-          directory: _site
+      - run: cargo run --locked --bin silo
+#      - id: deployment
+#        uses: cloudflare/pages-action@v1
+#        with:
+#          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+#          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+#          projectName: launchermeta
+#          directory: _site

@@ -6,13 +6,10 @@ license = "GPL-3.0-or-later"
 publish = false
 
 [features]
-default = ["application"]
-
 # Modifies logging function to be more suitable for a GUI application.
 application = []
 
 [dependencies]
-atty = "0.2"
 directories = "5"
 md-5 = "0.10"
 once_cell = "1"
