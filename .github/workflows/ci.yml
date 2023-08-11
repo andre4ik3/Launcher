@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       cargo: ${{ steps.changes.outputs.cargo }}
-      meta: ${{ steps.changes.outputs.meta }}
+      silo: ${{ steps.changes.outputs.silo }}
 
     steps:
       - uses: actions/checkout@v3
@@ -20,7 +20,7 @@ jobs:
         with:
           filters: |
             cargo: ['Cargo.*', 'Deny.toml', '**/*/Cargo.*']
-            meta: ['Cargo.*', 'apps/metagen/**/*', 'libs/core/**/*']
+            silo: ['Cargo.*', 'silo/**/*', 'modules/data/**/*', 'modules/net/**/*', 'modules/util/**/*']
 
   check:
     name: Check code
@@ -45,7 +45,8 @@ jobs:
   metadata:
     name: Deploy metadata site
     needs: [ check, changes ]
-    if: (github.event_name == 'push' && needs.changes.outputs.meta == 'true') || (github.event_name == 'workflow_dispatch')
+    #if: (github.event_name == 'push' && needs.changes.outputs.meta == 'true') || (github.event_name == 'workflow_dispatch')
+    if: false
     runs-on: ubuntu-latest
 
     concurrency: Metadata Site
@@ -58,10 +59,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: cargo run --locked --bin silo
-#      - id: deployment
-#        uses: cloudflare/pages-action@v1
-#        with:
-#          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-#          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-#          projectName: launchermeta
-#          directory: _site
+      - id: deployment
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: launchermeta
+          directory: _site

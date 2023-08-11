@@ -20,7 +20,7 @@
 //! into many sub-modules that categorize the data models based on where they are used:
 //!
 //! - [core::assets]
-//! - [core::conditional] - Data-driven condition API (evaluation requires `eval` feature).
+//! - [core::conditional] - Data-driven condition API.
 //! - [core::game]
 //! - [core::java]
 //! - [silo] - Models for APIs used during Silo data generation (requires `silo` feature).

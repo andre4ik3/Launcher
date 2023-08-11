@@ -22,6 +22,9 @@
 
 use std::io;
 
+pub use reqwest::{
+    dns, header, Body, Certificate, Identity, Method, NoProxy, Proxy, Request, Response, StatusCode,
+};
 use thiserror::Error;
 
 pub use client::Client;
@@ -58,7 +61,7 @@ mod tests {
 
         // Try a basic request
         let res = client.get(TEST_URL).await?;
-        assert_eq!(res.status(), reqwest::StatusCode::OK);
+        assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(res.text().await?, TEST_RESPONSE);
 
         // Try the same thing but using download method
@@ -70,7 +73,7 @@ mod tests {
 
         // Check that the client can destroy properly
         assert_eq!(client.destroy().await, Some(()));
-        assert_eq!(client.destroy().await, None);
+        assert_eq!(client.destroy().await, None); // destroying twice should be a no-op
 
         // Check that trying to run requests now returns an error
         let Err(Error::QueueShutDown) = client.get(TEST_URL).await else {
@@ -81,6 +84,21 @@ mod tests {
             panic!("Client::download returned with the wrong error (or no error at all!)");
         };
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn queue() -> Result<()> {
+        let (queue, handle) = queue::spawn().await;
+
+        // Try a basic request
+        let req = Request::new(Method::GET, TEST_URL.parse().unwrap());
+        let res = queue.execute(req).await?;
+        assert_eq!(res.text().await?, TEST_RESPONSE);
+
+        // Manually join the queue
+        drop(queue);
+        handle.await.expect("queue thread panicked!");
         Ok(())
     }
 }

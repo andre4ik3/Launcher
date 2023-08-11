@@ -24,6 +24,7 @@
 //! Each main function of Silo is represented as a [task::Task]. Tasks can depend on one another and
 //! are run in parallel when possible.
 
+use data::silo::game::GameVersionLegacy;
 use tokio::fs;
 use tokio::sync::OnceCell;
 use tracing::info;
@@ -56,12 +57,10 @@ async fn main() -> anyhow::Result<()> {
 
     // === testing ===
 
-    let game_versions = TaskGameVersions::run(()).await?;
-    fs::write(
-        output.join("game_versions.ron"),
-        format!("{game_versions:#?}"),
-    )
-    .await?;
+    // let data = fs::read_to_string("./1.12.2.json").await?;
+    // let data: GameVersionLegacy = serde_json::from_str(&data)?;
+
+    // println!("{data:#?}");
 
     client().await.destroy().await;
     Ok(())

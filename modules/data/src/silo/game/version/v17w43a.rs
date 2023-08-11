@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod assets;
-pub mod conditional;
-pub mod game;
-pub mod java;
-pub mod library;
+use serde::Deserialize;
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GameVersion17w43a {}

@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use async_trait::async_trait;
-use data::silo::game::{GameVersionManifest, GameVersionManifestEntry};
+use data::silo::game::{GameManifest, GameManifestEntry};
 use tracing::info;
 
 use super::Task;
@@ -28,11 +28,11 @@ pub struct TaskGameVersions;
 #[async_trait]
 impl Task for TaskGameVersions {
     type Input = ();
-    type Output = Vec<GameVersionManifestEntry>;
+    type Output = Vec<GameManifestEntry>;
 
     #[tracing::instrument(name = "TaskGameVersions", skip_all)]
     async fn run(_input: Self::Input) -> anyhow::Result<Self::Output> {
-        let manifest: GameVersionManifest = client().await.get(INDEX_URL).await?.json().await?;
+        let manifest: GameManifest = client().await.get(INDEX_URL).await?.json().await?;
         info!("Loaded {} game versions", manifest.versions.len());
         Ok(manifest.versions)
     }

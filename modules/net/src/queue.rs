@@ -123,7 +123,7 @@ impl QueueClient {
 
 /// Creates a new queue and spawns it as a background task, returning a [QueueClient] and a
 /// [JoinHandle].
-pub async fn spawn_queue() -> (QueueClient, JoinHandle<()>) {
+pub async fn spawn() -> (QueueClient, JoinHandle<()>) {
     trace!("Spawning off-thread queue.");
 
     // Channel used to interact with the background task.

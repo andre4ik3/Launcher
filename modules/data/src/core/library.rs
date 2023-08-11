@@ -13,8 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod assets;
-pub mod conditional;
-pub mod game;
-pub mod java;
-pub mod library;
+use crate::core::conditional::Conditional;
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct LibraryDownloadable {}
+
+/// A library is a JAR file that can
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Library {
+    pub name: String,
+    pub file: LibraryDownloadable,
+}

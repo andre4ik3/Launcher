@@ -1302,9 +1302,7 @@ version = "0.0.1"
 dependencies = [
  "bytes 1.4.0",
  "futures-util",
- "once_cell",
  "reqwest",
- "tempfile",
  "thiserror",
  "tokio",
  "tracing",

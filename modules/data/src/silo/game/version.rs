@@ -13,40 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::{DateTime, Utc};
 use serde::Deserialize;
-use url::Url;
+
+pub use legacy::*;
+pub use v17w43a::*;
+
+mod legacy;
+mod v17w43a;
 
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum GameVersionManifestStability {
-    Release,
-    Snapshot,
-    OldBeta,
-    OldAlpha,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct GameVersionManifestLatest {
-    pub release: String,
-    pub snapshot: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GameVersionManifestEntry {
-    pub id: String,
-    #[serde(rename = "type")]
-    pub stability: GameVersionManifestStability,
-    pub url: Url,
-    pub time: DateTime<Utc>,
-    pub release_time: DateTime<Utc>,
-    pub sha1: String,
-    pub compliance_level: u8,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct GameVersionManifest {
-    pub latest: GameVersionManifestLatest,
-    pub versions: Vec<GameVersionManifestEntry>,
+#[serde(untagged)]
+pub enum GameVersion {
+    Legacy(GameVersionLegacy),
+    Modern(GameVersion17w43a),
 }

@@ -13,23 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::{future::Future, io, sync::Arc};
+use std::{future::Future, sync::Arc};
 
 use futures_util::StreamExt;
 use reqwest::{header, IntoUrl, Method, Request, Response};
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
-use tokio::{fs, time};
+use tokio::time;
 use tracing::{debug, instrument, trace};
 
 use crate::{queue, Error, Result};
-
-/// Async version of [tempfile::tempfile].
-pub async fn tempfile() -> io::Result<fs::File> {
-    let file = tempfile::tempfile()?;
-    Ok(fs::File::from_std(file))
-}
 
 /// Maximum attempts for the client to make a request.
 const MAX_ATTEMPTS: u64 = 3;
@@ -45,7 +39,7 @@ impl Client {
     /// Creates a new client. A background request queue will be spawned to process requests.
     #[instrument(name = "net::Client")]
     pub async fn new() -> Self {
-        let (queue, handle) = queue::spawn_queue().await;
+        let (queue, handle) = queue::spawn().await;
         Self {
             queue: Mutex::new(Some(queue)),
             handle: Mutex::new(Some(handle)),

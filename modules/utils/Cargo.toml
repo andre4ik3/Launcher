@@ -5,10 +5,6 @@ edition = "2021"
 license = "GPL-3.0-or-later"
 publish = false
 
-[features]
-# Modifies logging function to be more suitable for a GUI application.
-application = []
-
 [dependencies]
 directories = "5"
 md-5 = "0.10"
