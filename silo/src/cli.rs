@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::collections::HashSet;
 use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum};
@@ -27,17 +26,15 @@ pub struct Cli {
     pub output: PathBuf,
     /// The tasks to run (can run other tasks if specified tasks depend on output)
     #[arg(short, long)]
-    pub task: Vec<Mode>,
+    pub task: Vec<TaskName>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
-pub enum Mode {
-    /// Run swiftly
-    Fast,
-    /// Crawl slowly but steadily
-    ///
-    /// This paragraph is ignored because there is no long help text for possible values.
-    Slow,
+pub enum TaskName {
+    /// Fetch the latest vanilla game versions from Mojang, and save them to the output directory.
+    GameVersions,
+    /// Fetch the latest Java builds from all Java providers, and save them to the output directory.
+    Java,
 }
 
 pub fn parse() -> Cli {

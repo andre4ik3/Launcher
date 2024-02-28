@@ -23,7 +23,7 @@ use tokio::task::JoinHandle;
 use tokio::time;
 use tracing::{debug, instrument, trace};
 
-use crate::{queue, Error, Result};
+use crate::{Error, queue, Result};
 
 /// Maximum attempts for the client to make a request.
 const MAX_ATTEMPTS: u64 = 3;
@@ -71,8 +71,8 @@ impl Client {
     /// Upon exhaustion of all attempts, [Error::RequestAttemptsExhausted] is returned, containing
     /// the number of attempts tried as well as the last error that occurred within the closure.
     async fn attempt<T, Fut>(mut func: impl FnMut() -> Fut) -> Result<T>
-    where
-        Fut: Future<Output = Result<T>>,
+        where
+            Fut: Future<Output=Result<T>>,
     {
         let mut last_error = None;
 
@@ -108,7 +108,7 @@ impl Client {
             let request = request.try_clone().ok_or(Error::RequestCloneFail)?;
             queue.execute(request).await
         })
-        .await
+            .await
     }
 
     /// Attempts to download a file to a destination with retry logic and interrupted download
@@ -149,7 +149,7 @@ impl Client {
             dest.flush().await?;
             Ok(())
         })
-        .await
+            .await
     }
 
     /// Shorthand for creating a GET request and using it with [Client::execute].

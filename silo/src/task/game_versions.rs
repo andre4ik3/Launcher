@@ -13,12 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::path::Path;
+
+use anyhow::bail;
 use async_trait::async_trait;
-use data::silo::game::{GameManifest, GameManifestEntry};
-use tracing::info;
+use chrono::DateTime;
+use tokio::fs;
+use tracing::{debug, error, info};
+
+use data::core::game;
+use data::silo::game::{GameManifest, GameManifestEntry, GameVersion, GameVersion17w43a, GameVersionLegacy};
+
+use crate::client;
+use crate::macros::write_to_ron_file;
 
 use super::Task;
-use crate::client;
 
 const INDEX_URL: &str = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 
@@ -27,13 +36,42 @@ pub struct TaskGameVersions;
 
 #[async_trait]
 impl Task for TaskGameVersions {
-    type Input = ();
-    type Output = Vec<GameManifestEntry>;
+    /// The already downloaded game versions.
+    type Input = Vec<String>;
+
+    /// An array that includes newly fetched game versions (not the ones from disk).
+    type Output = Vec<GameVersion>;
 
     #[tracing::instrument(name = "TaskGameVersions", skip_all)]
-    async fn run(_input: Self::Input) -> anyhow::Result<Self::Output> {
-        let manifest: GameManifest = client().await.get(INDEX_URL).await?.json().await?;
-        info!("Loaded {} game versions", manifest.versions.len());
-        Ok(manifest.versions)
+    async fn run(root: impl AsRef<Path> + Send + Sync, input: Self::Input) -> anyhow::Result<Self::Output> {
+        let client = client().await;
+        let mut output = Vec::new();
+
+        // First, retrieve the manifest of all available game versions.
+        let manifest: GameManifest = client.get(INDEX_URL).await?.json().await?;
+
+        // Then, for every version...
+        for version in manifest.versions {
+            let path = root.as_ref().join(format!("game/{}.ron", version.id));
+            // ...if we don't already have it...
+            if fs::try_exists(&path).await.unwrap_or(false) {
+                // TODO: Add a sort of "power wash" setting that fetches already existing versions.
+                info!("Skipping version {} as it appears we already have it.", version.id);
+                continue;
+            }
+
+            // ...fetch the details of the game version...
+            let data: GameVersion = client.get(version.url.clone()).await?.json().await?;
+
+            // ...convert it to a better format...
+            let data = game::GameVersion::from(data);
+
+            // ...and save it to disk.
+            info!("Fetched version {}.", version.id);
+            write_to_ron_file(&path, &data).await?;
+        }
+
+        info!("Loaded {} game versions", output.len());
+        Ok(output)
     }
 }

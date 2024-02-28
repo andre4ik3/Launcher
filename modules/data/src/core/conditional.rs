@@ -33,7 +33,7 @@ pub enum Condition {
     Xor(Vec<Condition>),
 }
 
-/// A helper struct for storing a value along with its' condition.
+/// A helper struct for storing a value along with its condition.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Conditional<T> {
     when: Condition,
@@ -129,6 +129,82 @@ impl<T> MaybeConditional<T> {
             Self::Unconditional(val) => Some(val),
             Self::Conditional(val) => val.fold(features),
         }
+    }
+}
+
+// === convert from modern game argument ===
+
+#[cfg(feature = "silo")]
+impl From<crate::silo::game::Os> for OS {
+    fn from(value: crate::silo::game::Os) -> Self {
+        match value {
+            crate::silo::game::Os::Linux => Self::Linux,
+            crate::silo::game::Os::MacOS => Self::MacOS,
+            crate::silo::game::Os::Windows => Self::Windows,
+        }
+    }
+}
+
+#[cfg(feature = "silo")]
+impl From<crate::silo::game::Arch> for Arch {
+    fn from(value: crate::silo::game::Arch) -> Self {
+        match value {
+            crate::silo::game::Arch::X86_64 => Self::X86_64,
+        }
+    }
+}
+
+#[cfg(feature = "silo")]
+impl From<crate::silo::game::LibraryRule> for Condition {
+    fn from(value: crate::silo::game::LibraryRule) -> Self {
+        let mut conditions = vec![];
+
+        if let Some(os) = value.os {
+            if let Some(os) = os.name {
+                conditions.push(Condition::OS(OS::from(os)));
+            }
+
+            if let Some(arch) = os.arch {
+                conditions.push(Condition::Arch(Arch::from(arch)));
+            }
+        }
+
+        if let Some(features) = value.features {
+            for (feature, _) in features.into_iter().filter(|(_, v)| *v) {
+                conditions.push(Condition::Feature(feature));
+            }
+        }
+
+        match value.action {
+            crate::silo::game::LibraryRuleAction::Allow => Condition::And(conditions),
+            crate::silo::game::LibraryRuleAction::Disallow => {
+                Condition::Not(Box::new(Condition::And(conditions)))
+            }
+        }
+    }
+}
+
+#[cfg(feature = "silo")]
+impl From<Vec<crate::silo::game::ModernGameArgument>> for MaybeConditional<Vec<String>> {
+    fn from(value: Vec<crate::silo::game::ModernGameArgument>) -> Self {
+        // let mut output = vec![];
+        for argument in value {}
+
+        // TODO: proper conversion
+
+        // match value {
+        //     crate::silo::game::ModernGameArgument::Plain(val) => Self::Unconditional(vec![val]),
+        //     crate::silo::game::ModernGameArgument::Conditional { rules, value } => Self::Conditional(Conditional {
+        //         when: Condition::Or(rules.into_iter().map(Condition::from).collect()).simplify(),
+        //         then: match value {
+        //             crate::silo::game::ModernGameRuleValue::String(val) => vec![val],
+        //             crate::silo::game::ModernGameRuleValue::Array(val) => val,
+        //         }
+        //     })
+        // };
+        //
+
+        todo!()
     }
 }
 

@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use semver::VersionReq;
+use semver::{Comparator, Op, Prerelease, VersionReq};
 use serde::{Deserialize, Serialize};
 
 use super::conditional::MaybeConditional;
@@ -49,6 +49,7 @@ pub struct GameVersion {
     /// A list of arguments that should be passed after `main_class`. The arguments can contain
     /// variables enclosed in `${}`, which should be replaced.
     pub game_arguments: Vec<MaybeConditional<String>>,
+    // pub libraries: Vec<MaybeConditional<Library>>
 }
 
 #[cfg(feature = "silo")]
@@ -59,6 +60,76 @@ impl From<crate::silo::game::GameManifestStability> for GameVersionStability {
             crate::silo::game::GameManifestStability::Snapshot => Self::Snapshot,
             crate::silo::game::GameManifestStability::OldBeta => Self::OldBeta,
             crate::silo::game::GameManifestStability::OldAlpha => Self::OldAlpha,
+        }
+    }
+}
+
+#[cfg(feature = "silo")]
+impl From<crate::silo::game::GameVersionLegacy> for GameVersion {
+    fn from(value: crate::silo::game::GameVersionLegacy) -> Self {
+        Self {
+            id: value.id,
+            stability: GameVersionStability::from(value.stability),
+            java_version: VersionReq {
+                comparators: vec![Comparator {
+                    op: Op::Exact,
+                    major: value.java_version.map(|it| it.major_version).unwrap_or(8),
+                    minor: None,
+                    patch: None,
+                    pre: Prerelease::EMPTY,
+                }],
+            },
+            main_class: value.main_class,
+            java_arguments: vec![],
+            game_arguments: vec![MaybeConditional::Unconditional(
+                value
+                    .minecraft_arguments
+                    .split(' ')
+                    .map(|it| it.to_string())
+                    .collect(),
+            )],
+        }
+    }
+}
+
+#[cfg(feature = "silo")]
+impl From<crate::silo::game::GameVersion17w43a> for GameVersion {
+    fn from(value: crate::silo::game::GameVersion17w43a) -> Self {
+        Self {
+            id: value.id,
+            stability: GameVersionStability::from(value.stability),
+            java_version: VersionReq {
+                comparators: vec![Comparator {
+                    op: Op::Exact,
+                    major: value.java_version.major_version,
+                    minor: None,
+                    patch: None,
+                    pre: Prerelease::EMPTY,
+                }],
+            },
+            main_class: value.main_class,
+            java_arguments: value
+                .arguments
+                .jvm
+                .into_iter()
+                .map(MaybeConditional::from)
+                .collect(),
+            game_arguments: value
+                .arguments
+                .game
+                .into_iter()
+                .map(MaybeConditional::from)
+                .collect(),
+        }
+    }
+}
+
+#[cfg(feature = "silo")]
+impl From<crate::silo::game::GameVersion> for GameVersion {
+    fn from(value: crate::silo::game::GameVersion) -> Self {
+        match value {
+            crate::silo::game::GameVersion::Legacy(val) => Self::from(val),
+            crate::silo::game::GameVersion::Modern(val) => Self::from(val),
         }
     }
 }

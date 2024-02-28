@@ -16,20 +16,21 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
 use url::Url;
+
+use macros::api_response;
 
 use crate::silo::game::GameManifestStability;
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
+#[api_response]
+#[serde(rename_all = "camelCase")]
 pub struct GameVersionLegacyJavaVersion {
     pub component: String,
-    pub major_version: u8,
+    pub major_version: u64,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
+#[api_response]
+#[serde(rename_all = "camelCase")]
 pub struct AssetIndex {
     pub id: String,
     pub sha1: String,
@@ -38,50 +39,58 @@ pub struct AssetIndex {
     pub url: Url,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct Downloadable {
     pub sha1: String,
     pub size: u64,
     pub url: Url,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response(strict = false)]
 pub struct Downloads {
     pub client: Downloadable,
     pub server: Option<Downloadable>,
+    // pub client_mappings: Option<Downloadable>,
+    // pub server_mappings: Option<Downloadable>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
+#[api_response(untagged = false)]
+#[serde(rename_all = "camelCase")]
 pub enum LibraryRuleAction {
     Allow,
     Disallow,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response(untagged = false)]
+#[serde(rename_all = "camelCase")]
 pub enum Os {
+    Linux,
     #[serde(rename = "osx")]
     MacOS,
+    Windows,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response(untagged = false)]
+pub enum Arch {
+    #[serde(rename = "x86")]
+    X86_64,
+}
+
+#[api_response]
 pub struct LibraryRuleOs {
-    pub name: Os,
+    pub name: Option<Os>,
+    pub arch: Option<Arch>,
+    pub version: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct LibraryRule {
     pub action: LibraryRuleAction,
+    pub features: Option<HashMap<String, bool>>,
     pub os: Option<LibraryRuleOs>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct LibraryArtifact {
     pub path: String,
     pub sha1: String,
@@ -89,8 +98,7 @@ pub struct LibraryArtifact {
     pub url: Url,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields, untagged)]
+#[api_response]
 pub enum LibraryDownloads {
     WithArtifact {
         artifact: LibraryArtifact,
@@ -101,22 +109,19 @@ pub enum LibraryDownloads {
     },
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct LibraryNativeKeys {
     pub linux: Option<String>,
     pub osx: Option<String>,
     pub windows: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct LibraryExtract {
     pub exclude: Option<Vec<String>>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct Library {
     pub name: String,
     pub downloads: LibraryDownloads,
@@ -125,8 +130,7 @@ pub struct Library {
     pub natives: Option<LibraryNativeKeys>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct LoggingDownloadable {
     pub id: String,
     pub sha1: String,
@@ -134,8 +138,7 @@ pub struct LoggingDownloadable {
     pub url: Url,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct LoggingClient {
     pub argument: String,
     pub file: LoggingDownloadable,
@@ -143,21 +146,21 @@ pub struct LoggingClient {
     pub logging_type: String,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct Logging {
     pub client: LoggingClient,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
+#[api_response]
+#[serde(rename_all = "camelCase")]
 pub struct GameVersionLegacy {
     pub asset_index: AssetIndex,
     pub assets: String,
-    pub compliance_level: u8,
+    pub compliance_level: Option<u8>,
     pub downloads: Downloads,
     pub id: String,
-    pub java_version: GameVersionLegacyJavaVersion,
+    pub java_version: Option<GameVersionLegacyJavaVersion>,
+    // assume java 8 if none? maybe check launcher version?
     pub main_class: String,
     pub minecraft_arguments: String,
     pub minimum_launcher_version: u64,
@@ -166,5 +169,5 @@ pub struct GameVersionLegacy {
     #[serde(rename = "type")]
     pub stability: GameManifestStability,
     pub libraries: Vec<Library>,
-    pub logging: Logging,
+    pub logging: Option<Logging>,
 }

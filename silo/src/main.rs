@@ -24,7 +24,6 @@
 //! Each main function of Silo is represented as a [task::Task]. Tasks can depend on one another and
 //! are run in parallel when possible.
 
-use data::silo::game::GameVersionLegacy;
 use tokio::fs;
 use tokio::sync::OnceCell;
 use tracing::info;
@@ -34,6 +33,7 @@ use task::*;
 
 mod cli;
 mod task;
+mod macros;
 
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 static CLIENT: OnceCell<Client> = OnceCell::const_new();
@@ -51,16 +51,23 @@ async fn main() -> anyhow::Result<()> {
     info!("{:?}", args.task);
 
     fs::create_dir_all(&args.output).await?;
-    let output = fs::canonicalize(&args.output).await?;
+    let root = fs::canonicalize(&args.output).await?;
 
-    info!("Output directory: {}", output.display());
+    info!("Output directory: {}", root.display());
 
-    // === testing ===
+    // === Game Versions ===
+    if args.task.contains(&cli::TaskName::GameVersions) {
+        info!("Running Game Versions task...");
+        let versions = TaskGameVersions::run(&root, vec![]).await?;
+        info!("Game Versions task complete. Successfully retrieved {} versions.", versions.len());
+    }
 
-    // let data = fs::read_to_string("./1.12.2.json").await?;
-    // let data: GameVersionLegacy = serde_json::from_str(&data)?;
-
-    // println!("{data:#?}");
+    // === Java ===
+    if args.task.contains(&cli::TaskName::Java) {
+        info!("Running Java task...");
+        let builds = TaskJava::run(&root, vec![8, 16, 17]).await?;
+        info!("Java task complete. Successfully retrieved {} builds.", builds.len());
+    }
 
     client().await.destroy().await;
     Ok(())

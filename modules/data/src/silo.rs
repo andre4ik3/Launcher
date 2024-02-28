@@ -16,3 +16,4 @@
 #![cfg(feature = "silo")]
 
 pub mod game;
+pub mod java;

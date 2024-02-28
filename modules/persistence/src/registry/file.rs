@@ -30,8 +30,8 @@ type Result<T> = core::result::Result<T, Error>;
 /// A FileRegistry stores a single instance of T in a file, managing access to it via a shared lock.
 /// Custom read and write functions allow modifying how the data is stored on disk.
 pub struct FileRegistry<T>
-where
-    T: Default + for<'a> Deserialize<'a> + Serialize,
+    where
+        T: Default + for<'a> Deserialize<'a> + Serialize,
 {
     /// A lock holding the data. Used to control read/write access within the registry.
     data: RwLock<T>,
@@ -42,8 +42,8 @@ where
 }
 
 impl<T> FileRegistry<T>
-where
-    T: Default + for<'a> Deserialize<'a> + Serialize,
+    where
+        T: Default + for<'a> Deserialize<'a> + Serialize,
 {
     /// Creates the registry and reads the file from disk into memory. The file should have a .toml
     /// extension.

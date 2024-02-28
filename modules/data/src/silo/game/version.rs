@@ -13,7 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use serde::Deserialize;
+//! [legacy] - Types for versions before 17w43a (first snapshot of 1.13).
+//! [v17w43a] - Types for versions after 17w43a (first snapshot of 1.13).
 
 pub use legacy::*;
 pub use v17w43a::*;
@@ -21,8 +22,7 @@ pub use v17w43a::*;
 mod legacy;
 mod v17w43a;
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(untagged)]
+#[macros::api_response]
 pub enum GameVersion {
     Legacy(GameVersionLegacy),
     Modern(GameVersion17w43a),

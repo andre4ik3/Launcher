@@ -35,7 +35,7 @@
 //! This is perfect for things like Java installations, downloaded asset catalogs, and instances,
 //! as each individual element is indexed.
 
-pub use registry::{directory::DirectoryRegistry, file::FileRegistry, Error};
+pub use registry::{directory::DirectoryRegistry, Error, file::FileRegistry};
 
 pub(crate) mod crypto;
 pub(crate) mod registry;

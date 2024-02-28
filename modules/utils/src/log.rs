@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use std::{env, fs, io, panic, thread};
 use std::backtrace::Backtrace;
 use std::io::{IsTerminal, Write};
-use std::{env, fs, io, panic, thread};
 
 use tracing::{error, Level};
 use tracing_appender::non_blocking::WorkerGuard;

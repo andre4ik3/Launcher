@@ -14,5 +14,5 @@ keyring = { version = "2", default-features = false, features = ["linux-secret-s
 serde = "1"
 thiserror = "1"
 tokio = { version = "1", features = ["fs", "rt", "sync"] } # rt needed for task::spawn_blocking
-toml = "0.7"
+toml = "0.8"
 tracing = "0.1"

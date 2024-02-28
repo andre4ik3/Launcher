@@ -1,3 +1,3 @@
 [workspace]
-members = ["core", "modules/*", "silo"]
+members = ["core", "macros", "modules/*", "silo"]
 resolver = "2"

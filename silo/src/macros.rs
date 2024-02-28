@@ -15,22 +15,22 @@
 
 use std::path::Path;
 
-use async_trait::async_trait;
+use serde::Serialize;
+use tokio::fs;
+use tracing::debug;
 
-pub use game_versions::TaskGameVersions;
-pub use java::TaskJava;
+pub async fn write_to_ron_file<T>(path: impl AsRef<Path>, data: &T) -> anyhow::Result<()>
+    where T: ?Sized + Serialize {
+    let path = path.as_ref();
 
-mod game_versions;
-mod java;
+    // Ensure the parents of the path exist.
+    if let Some(parent) = path.parent() {
+        tokio::fs::create_dir_all(parent).await?;
+    }
 
-#[async_trait]
-pub trait Task {
-    /// The input of this task (allows the task to depend on other tasks).
-    type Input;
+    // Finally, write the data to the file.
+    debug!("Writing to {}.", path.display());
+    fs::write(path, ron::ser::to_string_pretty(&data, ron::ser::PrettyConfig::default())?).await?;
 
-    /// The output of this task (allows other tasks to depend on this task).
-    type Output;
-
-    /// Runs the task to completion.
-    async fn run(root: impl AsRef<Path> + Send + Sync, input: Self::Input) -> anyhow::Result<Self::Output>;
+    Ok(())
 }

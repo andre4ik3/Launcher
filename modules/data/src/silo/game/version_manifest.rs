@@ -14,10 +14,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
 use url::Url;
 
-#[derive(Clone, Debug, Deserialize)]
+use macros::api_response;
+
+#[api_response(untagged = false)]
 #[serde(rename_all = "snake_case")]
 pub enum GameManifestStability {
     Release,
@@ -26,15 +27,14 @@ pub enum GameManifestStability {
     OldAlpha,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct GameManifestLatest {
     pub release: String,
     pub snapshot: String,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
+#[api_response]
+#[serde(rename_all = "camelCase")]
 pub struct GameManifestEntry {
     pub id: String,
     #[serde(rename = "type")]
@@ -46,8 +46,7 @@ pub struct GameManifestEntry {
     pub compliance_level: u8,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[api_response]
 pub struct GameManifest {
     pub latest: GameManifestLatest,
     pub versions: Vec<GameManifestEntry>,

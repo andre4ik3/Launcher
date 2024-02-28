@@ -9,6 +9,7 @@ publish = false
 silo = []
 
 [dependencies]
+macros = { path = "../../macros", version = "*", package = "launcher-macros" }
 serde = { version = "1", features = ["derive"] }
 
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
