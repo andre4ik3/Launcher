@@ -58,7 +58,7 @@ async fn main() -> anyhow::Result<()> {
     // === Game Versions ===
     if args.task.contains(&cli::TaskName::GameVersions) {
         info!("Running Game Versions task...");
-        let versions = TaskGameVersions::run(&root, vec![]).await?;
+        let versions = TaskGameVersions::run(&root, ()).await?;
         info!("Game Versions task complete. Successfully retrieved {} versions.", versions.len());
     }
 

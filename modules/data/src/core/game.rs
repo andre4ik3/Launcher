@@ -112,13 +112,13 @@ impl From<crate::silo::game::GameVersion17w43a> for GameVersion {
                 .arguments
                 .jvm
                 .into_iter()
-                .map(MaybeConditional::from)
+                .flat_map(Vec::<MaybeConditional<String>>::from)
                 .collect(),
             game_arguments: value
                 .arguments
                 .game
                 .into_iter()
-                .map(MaybeConditional::from)
+                .flat_map(Vec::<MaybeConditional<String>>::from)
                 .collect(),
         }
     }

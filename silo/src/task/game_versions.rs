@@ -15,14 +15,12 @@
 
 use std::path::Path;
 
-use anyhow::bail;
 use async_trait::async_trait;
-use chrono::DateTime;
 use tokio::fs;
-use tracing::{debug, error, info};
+use tracing::info;
 
 use data::core::game;
-use data::silo::game::{GameManifest, GameManifestEntry, GameVersion, GameVersion17w43a, GameVersionLegacy};
+use data::silo::game::{GameManifest, GameVersion};
 
 use crate::client;
 use crate::macros::write_to_ron_file;
@@ -36,14 +34,13 @@ pub struct TaskGameVersions;
 
 #[async_trait]
 impl Task for TaskGameVersions {
-    /// The already downloaded game versions.
-    type Input = Vec<String>;
+    type Input = ();
 
     /// An array that includes newly fetched game versions (not the ones from disk).
-    type Output = Vec<GameVersion>;
+    type Output = Vec<game::GameVersion>;
 
     #[tracing::instrument(name = "TaskGameVersions", skip_all)]
-    async fn run(root: impl AsRef<Path> + Send + Sync, input: Self::Input) -> anyhow::Result<Self::Output> {
+    async fn run(root: impl AsRef<Path> + Send + Sync, _input: Self::Input) -> anyhow::Result<Self::Output> {
         let client = client().await;
         let mut output = Vec::new();
 
@@ -69,6 +66,7 @@ impl Task for TaskGameVersions {
             // ...and save it to disk.
             info!("Fetched version {}.", version.id);
             write_to_ron_file(&path, &data).await?;
+            output.push(data);
         }
 
         info!("Loaded {} game versions", output.len());

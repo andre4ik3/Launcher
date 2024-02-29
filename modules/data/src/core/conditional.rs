@@ -33,18 +33,14 @@ pub enum Condition {
     Xor(Vec<Condition>),
 }
 
-/// A helper struct for storing a value along with its condition.
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Conditional<T> {
-    when: Condition,
-    then: T,
-}
-
 /// A helper enum for expressing a value that may or may not have an associated condition.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum MaybeConditional<T> {
     Unconditional(T),
-    Conditional(Conditional<T>),
+    Conditional {
+        when: Condition,
+        then: T
+    },
 }
 
 // === impl ===
@@ -111,23 +107,16 @@ impl Condition {
     }
 }
 
-impl<T> Conditional<T> {
-    /// Evaluates the inner condition and returns the inner value expressed as an [Option].
-    pub fn fold(self, features: &Vec<String>) -> Option<T> {
-        match self.when.eval(features) {
-            true => Some(self.then),
-            false => None,
-        }
-    }
-}
-
 impl<T> MaybeConditional<T> {
     /// Evaluates the inner condition (if one exists) and returns the inner value expressed as an
     /// [Option].
     pub fn fold(self, features: &Vec<String>) -> Option<T> {
         match self {
             Self::Unconditional(val) => Some(val),
-            Self::Conditional(val) => val.fold(features),
+            Self::Conditional { when, then } => match when.eval(features) {
+                true => Some(then),
+                false => None
+            },
         }
     }
 }
@@ -185,26 +174,24 @@ impl From<crate::silo::game::LibraryRule> for Condition {
 }
 
 #[cfg(feature = "silo")]
-impl From<Vec<crate::silo::game::ModernGameArgument>> for MaybeConditional<Vec<String>> {
-    fn from(value: Vec<crate::silo::game::ModernGameArgument>) -> Self {
-        // let mut output = vec![];
-        for argument in value {}
-
-        // TODO: proper conversion
-
-        // match value {
-        //     crate::silo::game::ModernGameArgument::Plain(val) => Self::Unconditional(vec![val]),
-        //     crate::silo::game::ModernGameArgument::Conditional { rules, value } => Self::Conditional(Conditional {
-        //         when: Condition::Or(rules.into_iter().map(Condition::from).collect()).simplify(),
-        //         then: match value {
-        //             crate::silo::game::ModernGameRuleValue::String(val) => vec![val],
-        //             crate::silo::game::ModernGameRuleValue::Array(val) => val,
-        //         }
-        //     })
-        // };
-        //
-
-        todo!()
+impl From<crate::silo::game::ModernGameArgument> for Vec<MaybeConditional<String>> {
+    fn from(value: crate::silo::game::ModernGameArgument) -> Self {
+        match value {
+            crate::silo::game::ModernGameArgument::Plain(val) => vec![MaybeConditional::Unconditional(val)],
+            crate::silo::game::ModernGameArgument::Conditional { rules, value } => {
+                let condition = Condition::Or(rules.into_iter().map(Condition::from).collect()).simplify();
+                match value {
+                    crate::silo::game::ModernGameRuleValue::String(val) => vec![MaybeConditional::Conditional {
+                        when: condition,
+                        then: val,
+                    }],
+                    crate::silo::game::ModernGameRuleValue::Array(vals) => vals.into_iter().map(|val| MaybeConditional::Conditional {
+                        when: condition.clone(),
+                        then: val
+                    }).collect()
+                }
+            }
+        }
     }
 }
 

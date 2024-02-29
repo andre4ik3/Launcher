@@ -21,7 +21,6 @@ use darling::{Error, FromMeta};
 use darling::ast::NestedMeta;
 use quote::{quote, TokenStreamExt};
 use syn::{Data, DeriveInput, parse_macro_input};
-use syn::parse::Parse;
 
 #[derive(Debug, FromMeta)]
 struct MacroArgs {
@@ -73,4 +72,9 @@ pub fn api_response(attr: TokenStream, item: TokenStream) -> TokenStream {
         #ast
     })
         .into()
+}
+
+#[proc_macro_attribute]
+pub fn data_structure(attr: TokenStream, item: TokenStream) -> TokenStream {
+    todo!()
 }
