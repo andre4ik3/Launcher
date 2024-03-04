@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,16 +22,14 @@ use macros::api_response;
 
 use crate::silo::game::GameManifestStability;
 
-#[api_response]
-#[serde(rename_all = "camelCase")]
+#[api_response(rename = "camelCase")]
 pub struct GameVersionLegacyJavaVersion {
     pub component: String,
     pub major_version: u64,
 }
 
-#[api_response]
-#[serde(rename_all = "camelCase")]
-pub struct AssetIndex {
+#[api_response(rename = "camelCase")]
+pub struct GameVersionAssetIndex {
     pub id: String,
     pub sha1: String,
     pub size: u64,
@@ -54,15 +52,13 @@ pub struct Downloads {
     // pub server_mappings: Option<Downloadable>,
 }
 
-#[api_response(untagged = false)]
-#[serde(rename_all = "camelCase")]
+#[api_response(untagged = false, rename = "camelCase")]
 pub enum LibraryRuleAction {
     Allow,
     Disallow,
 }
 
-#[api_response(untagged = false)]
-#[serde(rename_all = "camelCase")]
+#[api_response(untagged = false, rename = "camelCase")]
 pub enum Os {
     Linux,
     #[serde(rename = "osx")]
@@ -151,16 +147,14 @@ pub struct Logging {
     pub client: LoggingClient,
 }
 
-#[api_response]
-#[serde(rename_all = "camelCase")]
+#[api_response(rename = "camelCase")]
 pub struct GameVersionLegacy {
-    pub asset_index: AssetIndex,
+    pub asset_index: GameVersionAssetIndex,
     pub assets: String,
     pub compliance_level: Option<u8>,
     pub downloads: Downloads,
     pub id: String,
     pub java_version: Option<GameVersionLegacyJavaVersion>,
-    // assume java 8 if none? maybe check launcher version?
     pub main_class: String,
     pub minecraft_arguments: String,
     pub minimum_launcher_version: u64,

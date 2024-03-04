@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ use aes_gcm::aead::{Aead, Nonce, OsRng};
 use keyring::Entry;
 use thiserror::Error;
 use tokio::{fs, task};
-use tracing::{debug, error, instrument, warn};
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -113,7 +112,7 @@ async fn keyfile_clean(file: impl AsRef<Path>) -> Result<()> {
 // === Reading/Writing Credentials ===
 
 /// Gets a credential for the specified file. Will try both system keychain and key file.
-#[instrument(name = "crypto::read_key")]
+#[tracing::instrument(name = "crypto::read_key")]
 pub async fn read_key(file: impl AsRef<Path> + Debug) -> Option<Key<Aes256Gcm>> {
     let file = file.as_ref().to_owned();
 
@@ -127,14 +126,14 @@ pub async fn read_key(file: impl AsRef<Path> + Debug) -> Option<Key<Aes256Gcm>> 
         .await
         .expect("blocking thread panicked");
 
-    debug!("Keyring key: {}", keyring_key.is_ok());
-    debug!("Keyfile key: {}", keyfile_key.is_ok());
+    tracing::debug!("Keyring key: {}", keyring_key.is_ok());
+    tracing::debug!("Keyfile key: {}", keyfile_key.is_ok());
 
     keyring_key.ok().or(keyfile_key.ok())
 }
 
 /// Saves a credential for the specified file.
-#[instrument(name = "crypto::write_key", skip(key))]
+#[tracing::instrument(name = "crypto::write_key", skip(key))]
 pub async fn write_key(file: impl AsRef<Path> + Debug, key: Key<Aes256Gcm>) -> Result<()> {
     let file = file.as_ref().to_owned();
     let elif = file.clone(); // hack, this one is moved into the closure below
@@ -151,12 +150,12 @@ pub async fn write_key(file: impl AsRef<Path> + Debug, key: Key<Aes256Gcm>) -> R
     match keyring_result {
         Ok(()) => {
             if let Err(err) = keyfile_clean(&file).await {
-                warn!("Failed to cleanup keyfile after successful keychain migration: {err}");
+                tracing::warn!("Failed to cleanup keyfile after successful keychain migration: {err}");
             };
             Ok(())
         }
         Err(err) => {
-            debug!("Failed to write to keychain, trying keyfile instead: {err}");
+            tracing::debug!("Failed to write to keychain, trying keyfile instead: {err}");
             keyfile_write(&file, &key).await
         }
     }
@@ -166,7 +165,7 @@ pub async fn write_key(file: impl AsRef<Path> + Debug, key: Key<Aes256Gcm>) -> R
 
 /// Generates a new [Key\<Aes256Gcm\>].
 pub async fn generate_key() -> Key<Aes256Gcm> {
-    debug!("Generating a new key...");
+    tracing::debug!("Generating a new key...");
     task::spawn_blocking(|| Aes256Gcm::generate_key(OsRng))
         .await
         .expect("blocking thread panicked")
@@ -174,7 +173,7 @@ pub async fn generate_key() -> Key<Aes256Gcm> {
 
 /// Generates a new [Nonce\<Aes256Gcm\>].
 pub async fn generate_nonce() -> Nonce<Aes256Gcm> {
-    debug!("Generating a new nonce...");
+    tracing::debug!("Generating a new nonce...");
     task::spawn_blocking(|| Aes256Gcm::generate_nonce(OsRng))
         .await
         .expect("blocking thread panicked")
@@ -183,10 +182,10 @@ pub async fn generate_nonce() -> Nonce<Aes256Gcm> {
 /// Attempts to decrypt a read file. The first 12 bytes of the data are treated as the nonce (e.g.
 /// from the [encrypt] function).
 pub async fn decrypt(mut data: Vec<u8>, key: Key<Aes256Gcm>) -> Result<String> {
-    debug!("Decrypting {} bytes of data", data.len());
+    tracing::debug!("Decrypting {} bytes of data", data.len());
 
     if data.len() < 12 {
-        error!("Data length is too small, maybe corrupted?");
+        tracing::error!("Data length is too small, maybe corrupted?");
         return Err(Error::NonceSize(data.len()));
     }
 
@@ -203,7 +202,7 @@ pub async fn decrypt(mut data: Vec<u8>, key: Key<Aes256Gcm>) -> Result<String> {
 
     // Convert the data to a string
     let data = String::from_utf8(data)?;
-    debug!(
+    tracing::debug!(
         "Decryption success, returning {} decrypted bytes",
         data.len()
     );
@@ -213,7 +212,7 @@ pub async fn decrypt(mut data: Vec<u8>, key: Key<Aes256Gcm>) -> Result<String> {
 /// Attempts to encrypt some data. The result will be a concatenated nonce + payload, suitable for
 /// use with [decrypt] function.
 pub async fn encrypt(data: Vec<u8>, key: Key<Aes256Gcm>) -> Result<Vec<u8>> {
-    debug!("Encrypting {} bytes of data", data.len());
+    tracing::debug!("Encrypting {} bytes of data", data.len());
 
     let nonce = generate_nonce().await;
     let data = task::spawn_blocking(move || Aes256Gcm::new(&key).encrypt(&nonce, data.as_slice()))
@@ -223,7 +222,7 @@ pub async fn encrypt(data: Vec<u8>, key: Key<Aes256Gcm>) -> Result<Vec<u8>> {
 
     // chain the nonce and encrypted payload together
     let data: Vec<u8> = nonce.into_iter().chain(data.into_iter()).collect();
-    debug!(
+    tracing::debug!(
         "Encryption success, returning {} encrypted bytes",
         data.len()
     );

@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@ use std::path::Path;
 use async_trait::async_trait;
 use platforms::{Arch, OS};
 use semver::Version;
-use tracing::{info, warn};
 use url::Url;
 
 use data::core::java::{Environment, JavaBuild, JavaEdition, JavaProvider};
@@ -26,7 +25,8 @@ use data::silo::java::zulu::{ZuluDetails, ZuluMetadata};
 
 use crate::client;
 use crate::macros::write_to_ron_file;
-use crate::task::Task;
+
+use super::Task;
 
 /// The base URL that other parameters will get appended to.
 const BASE_URL: &str = "https://api.azul.com/metadata/v1/zulu/packages/?javafx_bundled=false&crac_supported=false&latest=true&release_status=ga&availability_types=CA&certifications=tck";
@@ -64,7 +64,10 @@ pub struct TaskJava;
 
 #[async_trait]
 impl Task for TaskJava {
+    /// A list of major Java versions to fetch builds for (e.g. `vec![8, 16, 17]`).
     type Input = Vec<u8>;
+
+    /// A list of fetched Java builds.
     type Output = Vec<JavaBuild>;
 
     #[tracing::instrument(name = "TaskJava", skip_all)]
@@ -134,11 +137,11 @@ impl Task for TaskJava {
 
                     // ...and write it to disk.
                     let path = root.as_ref().join(format!("java/{version}/{}-{}.ron", environment.os, environment.arch));
-                    info!("Fetched Java {version} for {} {}.", environment.os, environment.arch);
+                    tracing::info!("Fetched Java {version} for {} {}.", environment.os, environment.arch);
                     write_to_ron_file(&path, &build).await?;
                     output.push(build);
                 } else {
-                    warn!("Could not find build for Java {version} for {} {}!", environment.os, environment.arch);
+                    tracing::warn!("Could not find build for Java {version} for {} {}!", environment.os, environment.arch);
                 }
             }
         }

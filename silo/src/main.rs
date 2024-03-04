@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -48,17 +48,18 @@ async fn main() -> anyhow::Result<()> {
     let _guard = utils::log::setup();
 
     info!("Running Silo v{PACKAGE_VERSION}");
-    info!("{:?}", args.task);
 
     fs::create_dir_all(&args.output).await?;
     let root = fs::canonicalize(&args.output).await?;
 
+    info!("Tasks to do: {:?}", args.task);
     info!("Output directory: {}", root.display());
+    info!("Power wash mode: {}", args.power_wash);
 
     // === Game Versions ===
     if args.task.contains(&cli::TaskName::GameVersions) {
         info!("Running Game Versions task...");
-        let versions = TaskGameVersions::run(&root, ()).await?;
+        let versions = TaskGameVersions::run(&root, args.power_wash).await?;
         info!("Game Versions task complete. Successfully retrieved {} versions.", versions.len());
     }
 

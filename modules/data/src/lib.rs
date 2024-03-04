@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,15 +17,17 @@
 //! ====================
 //!
 //! This module contains data models for different APIs and services. The module itself is split
-//! into many sub-modules that categorize the data models based on where they are used:
+//! into many submodules that categorize the data models based on where they are used:
 //!
+//! - [auth] - Models for storing user accounts and credentials.
 //! - [core::assets]
 //! - [core::conditional] - Data-driven condition API.
 //! - [core::game]
-//! - [core::java]
+//! - [core::java] - Models for downloading and using Java builds.
 //! - [silo] - Models for APIs used during Silo data generation (requires `silo` feature).
-//! - [web::auth] - Models relating to online account authentication.
+//! - [web::microsoft] - Models for interacting with Microsoft's authentication API.
 
+pub mod auth;
 pub mod core;
 pub mod silo;
 pub mod web;

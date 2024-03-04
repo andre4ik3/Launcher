@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@ use std::path::Path;
 
 use async_trait::async_trait;
 use tokio::fs;
-use tracing::info;
 
 use data::core::game;
 use data::silo::game::{GameManifest, GameVersion};
@@ -34,13 +33,14 @@ pub struct TaskGameVersions;
 
 #[async_trait]
 impl Task for TaskGameVersions {
-    type Input = ();
+    /// Whether we should fetch versions that already exist on disk (`true`) or skip them (`false`).
+    type Input = bool;
 
-    /// An array that includes newly fetched game versions (not the ones from disk).
-    type Output = Vec<game::GameVersion>;
+    /// An array of snippets of all game versions (both newly fetched & already stored).
+    type Output = Vec<game::GameVersionSnippet>;
 
     #[tracing::instrument(name = "TaskGameVersions", skip_all)]
-    async fn run(root: impl AsRef<Path> + Send + Sync, _input: Self::Input) -> anyhow::Result<Self::Output> {
+    async fn run(root: impl AsRef<Path> + Send + Sync, input: Self::Input) -> anyhow::Result<Self::Output> {
         let client = client().await;
         let mut output = Vec::new();
 
@@ -50,11 +50,16 @@ impl Task for TaskGameVersions {
         // Then, for every version...
         for version in manifest.versions {
             let path = root.as_ref().join(format!("game/{}.ron", version.id));
-            // ...if we don't already have it...
-            if fs::try_exists(&path).await.unwrap_or(false) {
-                // TODO: Add a sort of "power wash" setting that fetches already existing versions.
-                info!("Skipping version {} as it appears we already have it.", version.id);
-                continue;
+            // ...if we don't already have it (and we're not set to do a power wash)...
+            if fs::try_exists(&path).await.unwrap_or(false) && !input {
+                if let Ok(data) = ron::from_str::<game::GameVersion>(&fs::read_to_string(&path).await?) {
+                    tracing::info!("Skipping version {} as it appears we already have it.", version.id);
+                    output.push(game::GameVersionSnippet::from(data));
+                    continue;
+                } else {
+                    tracing::warn!("Removing malformed version {} at {}", version.id, path.display());
+                    fs::remove_file(&path).await?;
+                }
             }
 
             // ...fetch the details of the game version...
@@ -64,12 +69,15 @@ impl Task for TaskGameVersions {
             let data = game::GameVersion::from(data);
 
             // ...and save it to disk.
-            info!("Fetched version {}.", version.id);
+            tracing::info!("Fetched version {}.", version.id);
             write_to_ron_file(&path, &data).await?;
-            output.push(data);
+            output.push(game::GameVersionSnippet::from(data));
         }
 
-        info!("Loaded {} game versions", output.len());
+        // Finally, write an index of all available versions.
+        write_to_ron_file(root.as_ref().join("game.ron"), &output).await?;
+
+        tracing::info!("Loaded {} game versions", output.len());
         Ok(output)
     }
 }

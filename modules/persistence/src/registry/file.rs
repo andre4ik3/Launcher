@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@ use aes_gcm::{Aes256Gcm, Key};
 use serde::{Deserialize, Serialize};
 use tokio::fs;
 use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
-use tracing::{instrument, trace, warn};
 
 use utils::directories;
 
@@ -47,12 +46,12 @@ impl<T> FileRegistry<T>
 {
     /// Creates the registry and reads the file from disk into memory. The file should have a .toml
     /// extension.
-    #[instrument(name = "FileRegistry::new")]
+    #[tracing::instrument(name = "FileRegistry::new")]
     pub async fn new(file: &'static str) -> Result<FileRegistry<T>> {
         let data = RwLock::new(T::default());
         let path = directories::CONFIG.join(file);
 
-        trace!("Creating new file registry at {}", path.display());
+        tracing::trace!("Creating new file registry at {}", path.display());
         let registry = FileRegistry {
             data,
             path,
@@ -60,8 +59,8 @@ impl<T> FileRegistry<T>
         };
 
         if registry.load().await.is_err() {
-            warn!("Failed to read registry. It will be overwritten and initialized with the defaults.");
-        };
+            tracing::warn!("Failed to read registry. It will be overwritten and initialized with the defaults.");
+        }
 
         registry.save().await?;
         Ok(registry)
@@ -70,21 +69,21 @@ impl<T> FileRegistry<T>
     /// Creates an encrypted registry. The file on disk will be encrypted, with the encryption key
     /// stored in the system's keychain or, if unavailable, a side-by-side keyfile. The file should
     /// have a .dat extension.
-    #[instrument(name = "FileRegistry::new_encrypted")]
+    #[tracing::instrument(name = "FileRegistry::new_encrypted")]
     pub async fn new_encrypted(file: &'static str) -> Result<FileRegistry<T>> {
         let data = RwLock::new(T::default());
         let path = directories::CONFIG.join(file);
 
-        trace!("Creating new encrypted file registry at {}", path.display());
+        tracing::trace!("Creating new encrypted file registry at {}", path.display());
 
         // attempt to retrieve encryption key or make a new one
         let encryption_key = match crypto::read_key(&path).await {
             Some(key) => {
-                trace!("Successfully found existing encryption key");
+                tracing::trace!("Successfully found existing encryption key");
                 key
             }
             None => {
-                warn!("Could not find an encryption key, generating a new one...");
+                tracing::warn!("Could not find an encryption key, generating a new one...");
                 crypto::generate_key().await
             }
         };
@@ -99,8 +98,8 @@ impl<T> FileRegistry<T>
         };
 
         if registry.load().await.is_err() {
-            warn!("Failed to read encrypted registry (possibly due to missing/wrong encryption key). It will be overwritten and initialized with the defaults.");
-        };
+            tracing::warn!("Failed to read encrypted registry (possibly due to missing/wrong encryption key). It will be overwritten and initialized with the defaults.");
+        }
 
         registry.save().await?;
         Ok(registry)
@@ -118,9 +117,9 @@ impl<T> FileRegistry<T>
     }
 
     /// Loads the file from disk.
-    #[instrument(name = "FileRegistry::load", skip(self), fields(file = % self.path.display()))]
+    #[tracing::instrument(name = "FileRegistry::load", skip(self), fields(file = % self.path.display()))]
     pub async fn load(&self) -> Result<()> {
-        trace!("Reading file...");
+        tracing::trace!("Reading file...");
         let mut lock = self.data.write().await;
 
         let data = match self.encryption_key {
@@ -135,9 +134,9 @@ impl<T> FileRegistry<T>
     }
 
     /// Saves the file to disk.
-    #[instrument(name = "FileRegistry::save", skip(self), fields(file = % self.path.display()))]
+    #[tracing::instrument(name = "FileRegistry::save", skip(self), fields(file = % self.path.display()))]
     pub async fn save(&self) -> Result<()> {
-        trace!("Writing file...");
+        tracing::trace!("Writing file...");
         let lock = self.data.read().await;
 
         let data = toml::to_string(&*lock)?;

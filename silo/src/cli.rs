@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,6 +27,9 @@ pub struct Cli {
     /// The tasks to run (can run other tasks if specified tasks depend on output)
     #[arg(short, long)]
     pub task: Vec<TaskName>,
+    /// Whether to refresh everything fully (even if it's already found on disk).
+    #[arg(long)]
+    pub power_wash: bool,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]

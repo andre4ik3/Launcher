@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ use chrono::{DateTime, Utc};
 use macros::api_response;
 
 use crate::silo::game::{
-    AssetIndex, Downloads, GameManifestStability, GameVersionLegacyJavaVersion, Library,
+    GameVersionAssetIndex, Downloads, GameManifestStability, GameVersionLegacyJavaVersion, Library,
     LibraryRule, Logging,
 };
 
@@ -43,11 +43,10 @@ pub struct ModernGameArguments {
     pub jvm: Vec<ModernGameArgument>,
 }
 
-#[api_response]
-#[serde(rename_all = "camelCase")]
+#[api_response(rename = "camelCase")]
 pub struct GameVersion17w43a {
     pub arguments: ModernGameArguments,
-    pub asset_index: AssetIndex,
+    pub asset_index: GameVersionAssetIndex,
     pub assets: String,
     pub compliance_level: u8,
     pub downloads: Downloads,

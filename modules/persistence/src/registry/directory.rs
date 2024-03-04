@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use tokio::fs;
-use tracing::{error, instrument, trace};
 
 use utils::directories;
 
@@ -46,12 +45,12 @@ impl<T> DirectoryRegistry<T>
         T: for<'a> Deserialize<'a> + Serialize,
 {
     /// Creates a new directory registry and loads any existing entries from the base into memory.
-    #[instrument(name = "DirectoryRegistry::new")]
+    #[tracing::instrument(name = "DirectoryRegistry::new")]
     pub async fn new(base: &str, file: &'static str) -> Result<DirectoryRegistry<T>> {
         let base = directories::DATA.join(base);
         fs::create_dir_all(&base).await?;
 
-        trace!("Creating new directory registry at {}", base.display());
+        tracing::trace!("Creating new directory registry at {}", base.display());
         let mut registry = Self {
             base,
             file,
@@ -95,9 +94,9 @@ impl<T> DirectoryRegistry<T>
     }
 
     /// Reads all entries from disk into memory.
-    #[instrument(name = "DirectoryRegistry::refresh", skip(self), fields(base = % self.base.display()))]
+    #[tracing::instrument(name = "DirectoryRegistry::refresh", skip(self), fields(base = % self.base.display()))]
     pub async fn refresh(&mut self) -> Result<()> {
-        trace!("Starting refresh.");
+        tracing::trace!("Starting refresh.");
 
         let mut stream = fs::read_dir(&self.base).await?;
         while let Some(entry) = stream.next_entry().await? {
@@ -106,13 +105,13 @@ impl<T> DirectoryRegistry<T>
             }
 
             let path = entry.path().join(self.file);
-            trace!("Considering path {}", path.display());
+            tracing::trace!("Considering path {}", path.display());
 
             // read file to string, continue with loop if failed
             let data = match fs::read_to_string(&path).await {
                 Ok(data) => data,
                 Err(err) => {
-                    error!("Failed to read entry at {}: {err}", path.display());
+                    tracing::error!("Failed to read entry at {}: {err}", path.display());
                     continue;
                 }
             };
@@ -121,17 +120,17 @@ impl<T> DirectoryRegistry<T>
             let data = match toml::from_str(&data) {
                 Ok(data) => data,
                 Err(err) => {
-                    error!("Failed to read entry at {}: {err}", path.display());
+                    tracing::error!("Failed to read entry at {}: {err}", path.display());
                     continue;
                 }
             };
 
             let id = entry.file_name().to_string_lossy().to_string();
-            trace!("Adding {id} to entries");
+            tracing::trace!("Adding {id} to entries");
             self.entries.insert(id, data);
         }
 
-        trace!("Done refreshing.");
+        tracing::trace!("Done refreshing.");
         Ok(())
     }
 }

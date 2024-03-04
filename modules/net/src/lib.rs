@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@ use thiserror::Error;
 
 pub use client::Client;
 
-pub(crate) mod client;
-pub(crate) mod queue;
+mod client;
+mod queue;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -44,6 +44,10 @@ pub enum Error {
     RequestCloneFail,
     #[error("queue has been shut down")]
     QueueShutDown,
+    #[error("failed to serialize form body: {0}")]
+    FormSerializationFailure(#[from] serde_urlencoded::ser::Error),
+    #[error("failed to serialize json body: {0}")]
+    JsonSerializationFailure(#[from] serde_json::Error),
 }
 
 pub type Result<T> = core::result::Result<T, Error>;

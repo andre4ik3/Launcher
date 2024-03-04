@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@ use reqwest::{Client, Request, Response};
 use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
 use tokio::time::{interval, Interval};
-use tracing::{debug, error, instrument, trace, warn};
 
 use crate::{Error, Result};
 
@@ -53,20 +52,20 @@ impl Queue {
 
     /// Waits for the next job and processes it. The `cancel` argument is a oneshot receiver that,
     /// upon being sent a value, will cause the queue to be shut down.
-    #[instrument(name = "net::Queue", skip_all)]
+    #[tracing::instrument(name = "net::Queue", skip_all)]
     pub async fn run(&mut self) {
-        trace!("Running request queue.");
+        tracing::trace!("Running request queue.");
         loop {
             // Wait for ratelimit
             self.interval.tick().await;
 
             // Get the next request, or if all transmitters have been dropped, shut down.
             let Some((request, tx)) = self.rx.recv().await else {
-                debug!("Queue receive channel closed, shutting down.");
+                tracing::debug!("Queue receive channel closed, shutting down.");
                 return;
             };
 
-            trace!("Processing request: {} {}", request.method(), request.url());
+            tracing::trace!("Processing request: {} {}", request.method(), request.url());
 
             // Execute the actual request.
             let result = self.client.execute(request).await;
@@ -74,10 +73,10 @@ impl Queue {
 
             // Try to send back response, warn in logs if failed.
             if let Err(result) = tx.send(result) {
-                warn!("Failed to send back response.");
+                tracing::warn!("Failed to send back response.");
                 match result {
-                    Ok(resp) => warn!("Response was Ok: {} {}", resp.status(), resp.url()),
-                    Err(err) => warn!("Response was Err: {err}"),
+                    Ok(resp) => tracing::warn!("Response was Ok: {} {}", resp.status(), resp.url()),
+                    Err(err) => tracing::warn!("Response was Err: {err}"),
                 }
             };
         }
@@ -93,28 +92,28 @@ impl QueueClient {
     pub async fn execute(&self, request: Request) -> Result<Response> {
         let (tx, rx) = oneshot::channel();
 
-        debug!("--> {} {}", request.method(), request.url());
+        tracing::debug!("--> {} {}", request.method(), request.url());
 
         // Send request to queue for processing
         if let Err(err) = self.0.send((request, tx)).await {
-            warn!("Failed to send request to queue: {err}");
+            tracing::warn!("Failed to send request to queue: {err}");
             return Err(Error::QueueShutDown);
         };
 
         // Wait for queue to send back result
         let Ok(result) = rx.await else {
-            warn!("Failed to get response from queue");
+            tracing::warn!("Failed to get response from queue");
             return Err(Error::QueueShutDown);
         };
 
         // Some pretty logging based on the outcome
         match result {
             Ok(response) => {
-                debug!("<-- {} {}", response.status(), response.url());
+                tracing::debug!("<-- {} {}", response.status(), response.url());
                 Ok(response)
             }
             Err(err) => {
-                error!("[!] {err}");
+                tracing::error!("[!] {err}");
                 Err(Error::from(err))
             }
         }
@@ -124,7 +123,7 @@ impl QueueClient {
 /// Creates a new queue and spawns it as a background task, returning a [QueueClient] and a
 /// [JoinHandle].
 pub async fn spawn() -> (QueueClient, JoinHandle<()>) {
-    trace!("Spawning off-thread queue.");
+    tracing::trace!("Spawning off-thread queue.");
 
     // Channel used to interact with the background task.
     let (tx, rx) = mpsc::channel(20);

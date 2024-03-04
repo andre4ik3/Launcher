@@ -1,0 +1,12 @@
+[package]
+name = "launcher-fetch"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+data = { path = "../data", version = "*", package = "launcher-data" }
+net = { path = "../net", version = "*", package = "launcher-net" }
+persistence = { path = "../persistence", version = "*", package = "launcher-persistence" }
+utils = { path = "../utils", version = "*", package = "launcher-utils" }
+
+thiserror = "1"

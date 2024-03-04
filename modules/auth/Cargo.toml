@@ -1,0 +1,18 @@
+[package]
+name = "launcher-auth"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+data = { path = "../data", version = "*", package = "launcher-data" }
+fetch = { path = "../fetch", version = "*", package = "launcher-fetch" }
+net = { path = "../net", version = "*", package = "launcher-net" }
+persistence = { path = "../persistence", version = "*", package = "launcher-persistence" }
+utils = { path = "../utils", version = "*", package = "launcher-utils" }
+
+async-trait = "0.1"
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
+thiserror = "1"
+tracing = "0.1"
+url = { version = "2", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }

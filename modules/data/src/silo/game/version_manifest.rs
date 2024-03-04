@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,8 +18,7 @@ use url::Url;
 
 use macros::api_response;
 
-#[api_response(untagged = false)]
-#[serde(rename_all = "snake_case")]
+#[api_response(untagged = false, rename = "snake_case")]
 pub enum GameManifestStability {
     Release,
     Snapshot,
@@ -33,8 +32,7 @@ pub struct GameManifestLatest {
     pub snapshot: String,
 }
 
-#[api_response]
-#[serde(rename_all = "camelCase")]
+#[api_response(rename = "camelCase")]
 pub struct GameManifestEntry {
     pub id: String,
     #[serde(rename = "type")]

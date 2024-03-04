@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,9 +18,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct LibraryDownloadable {}
 
-/// A library is a JAR file that can
+/// A library is a JAR file that is downloaded and put into the `classpath` to be loaded by the JVM.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Library {
+    /// The name of the library, in this format: `com.example:hello:1.0`.
     pub name: String,
+    /// The library file itself.
     pub file: LibraryDownloadable,
 }

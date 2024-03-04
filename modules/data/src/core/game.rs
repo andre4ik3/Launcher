@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,10 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use chrono::{DateTime, Utc};
+use platforms::OS;
 use semver::{Comparator, Op, Prerelease, VersionReq};
 use serde::{Deserialize, Serialize};
 
-use super::conditional::MaybeConditional;
+use super::conditional::{Condition, MaybeConditional};
+use super::library::Library;
 
 /// The different classes of game versions (e.g. release vs snapshot).
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -32,24 +35,46 @@ pub enum GameVersionStability {
 }
 
 /// Detailed information about a specific game version (including needed libraries, asset index
-/// version, Java version, etc).
+/// version, Java version, etc.).
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GameVersion {
     /// The ID or "name" of this version (e.g. "1.12.2" or "23w32a").
     pub id: String,
+    /// The date and time when this version was released.
+    pub release_date: DateTime<Utc>,
     /// The stability of this version (e.g. release vs snapshot).
     pub stability: GameVersionStability,
     /// The version of Java required to launch this version.
     pub java_version: VersionReq,
     /// The main Java class that contains the game's `main()` function.
     pub main_class: String,
+    /// A list of required libraries to run this version.
+    pub libraries: Vec<MaybeConditional<Library>>,
     /// A list of arguments that should be passed before `main_class`. The arguments can contain
     /// variables enclosed in `${}`, which should be replaced.
     pub java_arguments: Vec<MaybeConditional<String>>,
     /// A list of arguments that should be passed after `main_class`. The arguments can contain
     /// variables enclosed in `${}`, which should be replaced.
     pub game_arguments: Vec<MaybeConditional<String>>,
-    // pub libraries: Vec<MaybeConditional<Library>>
+}
+
+/// A small snippet of game version information that is used in the [GameVersionIndex].
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct GameVersionSnippet {
+    /// The ID or "name" of this version (e.g. "1.12.2" or "23w32a").
+    pub id: String,
+    /// The stability of this version (e.g. release vs snapshot).
+    pub stability: GameVersionStability,
+}
+
+// === conversion ===
+impl From<GameVersion> for GameVersionSnippet {
+    fn from(value: GameVersion) -> Self {
+        Self {
+            id: value.id,
+            stability: value.stability,
+        }
+    }
 }
 
 #[cfg(feature = "silo")]
@@ -69,6 +94,7 @@ impl From<crate::silo::game::GameVersionLegacy> for GameVersion {
     fn from(value: crate::silo::game::GameVersionLegacy) -> Self {
         Self {
             id: value.id,
+            release_date: value.release_time,
             stability: GameVersionStability::from(value.stability),
             java_version: VersionReq {
                 comparators: vec![Comparator {
@@ -80,14 +106,35 @@ impl From<crate::silo::game::GameVersionLegacy> for GameVersion {
                 }],
             },
             main_class: value.main_class,
-            java_arguments: vec![],
-            game_arguments: vec![MaybeConditional::Unconditional(
-                value
-                    .minecraft_arguments
-                    .split(' ')
-                    .map(|it| it.to_string())
-                    .collect(),
-            )],
+            libraries: vec![],
+            java_arguments: vec![
+                MaybeConditional::Conditional {
+                    when: Condition::OS(OS::MacOS),
+                    then: "-XstartOnFirstThread".to_string()
+                },
+                MaybeConditional::Conditional {
+                    when: Condition::OS(OS::Windows),
+                    then: "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump".to_string()
+                },
+                MaybeConditional::Conditional {
+                    when: Condition::OS(OS::Windows),
+                    then: "-Dos.name=Windows 10".to_string()
+                },
+                MaybeConditional::Conditional {
+                    when: Condition::OS(OS::Windows),
+                    then: "-Dos.version=10.0".to_string()
+                },
+                MaybeConditional::Unconditional("-Djava.library.path=${natives_directory}".to_string()),
+                MaybeConditional::Unconditional("-Dminecraft.launcher.brand=${launcher_name}".to_string()),
+                MaybeConditional::Unconditional("-Dminecraft.launcher.version=${launcher_version}".to_string()),
+                MaybeConditional::Unconditional("-cp".to_string()),
+                MaybeConditional::Unconditional("${classpath}".to_string()),
+            ],
+            game_arguments: value
+                .minecraft_arguments
+                .split(' ')
+                .map(|it| MaybeConditional::Unconditional(it.to_string()))
+                .collect(),
         }
     }
 }
@@ -97,6 +144,7 @@ impl From<crate::silo::game::GameVersion17w43a> for GameVersion {
     fn from(value: crate::silo::game::GameVersion17w43a) -> Self {
         Self {
             id: value.id,
+            release_date: value.release_time,
             stability: GameVersionStability::from(value.stability),
             java_version: VersionReq {
                 comparators: vec![Comparator {
@@ -108,6 +156,7 @@ impl From<crate::silo::game::GameVersion17w43a> for GameVersion {
                 }],
             },
             main_class: value.main_class,
+            libraries: vec![],
             java_arguments: value
                 .arguments
                 .jvm
@@ -133,3 +182,7 @@ impl From<crate::silo::game::GameVersion> for GameVersion {
         }
     }
 }
+
+// === test ===
+
+// TODO

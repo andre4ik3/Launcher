@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,7 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#![cfg(feature = "silo")]
+use data::web::mojang::{PROFILE_URL, UserProfile};
+use net::{Client, Error, Method, Request};
+use net::header::HeaderValue;
 
-pub mod game;
-pub mod java;
+use super::Result;
+
+/// Gets a user's own profile from a game token.
+pub async fn get_profile(client: &Client, token: &str) -> Result<UserProfile> {
+    let mut request = Request::new(Method::GET, PROFILE_URL.try_into().unwrap());
+
+    let value = HeaderValue::from_str(format!("Bearer {token}").as_str()).unwrap();
+    request.headers_mut().insert("Authorization", value);
+
+    let data: UserProfile = client.execute(request).await?.json().await.map_err(Error::from)?;
+    Ok(data)
+}

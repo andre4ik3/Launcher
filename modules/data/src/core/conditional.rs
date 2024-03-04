@@ -1,4 +1,4 @@
-// Copyright © 2023 andre4ik3
+// Copyright © 2023-2024 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,12 +18,15 @@ use std::env::consts;
 use std::str::FromStr;
 
 use platforms::{Arch, OS};
-use serde::{Deserialize, Serialize};
+
+use macros::data_structure;
 
 /// Condition for inclusion of arguments and libraries.
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Deserialize, Serialize)]
+#[derive(Hash)]
+#[data_structure(equatable)]
 pub enum Condition {
-    None,
+    Always,
+    Never,
     Feature(String),
     OS(OS),
     Arch(Arch),
@@ -34,12 +37,12 @@ pub enum Condition {
 }
 
 /// A helper enum for expressing a value that may or may not have an associated condition.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[data_structure]
 pub enum MaybeConditional<T> {
     Unconditional(T),
     Conditional {
         when: Condition,
-        then: T
+        then: T,
     },
 }
 
@@ -54,10 +57,16 @@ macro_rules! simplify_impl {
             .collect();
 
         let mut conditions: Vec<Condition> = conditions.into_iter().collect();
-        match conditions.len() {
-            0 => Self::None,
+        let result = match conditions.len() {
+            0 => Self::Always,
             1 => conditions.swap_remove(0),
             _ => $x(conditions),
+        };
+
+        match result {
+            Condition::And(it) if it.contains(&Condition::Never) => Condition::Never,
+            Condition::Or(it) if it.contains(&Condition::Always) => Condition::Always,
+            other => other,
         }
     }};
 }
@@ -66,7 +75,8 @@ impl Condition {
     /// Evaluates a condition to a boolean.
     pub fn eval(&self, features: &Vec<String>) -> bool {
         match self {
-            Self::None => true,
+            Self::Always => true,
+            Self::Never => false,
             Self::Feature(feature) => features.contains(feature),
             Self::OS(os) => os == &OS::from_str(consts::OS).unwrap(),
             Self::Arch(arch) => arch == &Arch::from_str(consts::ARCH).unwrap(),
@@ -85,7 +95,6 @@ impl Condition {
     /// Checks if a condition is empty (aka a no-op). Used to simplify expressions.
     pub fn is_empty(&self) -> bool {
         match self {
-            Self::None => true,
             Self::And(vals) | Self::Or(vals) => vals.is_empty(),
             Self::Not(val) => val.is_empty(),
             _ => false,
@@ -99,6 +108,8 @@ impl Condition {
             Self::Or(vals) => simplify_impl!(Self::Or, vals),
             Self::Xor(vals) => simplify_impl!(Self::Xor, vals),
             Self::Not(val) => match *val {
+                Self::Always => Self::Never,
+                Self::Never => Self::Always,
                 Self::Not(val) => val.simplify(),
                 _ => val.simplify(),
             },
@@ -121,7 +132,7 @@ impl<T> MaybeConditional<T> {
     }
 }
 
-// === convert from modern game argument ===
+// === conversion ===
 
 #[cfg(feature = "silo")]
 impl From<crate::silo::game::Os> for OS {
@@ -149,8 +160,25 @@ impl From<crate::silo::game::LibraryRule> for Condition {
         let mut conditions = vec![];
 
         if let Some(os) = value.os {
-            if let Some(os) = os.name {
-                conditions.push(Condition::OS(OS::from(os)));
+            if let Some(name) = os.name {
+                let name = OS::from(name);
+
+                // Our app only runs on macOS >13 and Windows >11. So version requirements like
+                // macOS 10.5 and Windows 10 are irrelevant.
+                if let Some(version) = os.version {
+                    match (version.as_str(), &name) {
+                        ("^10\\.5\\.\\d$", OS::MacOS) => conditions.push(Condition::Never),
+                        ("^10\\.", OS::Windows) => conditions.push(Condition::Never),
+
+                        // Assuming Microsoft will at some point change Win11 to actually be Win11.
+                        ("^11\\.", OS::Windows) => conditions.push(Condition::Never),
+
+                        // We don't have an implementation of OS version requirement checking (yet).
+                        _ => todo!()
+                    }
+                }
+
+                conditions.push(Condition::OS(name));
             }
 
             if let Some(arch) = os.arch {
@@ -187,7 +215,7 @@ impl From<crate::silo::game::ModernGameArgument> for Vec<MaybeConditional<String
                     }],
                     crate::silo::game::ModernGameRuleValue::Array(vals) => vals.into_iter().map(|val| MaybeConditional::Conditional {
                         when: condition.clone(),
-                        then: val
+                        then: val,
                     }).collect()
                 }
             }
@@ -205,8 +233,9 @@ mod tests {
     fn eval() {
         let features = vec!["feature-1".to_string(), "feature-2".to_string()];
 
-        // This should always be true
-        assert!(Condition::None.eval(&features));
+        // These should always be true and false respectively
+        assert!(Condition::Always.eval(&features));
+        assert!(!Condition::Never.eval(&features));
 
         // Should be true for current OS
         let current_os = OS::from_str(consts::OS).unwrap();
@@ -225,13 +254,13 @@ mod tests {
 
     #[test]
     fn simplify() {
-        // Empty arrays should simplify to Condition::None (which is always true)
-        assert_eq!(Condition::And(vec![]).simplify(), Condition::None);
-        assert_eq!(Condition::Or(vec![]).simplify(), Condition::None);
-        assert_eq!(Condition::Xor(vec![]).simplify(), Condition::None);
+        // Empty arrays should simplify to be always true
+        assert_eq!(Condition::And(vec![]).simplify(), Condition::Always);
+        assert_eq!(Condition::Or(vec![]).simplify(), Condition::Always);
+        assert_eq!(Condition::Xor(vec![]).simplify(), Condition::Always);
         assert_eq!(
-            Condition::Not(Box::new(Condition::Not(Box::new(Condition::None)))).simplify(),
-            Condition::None
+            Condition::Not(Box::new(Condition::Not(Box::new(Condition::Always)))).simplify(),
+            Condition::Always
         );
 
         // Single arrays should be unwrapped to the inner condition
@@ -243,6 +272,10 @@ mod tests {
             Condition::Not(Box::new(Condition::Not(Box::new(feature.clone())))).simplify(),
             feature
         );
+
+        // Simplification of And(..., Never, ...) and Or(..., Always, ...) should always be false and true
+        assert_eq!(Condition::And(vec![feature.clone(), Condition::Never, feature.clone()]).simplify(), Condition::Never);
+        assert_eq!(Condition::Or(vec![feature.clone(), Condition::Always, feature.clone()]).simplify(), Condition::Always);
 
         // Simplifying already simplified condition should be a no-op
         assert_eq!(feature.clone().simplify(), feature);
