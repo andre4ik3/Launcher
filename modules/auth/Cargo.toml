@@ -1,7 +1,9 @@
 [package]
 name = "launcher-auth"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
+license = "GPL-3.0-or-later"
+publish = false
 
 [dependencies]
 data = { path = "../data", version = "*", package = "launcher-data" }
@@ -14,5 +16,4 @@ async-trait = "0.1"
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
 thiserror = "1"
 tracing = "0.1"
-url = { version = "2", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }

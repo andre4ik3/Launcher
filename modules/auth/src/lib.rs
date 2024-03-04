@@ -17,12 +17,15 @@
 //! ==============================
 //!
 //! This module deals with everything to do with online account authentication. Each authentication
-//! service is divided
+//! service is divided into its own module, such as [MicrosoftAuthenticationService] for MSA
+//! accounts, or [OfflineAuthenticationService] for offline-mode accounts. All authentication
+//! services implement the [AuthenticationService] trait and return [Account]s, ready for use in
+//! higher-level code.
 
 use async_trait::async_trait;
 use thiserror::Error;
 
-use data::auth::Account;
+use data::core::auth::Account;
 pub use microsoft::MicrosoftAuthenticationService;
 use net::Client;
 pub use offline::OfflineAuthenticationService;
@@ -46,7 +49,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 /// A generic interface for interacting with an authentication service.
 #[async_trait]
-pub trait AuthenticationMethod {
+pub trait AuthenticationService {
     /// The type of credentials that this authentication service accepts.
     type Credentials;
 

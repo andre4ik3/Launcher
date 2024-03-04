@@ -15,32 +15,19 @@
 
 use async_trait::async_trait;
 use chrono::{DateTime, Duration, Utc};
-use url::Url;
 use uuid::Uuid;
 
-use data::auth::{Account, AccountCredentials};
+use data::core::auth::{Account, AccountCredentials};
 use data::web::microsoft::*;
 use fetch::mojang::get_profile;
-use net::{Client, Request};
+use net::Client;
 
-use super::{AuthenticationMethod, Error, Result};
-
-/// Builds a URL that can be opened in a WebView to redirect to a URL with a ?code= parameter.
-pub fn get_auth_url() -> Url {
-    let params = [
-        ("client_id", AUTH_CLIENT_ID),
-        ("prompt", "select_account"),
-        ("redirect_uri", AUTH_REDIRECT_URL),
-        ("response_type", "code"),
-        ("scope", AUTH_SCOPE),
-    ];
-    Url::parse_with_params(AUTH_LOG_IN_URL, params).unwrap()
-}
+use super::{AuthenticationService, Error, Result};
 
 pub struct MicrosoftAuthenticationService;
 
 #[async_trait]
-impl AuthenticationMethod for MicrosoftAuthenticationService {
+impl AuthenticationService for MicrosoftAuthenticationService {
     type Credentials = String;
 
     #[tracing::instrument(skip_all)]
@@ -72,7 +59,7 @@ impl AuthenticationMethod for MicrosoftAuthenticationService {
     #[tracing::instrument(skip_all)]
     async fn refresh(client: &Client, account: Account) -> Result<Account> {
         tracing::debug!("Beginning refresh of Microsoft account {}.", account.username);
-        
+
         // Get a new access token and refresh token.
         let refresh_token = match account.credentials {
             AccountCredentials::Microsoft { refresh, .. } => refresh,

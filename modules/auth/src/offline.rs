@@ -16,15 +16,15 @@
 use async_trait::async_trait;
 use uuid::Uuid;
 
-use data::auth::AccountCredentials;
+use data::core::auth::AccountCredentials;
 use net::Client;
 
-use super::{Account, AuthenticationMethod, Result};
+use super::{Account, AuthenticationService, Result};
 
 pub struct OfflineAuthenticationService;
 
 #[async_trait]
-impl AuthenticationMethod for OfflineAuthenticationService {
+impl AuthenticationService for OfflineAuthenticationService {
     /// The credentials for the offline authentication service -- that is, simply the username of
     /// the account that should be logged into.
     type Credentials = String;

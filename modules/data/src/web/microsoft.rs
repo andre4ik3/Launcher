@@ -16,6 +16,19 @@
 use std::collections::HashMap;
 use macros::{api_request, api_response};
 
+/// A URL that can be opened in a WebView to authenticate the user.
+///
+/// # Caution
+///
+/// The URL *must* be opened in an environment controlled by the application (i.e. no just opening
+/// the browser), as the redirect goes to a URL that we don't control. We must detect the redirect
+/// and intercept it instead of allowing it to load, otherwise the parameters get sent off to
+/// nowhere and the user is stuck on an empty screen.
+///
+/// This redirect interception should be done by the code in charge of the WebView, i.e.
+/// platform-specific code.
+pub const AUTH_URL: &str = "https://login.live.com/oauth20_authorize.srf?client_id=00000000402B5328&prompt=select_account&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf&response_type=code&scope=service%3A%3Auser.auth.xboxlive.com%3A%3AMBI_SSL";
+
 // Web URLs
 pub const AUTH_LOG_IN_URL: &str = "https://login.live.com/oauth20_authorize.srf";
 pub const AUTH_REDIRECT_URL: &str = "https://login.live.com/oauth20_desktop.srf";

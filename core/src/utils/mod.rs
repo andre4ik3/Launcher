@@ -19,11 +19,9 @@ use anyhow::Result;
 use sha1::Sha1;
 use sha2::{Digest, Sha256};
 
-pub use self::net::*;
 pub use archive::*;
 
 mod archive;
-mod net;
 
 /// Calculates a SHA256 checksum from some data.
 pub fn sha256(data: impl Deref<Target = [u8]>) -> Result<impl AsRef<[u8]>> {

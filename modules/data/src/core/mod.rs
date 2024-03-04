@@ -14,6 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 pub mod assets;
+pub mod auth;
 pub mod conditional;
 pub mod game;
 pub mod java;
