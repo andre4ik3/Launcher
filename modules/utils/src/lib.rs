@@ -13,6 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+//! Launcher Utilities Module
+//! =========================
+//!
+//! This module is full of random code that doesn't distinctly belong anywhere else or warrant its
+//! own separate module, yet is still used in various places throughout the code. It includes:
+//!
+//! - [directories] - Abstractions for common directories across platforms.
+//! - [log] - Functions for setting up logging and panic hooks.
+//! - [platforms] - Constants for the current platform.
+
+pub use macros::*;
+
 pub mod archive;
 pub mod directories;
 pub mod log;
+pub mod platforms;

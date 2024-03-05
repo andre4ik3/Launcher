@@ -19,10 +19,11 @@ use uuid::Uuid;
 
 use data::core::auth::{Account, AccountCredentials};
 use data::web::microsoft::*;
-use fetch::mojang::get_profile;
-use net::Client;
+use data::web::mojang::{PROFILE_URL, UserProfile};
+use net::{Client, Method, Request};
+use net::header::HeaderValue;
 
-use super::{AuthenticationService, Error, Result};
+use crate::{AuthenticationService, Error, Result};
 
 pub struct MicrosoftAuthenticationService;
 
@@ -30,7 +31,7 @@ pub struct MicrosoftAuthenticationService;
 impl AuthenticationService for MicrosoftAuthenticationService {
     type Credentials = String;
 
-    #[tracing::instrument(skip_all)]
+    #[tracing::instrument(name = "MicrosoftAuthenticationService::authenticate", skip_all)]
     async fn authenticate(client: &Client, credentials: Self::Credentials) -> Result<Account> {
         tracing::debug!("Beginning authentication of Microsoft account.");
 
@@ -42,6 +43,8 @@ impl AuthenticationService for MicrosoftAuthenticationService {
         let (id, username) = profile
             .map(|p| (p.id, p.username))
             .unwrap_or_else(|_| (Uuid::new_v4().to_string(), "Player".to_string()));
+
+        tracing::debug!("Successfully retrieved Microsoft account {username}. Profile: {has_profile}");
 
         Ok(Account {
             id,
@@ -56,7 +59,7 @@ impl AuthenticationService for MicrosoftAuthenticationService {
         })
     }
 
-    #[tracing::instrument(skip_all)]
+    #[tracing::instrument(name = "MicrosoftAuthenticationService::refresh", skip_all)]
     async fn refresh(client: &Client, account: Account) -> Result<Account> {
         tracing::debug!("Beginning refresh of Microsoft account {}.", account.username);
 
@@ -89,6 +92,16 @@ impl AuthenticationService for MicrosoftAuthenticationService {
     }
 }
 
+/// Gets a user's profile from a Mojang game token.
+async fn get_profile(client: &Client, token: &str) -> Result<UserProfile> {
+    let mut request = Request::new(Method::GET, PROFILE_URL.try_into().unwrap());
+
+    let value = HeaderValue::from_str(format!("Bearer {token}").as_str()).unwrap();
+    request.headers_mut().insert("Authorization", value);
+
+    let data: UserProfile = client.execute(request).await?.json().await.map_err(net::Error::from)?;
+    Ok(data)
+}
 
 /// Exchanges the code received from the Microsoft login webpage to an access and refresh token.
 async fn exchange(client: &Client, code: String) -> Result<(String, String)> {
@@ -155,7 +168,7 @@ async fn authenticate(client: &Client, token: String) -> Result<(String, DateTim
     // === XSTS -> Game ===
     let body = AuthGameTokenRequest {
         platform: "PC_LAUNCHER",
-        xtoken: format!("XBL3.0 x={};{}", uhs, xsts),
+        xtoken: format!("XBL3.0 x={uhs};{xsts}"),
     };
 
     let data: AuthGameTokenResponse = client.post_json(AUTH_GAME_TOKEN_URL, &body).await?.json().await.map_err(net::Error::from)?;

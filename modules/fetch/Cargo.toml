@@ -5,10 +5,15 @@ edition = "2021"
 license = "GPL-3.0-or-later"
 publish = false
 
+[features]
+silo = []
+
 [dependencies]
 data = { path = "../data", version = "*", package = "launcher-data" }
 net = { path = "../net", version = "*", package = "launcher-net" }
 persistence = { path = "../persistence", version = "*", package = "launcher-persistence" }
 utils = { path = "../utils", version = "*", package = "launcher-utils" }
 
+platforms = { version = "3", features = ["serde"] }
 thiserror = "1"
+url = { version = "2", features = ["serde"] }

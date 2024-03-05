@@ -32,3 +32,5 @@ pub enum Error {
     #[error("failed to perform crypto operation: {0}")]
     Crypto(#[from] crate::crypto::Error),
 }
+
+pub type Result<T> = core::result::Result<T, Error>;

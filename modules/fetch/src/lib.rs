@@ -20,6 +20,10 @@
 //! combination of the [data], [net], and [persistence] modules.
 //!
 //! It consists of a few separate parts:
+//!
+//! - [meta]
+
+pub mod meta;
 
 use thiserror::Error;
 
@@ -27,8 +31,10 @@ use thiserror::Error;
 pub enum Error {
     #[error("network error: {0}")]
     NetworkError(#[from] net::Error),
+    #[error("url parse error: {0}")]
+    UrlParseError(#[from] url::ParseError),
+    #[error("client is not yet set up with base URL")]
+    NotSetUp,
 }
 
 pub type Result<T> = core::result::Result<T, Error>;
-
-pub mod mojang;

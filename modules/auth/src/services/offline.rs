@@ -16,10 +16,10 @@
 use async_trait::async_trait;
 use uuid::Uuid;
 
-use data::core::auth::AccountCredentials;
+use data::core::auth::{Account, AccountCredentials};
 use net::Client;
 
-use super::{Account, AuthenticationService, Result};
+use crate::{AuthenticationService, Result};
 
 pub struct OfflineAuthenticationService;
 
@@ -29,7 +29,7 @@ impl AuthenticationService for OfflineAuthenticationService {
     /// the account that should be logged into.
     type Credentials = String;
 
-    #[tracing::instrument(skip_all)]
+    #[tracing::instrument(name = "OfflineAuthenticationService::authenticate", skip_all)]
     async fn authenticate(_client: &Client, credentials: Self::Credentials) -> Result<Account> {
         tracing::debug!("Authorizing offline account {credentials}");
         Ok(Account {
@@ -42,7 +42,7 @@ impl AuthenticationService for OfflineAuthenticationService {
         })
     }
 
-    #[tracing::instrument(skip_all)]
+    #[tracing::instrument(name = "OfflineAuthenticationService::refresh", skip_all)]
     async fn refresh(_client: &Client, account: Account) -> Result<Account> {
         tracing::debug!("Refreshing offline account {}", account.username);
         Ok(account)

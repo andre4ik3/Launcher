@@ -13,15 +13,31 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use clap::Parser;
-
-use crate::cli::Cli;
-
-mod cli;
+use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
+use auth::{AuthenticationService, MicrosoftAuthenticationService};
+use data::web::microsoft::AUTH_URL;
 
 #[tokio::main]
-async fn main() {
-    let args = Cli::parse();
+async fn main() -> anyhow::Result<()> {
+    // just a playground to test out WIP code
+    let _guard = utils::log::setup();
+    let client = net::Client::new().await;
+    
+    // let thing = 
 
-    println!("Hello, cli cli!");
+    // === Ask the user for the token ===
+    println!("Please open the following URL in the browser, sign in, then copy the code from the redirect URL: {AUTH_URL}");
+    println!("Paste your token: ");
+    let mut token = String::new();
+    io::stdout().flush().await?;
+    BufReader::new(io::stdin()).read_line(&mut token).await?;
+    let token = token.trim();
+
+    // === Try authenticate ===
+    let account = MicrosoftAuthenticationService::authenticate(&client, token.to_string()).await?;
+    
+    println!("Got account!!");
+    println!("{:#?}", account);
+
+    Ok(())
 }

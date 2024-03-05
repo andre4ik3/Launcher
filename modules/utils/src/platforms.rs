@@ -13,22 +13,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::collections::HashMap;
+use platforms::{Arch, OS};
 
-use anyhow::Result;
-use indicatif::ProgressBar;
+// === OS ===
 
-use crate::CLIENT;
+#[cfg(target_os = "linux")]
+pub const CURRENT_OS: OS = OS::Linux;
 
-const VERSIONS: &str =
-    "https://files.minecraftforge.net/net/minecraftforge/forge/maven-metadata.json";
-const PROMOTIONS: &str =
-    "https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json";
+#[cfg(target_os = "macos")]
+pub const CURRENT_OS: OS = OS::MacOS;
 
-pub async fn collect() -> Result<()> {
-    let data = CLIENT.get(VERSIONS).send().await?;
-    let data: HashMap<String, Vec<String>> = data.error_for_status()?.json().await?;
-    println!("{:?}", data.get("1.20.1"));
+#[cfg(target_os = "windows")]
+pub const CURRENT_OS: OS = OS::Windows;
 
-    Ok(())
-}
+// === Arch ===
+
+#[cfg(target_arch = "x86_64")]
+pub const CURRENT_ARCH: Arch = Arch::X86_64;
+
+#[cfg(target_arch = "aarch64")]
+pub const CURRENT_ARCH: Arch = Arch::AArch64;

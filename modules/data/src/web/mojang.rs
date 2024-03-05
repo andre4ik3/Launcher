@@ -19,19 +19,19 @@ use macros::api_response;
 
 pub const PROFILE_URL: &str = "https://api.minecraftservices.com/minecraft/profile";
 
-#[api_response(rename = "SCREAMING_SNAKE_CASE")]
+#[api_response(untagged = false, rename = "SCREAMING_SNAKE_CASE")]
 pub enum UserCosmeticState {
     Inactive,
     Active,
 }
 
-#[api_response(rename = "SCREAMING_SNAKE_CASE")]
+#[api_response(untagged = false, rename = "SCREAMING_SNAKE_CASE")]
 pub enum UserSkinVariant {
     Classic,
     Slim,
 }
 
-#[api_response]
+#[api_response(strict = false)]
 pub struct UserSkin {
     pub id: String,
     pub state: UserCosmeticState,
@@ -39,7 +39,7 @@ pub struct UserSkin {
     pub variant: UserSkinVariant,
 }
 
-#[api_response]
+#[api_response(strict = false)]
 pub struct UserCape {
     #[serde(rename = "alias")]
     pub name: String,
@@ -48,7 +48,7 @@ pub struct UserCape {
     pub url: Url,
 }
 
-#[api_response]
+#[api_response(strict = false)]
 pub struct UserProfile {
     pub id: String,
     #[serde(rename = "name")]

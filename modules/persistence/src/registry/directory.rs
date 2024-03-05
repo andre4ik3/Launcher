@@ -21,9 +21,7 @@ use tokio::fs;
 
 use utils::directories;
 
-use crate::registry::Error;
-
-type Result<T> = core::result::Result<T, Error>;
+use crate::registry::Result;
 
 /// A DirectoryRegistry stores a list of T. The type T is serialized and stored inside a unique
 /// directory in a sub-path of the data directory. You can configure the file name and top-level
@@ -34,7 +32,7 @@ pub struct DirectoryRegistry<T>
 {
     /// The assembled base directory.
     base: PathBuf,
-    /// The file name where T is stored (in a sub-directory of parent_dir).
+    /// The file name where T is stored (in a subdirectory of parent_dir).
     file: &'static str,
     /// The loaded entries of this registry.
     entries: HashMap<String, T>,

@@ -23,3 +23,8 @@ zip = "0.6"
 md-5 = "0.10"
 sha1 = "0.10"
 sha2 = "0.10"
+
+# platforms
+platforms = "3"
+
+macros = { path = "../macros", version = "*", package = "launcher-macros" }

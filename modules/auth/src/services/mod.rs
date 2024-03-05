@@ -13,26 +13,25 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::path::Path;
-
 use async_trait::async_trait;
 
-pub use index::IndexTask;
-pub use game_versions::TaskGameVersions;
-pub use java::TaskJava;
+use data::core::auth::Account;
+pub use microsoft::MicrosoftAuthenticationService;
+use net::Client;
+pub use offline::OfflineAuthenticationService;
 
-mod game_versions;
-mod java;
-mod index;
+mod microsoft;
+mod offline;
 
+/// A generic interface for interacting with an authentication service.
 #[async_trait]
-pub trait Task {
-    /// The input of this task (allows the task to depend on other tasks).
-    type Input;
+pub trait AuthenticationService {
+    /// The type of credentials that this authentication service accepts.
+    type Credentials;
 
-    /// The output of this task (allows other tasks to depend on this task).
-    type Output;
+    /// Authenticates with the service, returning an authenticated account ready to be persisted.
+    async fn authenticate(client: &Client, credentials: Self::Credentials) -> crate::Result<Account>;
 
-    /// Runs the task to completion.
-    async fn run(root: impl AsRef<Path> + Send + Sync, input: Self::Input) -> anyhow::Result<Self::Output>;
+    /// Refreshes an expired account so that it is ready to be used again.
+    async fn refresh(client: &Client, account: Account) -> crate::Result<Account>;
 }

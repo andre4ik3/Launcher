@@ -22,16 +22,12 @@
 //! services implement the [AuthenticationService] trait and return [Account]s, ready for use in
 //! higher-level code.
 
-use async_trait::async_trait;
 use thiserror::Error;
 
-use data::core::auth::Account;
-pub use microsoft::MicrosoftAuthenticationService;
-use net::Client;
-pub use offline::OfflineAuthenticationService;
+pub use services::*;
 
-pub(crate) mod microsoft;
-pub(crate) mod offline;
+mod services;
+mod store;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -46,16 +42,3 @@ pub enum Error {
 }
 
 pub type Result<T> = core::result::Result<T, Error>;
-
-/// A generic interface for interacting with an authentication service.
-#[async_trait]
-pub trait AuthenticationService {
-    /// The type of credentials that this authentication service accepts.
-    type Credentials;
-
-    /// Authenticates with the service, returning an authenticated account ready to be persisted.
-    async fn authenticate(client: &Client, credentials: Self::Credentials) -> Result<Account>;
-
-    /// Refreshes an expired account so that it is ready to be used again.
-    async fn refresh(client: &Client, account: Account) -> Result<Account>;
-}

@@ -22,9 +22,7 @@ use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use utils::directories;
 
-use crate::{crypto, registry::Error};
-
-type Result<T> = core::result::Result<T, Error>;
+use crate::{crypto, registry::Result};
 
 /// A FileRegistry stores a single instance of T in a file, managing access to it via a shared lock.
 /// Custom read and write functions allow modifying how the data is stored on disk.
@@ -48,6 +46,10 @@ impl<T> FileRegistry<T>
     /// extension.
     #[tracing::instrument(name = "FileRegistry::new")]
     pub async fn new(file: &'static str) -> Result<FileRegistry<T>> {
+        if !file.ends_with(".toml") {
+            tracing::warn!("Filename {file} doesn't end with .toml!");
+        }
+
         let data = RwLock::new(T::default());
         let path = directories::CONFIG.join(file);
 
@@ -71,6 +73,10 @@ impl<T> FileRegistry<T>
     /// have a .dat extension.
     #[tracing::instrument(name = "FileRegistry::new_encrypted")]
     pub async fn new_encrypted(file: &'static str) -> Result<FileRegistry<T>> {
+        if !file.ends_with(".dat") {
+            tracing::warn!("Filename {file} doesn't end with .dat!");
+        }
+
         let data = RwLock::new(T::default());
         let path = directories::CONFIG.join(file);
 
@@ -98,6 +104,7 @@ impl<T> FileRegistry<T>
         };
 
         if registry.load().await.is_err() {
+            // TODO: Present this in the UI, wait for user confirmation before proceeding.
             tracing::warn!("Failed to read encrypted registry (possibly due to missing/wrong encryption key). It will be overwritten and initialized with the defaults.");
         }
 

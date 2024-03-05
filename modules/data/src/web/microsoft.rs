@@ -92,7 +92,7 @@ pub struct AuthGameTokenRequest {
     pub xtoken: String,
 }
 
-#[api_response]
+#[api_response(strict = false)]
 pub struct AuthGameTokenResponse {
     pub access_token: String,
     pub expires_in: i64,

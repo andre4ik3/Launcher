@@ -36,6 +36,8 @@ mod task;
 mod macros;
 
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
+const META_VERSIONS: [u64; 1] = [0];
+
 static CLIENT: OnceCell<Client> = OnceCell::const_new();
 
 pub(crate) async fn client<'a>() -> &'a Client {
@@ -55,6 +57,8 @@ async fn main() -> anyhow::Result<()> {
     info!("Tasks to do: {:?}", args.task);
     info!("Output directory: {}", root.display());
     info!("Power wash mode: {}", args.power_wash);
+    
+    IndexTask::run(&root, ()).await?;
 
     // === Game Versions ===
     if args.task.contains(&cli::TaskName::GameVersions) {

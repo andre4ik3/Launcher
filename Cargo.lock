@@ -1338,14 +1338,15 @@ dependencies = [
 name = "launcher-auth"
 version = "0.0.1"
 dependencies = [
+ "async-once-cell",
  "async-trait",
  "chrono",
  "launcher-data",
- "launcher-fetch",
  "launcher-net",
  "launcher-persistence",
- "launcher-utils",
+ "once_cell",
  "thiserror",
+ "tokio",
  "tracing",
  "uuid",
 ]
@@ -1370,7 +1371,9 @@ dependencies = [
  "launcher-net",
  "launcher-persistence",
  "launcher-utils",
+ "platforms",
  "thiserror",
+ "url",
 ]
 
 [[package]]
@@ -1419,8 +1422,10 @@ name = "launcher-utils"
 version = "0.0.1"
 dependencies = [
  "directories",
+ "launcher-macros",
  "md-5",
  "once_cell",
+ "platforms",
  "sha1",
  "sha2",
  "tar",
@@ -1493,6 +1498,20 @@ dependencies = [
  "cc",
  "libc",
  "pkg-config",
+]
+
+[[package]]
+name = "mc"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "clap",
+ "launcher-auth",
+ "launcher-data",
+ "launcher-fetch",
+ "launcher-net",
+ "launcher-utils",
+ "tokio",
 ]
 
 [[package]]
@@ -2325,6 +2344,7 @@ dependencies = [
  "clap",
  "indicatif",
  "launcher-data",
+ "launcher-fetch",
  "launcher-net",
  "launcher-utils",
  "once_cell",
