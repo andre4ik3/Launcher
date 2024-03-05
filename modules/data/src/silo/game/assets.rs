@@ -14,13 +14,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::collections::HashMap;
+use macros::api_response;
 
-#[macros::api_response]
+#[api_response]
 pub struct AssetIndex {
     pub objects: HashMap<String, AssetIndexObject>,
 }
 
-#[macros::api_response]
+#[api_response]
 pub struct AssetIndexObject {
     pub hash: String,
     pub size: u64,

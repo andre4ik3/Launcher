@@ -20,7 +20,7 @@ jobs:
         with:
           filters: |
             cargo: ['Cargo.*', 'Deny.toml', '**/*/Cargo.*']
-            silo: ['Cargo.*', 'silo/**/*', 'modules/data/**/*', 'modules/net/**/*', 'modules/util/**/*']
+            silo: ['Cargo.*', 'silo/**/*', 'modules/data/**/*', 'modules/net/**/*', 'modules/utils/**/*']
 
   check:
     name: Check code
@@ -45,8 +45,7 @@ jobs:
   metadata:
     name: Deploy metadata site
     needs: [ check, changes ]
-    #if: (github.event_name == 'push' && needs.changes.outputs.meta == 'true') || (github.event_name == 'workflow_dispatch')
-    if: false
+    if: (github.event_name == 'push' && needs.changes.outputs.silo == 'true') || (github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
 
     concurrency: Metadata Site

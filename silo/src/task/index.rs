@@ -13,42 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::path::Path;
+use data::web::meta::{MetaIndex, MetaIndexAnnouncement, VERSION};
 
-use async_trait::async_trait;
-use tokio::fs;
-use url::Url;
-use data::core::conditional::Condition;
-use data::web::meta::{MetaIndex, MetaIndexAnnouncement, MetaIndexAnnouncementSeverity, VERSION};
 use crate::macros::write_to_ron_file;
+use crate::path;
 
-use crate::task::Task;
+pub async fn run(announcements: Vec<MetaIndexAnnouncement>) -> anyhow::Result<MetaIndex> {
+    let data = MetaIndex {
+        api_versions: vec![VERSION],
+        announcements,
+    };
 
-pub struct IndexTask;
-
-#[async_trait]
-impl Task for IndexTask {
-    type Input = ();
-    type Output = ();
-
-    async fn run(root: impl AsRef<Path> + Send + Sync, input: Self::Input) -> anyhow::Result<Self::Output> {
-        let path = root.as_ref().join("index.ron");
-
-        let data = MetaIndex {
-            api_versions: vec![VERSION],
-            announcements: vec![
-                MetaIndexAnnouncement {
-                    severity: MetaIndexAnnouncementSeverity::Informational,
-                    condition: Condition::Always,
-                    title: "Hello, world!".to_string(),
-                    content: "Welcome to B(a)G(e)L!".to_string(),
-                    details: Some(Url::parse("https://example.com").unwrap()),
-                    marquee: Some("very long text that makes the screen scroll sideways slowly hopefully, a bit more rambling so that the scroll is nice and long, oh yeah it's gonna look so good, like those things with stocks at the new york stock exchange or something".to_string()),
-                }
-            ],
-        };
-
-        write_to_ron_file(&path, &data).await?;
-        Ok(())
-    }
+    write_to_ron_file(path!("index.ron"), &data).await?;
+    Ok(data)
 }

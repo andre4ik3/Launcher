@@ -95,14 +95,14 @@ pub struct LibraryArtifact {
 }
 
 #[api_response]
-pub enum LibraryDownloads {
-    WithArtifact {
-        artifact: LibraryArtifact,
-        classifiers: Option<HashMap<String, LibraryArtifact>>,
-    },
-    WithoutArtifact {
-        classifiers: HashMap<String, LibraryArtifact>,
-    },
+pub struct CommonLibraryDownloads {
+    pub artifact: LibraryArtifact,
+}
+
+#[api_response]
+pub struct NativeLibraryDownloads {
+    pub artifact: Option<LibraryArtifact>,
+    pub classifiers: HashMap<String, LibraryArtifact>,
 }
 
 #[api_response]
@@ -118,12 +118,25 @@ pub struct LibraryExtract {
 }
 
 #[api_response]
-pub struct Library {
+pub enum Library {
+    Common(CommonLibrary),
+    Native(NativeLibrary),
+}
+
+#[api_response]
+pub struct CommonLibrary {
     pub name: String,
-    pub downloads: LibraryDownloads,
+    pub downloads: CommonLibraryDownloads,
     pub rules: Option<Vec<LibraryRule>>,
+}
+
+#[api_response]
+pub struct NativeLibrary {
+    pub name: String,
+    pub downloads: NativeLibraryDownloads,
+    pub natives: LibraryNativeKeys,
     pub extract: Option<LibraryExtract>,
-    pub natives: Option<LibraryNativeKeys>,
+    pub rules: Option<Vec<LibraryRule>>,
 }
 
 #[api_response]
@@ -148,7 +161,7 @@ pub struct Logging {
 }
 
 #[api_response(rename = "camelCase")]
-pub struct GameVersionLegacy {
+pub struct ApiGameVersionLegacy {
     pub asset_index: GameVersionAssetIndex,
     pub assets: String,
     pub compliance_level: Option<u8>,

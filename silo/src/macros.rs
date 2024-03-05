@@ -15,22 +15,40 @@
 
 use std::path::Path;
 
+use ron::ser::PrettyConfig;
 use serde::Serialize;
 use tokio::fs;
+use tokio::sync::OnceCell;
 use tracing::debug;
 
+static PRETTY_CONFIG: OnceCell<PrettyConfig> = OnceCell::const_new();
+
+/// Shortcut for a path relative to the output directory.
+#[macro_export]
+macro_rules! path {
+    ($($arg:tt)*) => { $crate::root().join(format!($($arg)*)) };
+}
+
+/// Shortcut for a versioned path relative to the output directory.
+#[macro_export]
+macro_rules! vpath {
+    ($($arg:tt)*) => { $crate::root().join(format!("v{}", $crate::VERSION)).join(format!($($arg)*)) };
+}
+
+/// Shortcut to write a serializable struct to a `.ron` file.
 pub async fn write_to_ron_file<T>(path: impl AsRef<Path>, data: &T) -> anyhow::Result<()>
     where T: ?Sized + Serialize {
     let path = path.as_ref();
+    let config = PRETTY_CONFIG.get_or_init(|| async { PrettyConfig::new().struct_names(true) }).await;
 
     // Ensure the parents of the path exist.
     if let Some(parent) = path.parent() {
-        tokio::fs::create_dir_all(parent).await?;
+        fs::create_dir_all(parent).await?;
     }
 
     // Finally, write the data to the file.
     debug!("Writing to {}.", path.display());
-    fs::write(path, ron::ser::to_string_pretty(&data, ron::ser::PrettyConfig::default())?).await?;
+    fs::write(path, ron::ser::to_string_pretty(&data, config.clone())?).await?;
 
     Ok(())
 }

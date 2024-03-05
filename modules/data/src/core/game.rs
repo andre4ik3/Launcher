@@ -68,6 +68,7 @@ pub struct GameVersionSnippet {
 }
 
 // === conversion ===
+
 impl From<GameVersion> for GameVersionSnippet {
     fn from(value: GameVersion) -> Self {
         Self {
@@ -90,39 +91,40 @@ impl From<crate::silo::game::GameManifestStability> for GameVersionStability {
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::GameVersionLegacy> for GameVersion {
-    fn from(value: crate::silo::game::GameVersionLegacy) -> Self {
+impl From<crate::silo::game::ApiGameVersionLegacy> for GameVersion {
+    fn from(value: crate::silo::game::ApiGameVersionLegacy) -> Self {
+        let java_version = value.java_version.map(|it| it.major_version).unwrap_or(8);
         Self {
             id: value.id,
             release_date: value.release_time,
             stability: GameVersionStability::from(value.stability),
             java_version: VersionReq {
                 comparators: vec![Comparator {
-                    op: Op::Exact,
-                    major: value.java_version.map(|it| it.major_version).unwrap_or(8),
+                    op: if java_version == 8 { Op::Exact } else { Op::GreaterEq },
+                    major: java_version,
                     minor: None,
                     patch: None,
                     pre: Prerelease::EMPTY,
                 }],
             },
             main_class: value.main_class,
-            libraries: vec![],
+            libraries: value.libraries.into_iter().flat_map(Vec::<MaybeConditional<Library>>::from).collect(),
             java_arguments: vec![
                 MaybeConditional::Conditional {
                     when: Condition::OS(OS::MacOS),
-                    then: "-XstartOnFirstThread".to_string()
+                    then: "-XstartOnFirstThread".to_string(),
                 },
                 MaybeConditional::Conditional {
                     when: Condition::OS(OS::Windows),
-                    then: "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump".to_string()
+                    then: "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump".to_string(),
                 },
                 MaybeConditional::Conditional {
                     when: Condition::OS(OS::Windows),
-                    then: "-Dos.name=Windows 10".to_string()
+                    then: "-Dos.name=Windows 10".to_string(),
                 },
                 MaybeConditional::Conditional {
                     when: Condition::OS(OS::Windows),
-                    then: "-Dos.version=10.0".to_string()
+                    then: "-Dos.version=10.0".to_string(),
                 },
                 MaybeConditional::Unconditional("-Djava.library.path=${natives_directory}".to_string()),
                 MaybeConditional::Unconditional("-Dminecraft.launcher.brand=${launcher_name}".to_string()),
@@ -140,15 +142,15 @@ impl From<crate::silo::game::GameVersionLegacy> for GameVersion {
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::GameVersion17w43a> for GameVersion {
-    fn from(value: crate::silo::game::GameVersion17w43a) -> Self {
+impl From<crate::silo::game::ApiGameVersion17w43a> for GameVersion {
+    fn from(value: crate::silo::game::ApiGameVersion17w43a) -> Self {
         Self {
             id: value.id,
             release_date: value.release_time,
             stability: GameVersionStability::from(value.stability),
             java_version: VersionReq {
                 comparators: vec![Comparator {
-                    op: Op::Exact,
+                    op: if value.java_version.major_version == 8 { Op::Exact } else { Op::GreaterEq },
                     major: value.java_version.major_version,
                     minor: None,
                     patch: None,
@@ -156,7 +158,7 @@ impl From<crate::silo::game::GameVersion17w43a> for GameVersion {
                 }],
             },
             main_class: value.main_class,
-            libraries: vec![],
+            libraries: value.libraries.into_iter().flat_map(Vec::<MaybeConditional<Library>>::from).collect(),
             java_arguments: value
                 .arguments
                 .jvm
@@ -174,15 +176,11 @@ impl From<crate::silo::game::GameVersion17w43a> for GameVersion {
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::GameVersion> for GameVersion {
-    fn from(value: crate::silo::game::GameVersion) -> Self {
+impl From<crate::silo::game::ApiGameVersion> for GameVersion {
+    fn from(value: crate::silo::game::ApiGameVersion) -> Self {
         match value {
-            crate::silo::game::GameVersion::Legacy(val) => Self::from(val),
-            crate::silo::game::GameVersion::Modern(val) => Self::from(val),
+            crate::silo::game::ApiGameVersion::Legacy(val) => Self::from(val),
+            crate::silo::game::ApiGameVersion::Modern(val) => Self::from(val),
         }
     }
 }
-
-// === test ===
-
-// TODO

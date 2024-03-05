@@ -23,7 +23,7 @@ mod legacy;
 mod v17w43a;
 
 #[macros::api_response]
-pub enum GameVersion {
-    Legacy(GameVersionLegacy),
-    Modern(GameVersion17w43a),
+pub enum ApiGameVersion {
+    Legacy(ApiGameVersionLegacy),
+    Modern(ApiGameVersion17w43a),
 }

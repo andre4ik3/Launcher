@@ -24,56 +24,58 @@
 //! Each main function of Silo is represented as a [task::Task]. Tasks can depend on one another and
 //! are run in parallel when possible.
 
+use std::path::PathBuf;
+use anyhow::anyhow;
 use tokio::fs;
 use tokio::sync::OnceCell;
-use tracing::info;
 
 use net::Client;
-use task::*;
 
 mod cli;
 mod task;
-mod macros;
+pub(crate) mod macros;
+
+pub(crate) use data::web::meta::VERSION;
 
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 const META_VERSIONS: [u64; 1] = [0];
 
 static CLIENT: OnceCell<Client> = OnceCell::const_new();
+static ROOT: OnceCell<PathBuf> = OnceCell::const_new();
 
-pub(crate) async fn client<'a>() -> &'a Client {
-    CLIENT.get_or_init(Client::new).await
+pub(crate) fn root<'a>() -> &'a PathBuf {
+    ROOT.get().unwrap()
 }
+
+pub(crate) fn client<'a>() -> &'a Client {
+    CLIENT.get().unwrap()
+}
+
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = cli::parse();
     let _guard = utils::log::setup();
 
-    info!("Running Silo v{PACKAGE_VERSION}");
+    tracing::info!("Running Silo v{PACKAGE_VERSION}");
+    fs::create_dir_all(&args.output).await.expect("failed to create output folder");
 
-    fs::create_dir_all(&args.output).await?;
-    let root = fs::canonicalize(&args.output).await?;
+    // Initialize statics
+    CLIENT.set(Client::new().await).map_err(|_| anyhow!("failed to setup client")).unwrap();
+    ROOT.set(fs::canonicalize(&args.output).await?).unwrap();
 
-    info!("Tasks to do: {:?}", args.task);
-    info!("Output directory: {}", root.display());
-    info!("Power wash mode: {}", args.power_wash);
-    
-    IndexTask::run(&root, ()).await?;
+    // Index
+    let index = task::index::run(vec![]).await?;
+    tracing::info!("Successfully generated index file with {} announcements.", index.announcements.len());
 
-    // === Game Versions ===
-    if args.task.contains(&cli::TaskName::GameVersions) {
-        info!("Running Game Versions task...");
-        let versions = TaskGameVersions::run(&root, args.power_wash).await?;
-        info!("Game Versions task complete. Successfully retrieved {} versions.", versions.len());
-    }
+    // Java builds
+    // let java_builds = task::java::run(vec![8, 17]).await?;
+    // tracing::info!("Successfully fetched {} Java builds.", java_builds.len());
 
-    // === Java ===
-    if args.task.contains(&cli::TaskName::Java) {
-        info!("Running Java task...");
-        let builds = TaskJava::run(&root, vec![8, 16, 17]).await?;
-        info!("Java task complete. Successfully retrieved {} builds.", builds.len());
-    }
+    // Game versions
+    let game_versions = task::game::run(args.power_wash).await?;
+    tracing::info!("Successfully fetched {} game versions.", game_versions.len());
 
-    client().await.destroy().await;
+    CLIENT.get().unwrap().destroy().await;
     Ok(())
 }

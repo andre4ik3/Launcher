@@ -44,7 +44,7 @@ pub struct ModernGameArguments {
 }
 
 #[api_response(rename = "camelCase")]
-pub struct GameVersion17w43a {
+pub struct ApiGameVersion17w43a {
     pub arguments: ModernGameArguments,
     pub asset_index: GameVersionAssetIndex,
     pub assets: String,
