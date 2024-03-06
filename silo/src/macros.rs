@@ -46,9 +46,12 @@ pub async fn write_to_ron_file<T>(path: impl AsRef<Path>, data: &T) -> anyhow::R
         fs::create_dir_all(parent).await?;
     }
 
+    let mut contents = ron::ser::to_string_pretty(&data, config.clone())?;
+    contents.push('\n');
+
     // Finally, write the data to the file.
     debug!("Writing to {}.", path.display());
-    fs::write(path, ron::ser::to_string_pretty(&data, config.clone())?).await?;
+    fs::write(path, contents).await?;
 
     Ok(())
 }

@@ -32,7 +32,7 @@ macro_rules! fetch_impl {
 
 /// Fetches the index from the metadata server.
 pub async fn index(client: &Client, base: &Url) -> Result<MetaIndex> {
-    fetch_impl!(client, base, "v{VERSION}/index.ron")
+    fetch_impl!(client, base, "index.ron")
 }
 
 /// Fetches a Java build from the metadata server.

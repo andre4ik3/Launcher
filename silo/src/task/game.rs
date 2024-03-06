@@ -37,6 +37,7 @@ pub async fn run(power_wash: bool) -> anyhow::Result<Vec<GameVersionSnippet>> {
         if fs::try_exists(&path).await.unwrap_or(false) && !power_wash {
             if let Ok(data) = ron::from_str::<GameVersion>(&fs::read_to_string(&path).await?) {
                 tracing::info!("Skipping version {} as it appears we already have it.", version.id);
+                write_to_ron_file(&path, &data).await?;
                 output.push(GameVersionSnippet::from(data));
                 continue;
             } else {

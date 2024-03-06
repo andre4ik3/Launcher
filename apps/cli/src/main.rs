@@ -16,28 +16,21 @@
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 use auth::{AuthenticationService, MicrosoftAuthenticationService};
 use data::web::microsoft::AUTH_URL;
+use url::Url;
+
+const BASE_URL: &str = "https://launchermeta.lambda.prod.andre4ik3.net/";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // just a playground to test out WIP code
     let _guard = utils::log::setup();
     let client = net::Client::new().await;
-    
-    // let thing = 
 
-    // === Ask the user for the token ===
-    println!("Please open the following URL in the browser, sign in, then copy the code from the redirect URL: {AUTH_URL}");
-    println!("Paste your token: ");
-    let mut token = String::new();
-    io::stdout().flush().await?;
-    BufReader::new(io::stdin()).read_line(&mut token).await?;
-    let token = token.trim();
+    let url = Url::parse(BASE_URL).unwrap();
 
-    // === Try authenticate ===
-    let account = MicrosoftAuthenticationService::authenticate(&client, token.to_string()).await?;
-    
-    println!("Got account!!");
-    println!("{:#?}", account);
+    let index = fetch::meta::index(&client, &url).await?;
+
+    println!("{:#?}", index);
 
     Ok(())
 }
