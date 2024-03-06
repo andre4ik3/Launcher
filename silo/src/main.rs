@@ -69,8 +69,8 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("Successfully generated index file with {} announcements.", index.announcements.len());
 
     // Java builds
-    // let java_builds = task::java::run(vec![8, 17]).await?;
-    // tracing::info!("Successfully fetched {} Java builds.", java_builds.len());
+    let java_builds = task::java::run(vec![8, 17]).await?;
+    tracing::info!("Successfully fetched {} Java builds.", java_builds.len());
 
     // Game versions
     let game_versions = task::game::run(args.power_wash).await?;

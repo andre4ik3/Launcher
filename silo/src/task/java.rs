@@ -20,7 +20,7 @@ use url::Url;
 use data::core::java::{Environment, JavaBuild, JavaEdition, JavaProvider};
 use data::silo::java::zulu::{ZuluDetails, ZuluMetadata};
 
-use crate::{client, path, vpath};
+use crate::{client, vpath};
 use crate::macros::write_to_ron_file;
 
 const BASE_URL: &str = "https://api.azul.com/metadata/v1/zulu/packages/?javafx_bundled=false&crac_supported=false&latest=true&release_status=ga&availability_types=CA&certifications=tck";
