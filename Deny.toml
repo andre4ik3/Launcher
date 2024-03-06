@@ -1,3 +1,4 @@
+[graph]
 targets = [
     { triple = "aarch64-apple-darwin" },
     { triple = "aarch64-pc-windows-msvc" },

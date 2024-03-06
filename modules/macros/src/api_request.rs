@@ -44,7 +44,6 @@ pub fn api_request(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Add stuff to extra based on toggles and what we are modifying (struct or enum).
     if let Some(rename) = args.rename {
         extra.append_all(vec![quote! { #[serde(rename_all = #rename)] }]);
-        // extra.append_all(vec![ quote! { core::compile_error!("whats good") } ]);
     }
 
     (quote! {

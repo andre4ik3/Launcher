@@ -35,7 +35,7 @@ jobs:
       - if: needs.changes.outputs.cargo == 'true'
         run: |
           cargo install cargo-deny
-          cargo-deny check -c Deny.toml bans licenses sources
+          cargo-deny check bans licenses sources
 
       - uses: olix0r/cargo-action-fmt/setup@v2
       - run: cargo check --locked --message-format=json | cargo-action-fmt
