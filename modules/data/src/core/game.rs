@@ -17,12 +17,13 @@ use chrono::{DateTime, Utc};
 use platforms::OS;
 use semver::{Comparator, Op, Prerelease, VersionReq};
 use serde::{Deserialize, Serialize};
+use macros::data_structure;
 
 use super::conditional::{Condition, MaybeConditional};
 use super::library::Library;
 
 /// The different classes of game versions (e.g. release vs snapshot).
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[data_structure]
 pub enum GameVersionStability {
     /// Stable versions that have been released to the public.
     Release,
@@ -36,7 +37,7 @@ pub enum GameVersionStability {
 
 /// Detailed information about a specific game version (including needed libraries, asset index
 /// version, Java version, etc.).
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[data_structure]
 pub struct GameVersion {
     /// The ID or "name" of this version (e.g. "1.12.2" or "23w32a").
     pub id: String,
@@ -59,7 +60,7 @@ pub struct GameVersion {
 }
 
 /// A small snippet of game version information that is used in the [GameVersionIndex].
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[data_structure]
 pub struct GameVersionSnippet {
     /// The ID or "name" of this version (e.g. "1.12.2" or "23w32a").
     pub id: String,

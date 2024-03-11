@@ -33,8 +33,10 @@ pub enum Error {
     NetworkError(#[from] net::Error),
     #[error("url parse error: {0}")]
     UrlParseError(#[from] url::ParseError),
-    #[error("client is not yet set up with base URL")]
-    NotSetUp,
+    #[error("ron parse error: {0}")]
+    RonParseError(#[from] ron::de::SpannedError),
+    #[error("unsupported api version: we only support {0}, api supports {1}")]
+    ApiVersionMismatch(u64, String),
 }
 
 pub type Result<T> = core::result::Result<T, Error>;

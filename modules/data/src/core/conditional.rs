@@ -135,28 +135,28 @@ impl<T> MaybeConditional<T> {
 // === conversion ===
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::Os> for OS {
-    fn from(value: crate::silo::game::Os) -> Self {
+impl From<crate::silo::game::ApiOs> for OS {
+    fn from(value: crate::silo::game::ApiOs) -> Self {
         match value {
-            crate::silo::game::Os::Linux => Self::Linux,
-            crate::silo::game::Os::MacOS => Self::MacOS,
-            crate::silo::game::Os::Windows => Self::Windows,
+            crate::silo::game::ApiOs::Linux => Self::Linux,
+            crate::silo::game::ApiOs::MacOS => Self::MacOS,
+            crate::silo::game::ApiOs::Windows => Self::Windows,
         }
     }
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::Arch> for Arch {
-    fn from(value: crate::silo::game::Arch) -> Self {
+impl From<crate::silo::game::ApiArch> for Arch {
+    fn from(value: crate::silo::game::ApiArch) -> Self {
         match value {
-            crate::silo::game::Arch::X86_64 => Self::X86_64,
+            crate::silo::game::ApiArch::X86_64 => Self::X86_64,
         }
     }
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::LibraryRule> for Condition {
-    fn from(value: crate::silo::game::LibraryRule) -> Self {
+impl From<crate::silo::game::ApiLibraryRule> for Condition {
+    fn from(value: crate::silo::game::ApiLibraryRule) -> Self {
         let mut conditions = vec![];
 
         if let Some(os) = value.os {
@@ -193,8 +193,8 @@ impl From<crate::silo::game::LibraryRule> for Condition {
         }
 
         match value.action {
-            crate::silo::game::LibraryRuleAction::Allow => Condition::And(conditions),
-            crate::silo::game::LibraryRuleAction::Disallow => {
+            crate::silo::game::ApiLibraryRuleAction::Allow => Condition::And(conditions),
+            crate::silo::game::ApiLibraryRuleAction::Disallow => {
                 Condition::Not(Box::new(Condition::And(conditions)))
             }
         }
@@ -202,18 +202,18 @@ impl From<crate::silo::game::LibraryRule> for Condition {
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::ModernGameArgument> for Vec<MaybeConditional<String>> {
-    fn from(value: crate::silo::game::ModernGameArgument) -> Self {
+impl From<crate::silo::game::ApiModernGameArgument> for Vec<MaybeConditional<String>> {
+    fn from(value: crate::silo::game::ApiModernGameArgument) -> Self {
         match value {
-            crate::silo::game::ModernGameArgument::Plain(val) => vec![MaybeConditional::Unconditional(val)],
-            crate::silo::game::ModernGameArgument::Conditional { rules, value } => {
+            crate::silo::game::ApiModernGameArgument::Plain(val) => vec![MaybeConditional::Unconditional(val)],
+            crate::silo::game::ApiModernGameArgument::Conditional { rules, value } => {
                 let condition = Condition::Or(rules.into_iter().map(Condition::from).collect()).simplify();
                 match value {
-                    crate::silo::game::ModernGameRuleValue::String(val) => vec![MaybeConditional::Conditional {
+                    crate::silo::game::ApiModernGameRuleValue::String(val) => vec![MaybeConditional::Conditional {
                         when: condition,
                         then: val,
                     }],
-                    crate::silo::game::ModernGameRuleValue::Array(vals) => vals.into_iter().map(|val| MaybeConditional::Conditional {
+                    crate::silo::game::ApiModernGameRuleValue::Array(vals) => vals.into_iter().map(|val| MaybeConditional::Conditional {
                         when: condition.clone(),
                         then: val,
                     }).collect()

@@ -19,6 +19,7 @@ use url::Url;
 use macros::data_structure;
 
 use crate::core::conditional::{Condition, MaybeConditional};
+use crate::core::maven::MavenIdentifier;
 
 /// Abstract type for a downloadable game file.
 #[data_structure]
@@ -37,7 +38,7 @@ pub struct LibraryDownloadable {
 #[data_structure]
 pub struct Library {
     /// The name of the library, in this format: `com.example:hello:1.0`.
-    pub name: String,
+    pub name: MavenIdentifier,
     /// The library file itself.
     pub file: LibraryDownloadable,
 }
@@ -45,8 +46,8 @@ pub struct Library {
 // === conversion ===
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::LibraryArtifact> for LibraryDownloadable {
-    fn from(value: crate::silo::game::LibraryArtifact) -> Self {
+impl From<crate::silo::game::ApiLibraryArtifact> for LibraryDownloadable {
+    fn from(value: crate::silo::game::ApiLibraryArtifact) -> Self {
         Self {
             path: value.path,
             checksum: value.sha1,
@@ -57,8 +58,8 @@ impl From<crate::silo::game::LibraryArtifact> for LibraryDownloadable {
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::CommonLibrary> for MaybeConditional<Library> {
-    fn from(value: crate::silo::game::CommonLibrary) -> Self {
+impl From<crate::silo::game::ApiCommonLibrary> for MaybeConditional<Library> {
+    fn from(value: crate::silo::game::ApiCommonLibrary) -> Self {
         let library = Library {
             name: value.name,
             file: value.downloads.artifact.into(),
@@ -75,8 +76,8 @@ impl From<crate::silo::game::CommonLibrary> for MaybeConditional<Library> {
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::NativeLibrary> for Vec<MaybeConditional<Library>> {
-    fn from(mut value: crate::silo::game::NativeLibrary) -> Self {
+impl From<crate::silo::game::ApiNativeLibrary> for Vec<MaybeConditional<Library>> {
+    fn from(mut value: crate::silo::game::ApiNativeLibrary) -> Self {
         let mut libraries = Vec::<MaybeConditional<Library>>::new();
 
         // TODO: Make this more readable
@@ -134,11 +135,11 @@ impl From<crate::silo::game::NativeLibrary> for Vec<MaybeConditional<Library>> {
 }
 
 #[cfg(feature = "silo")]
-impl From<crate::silo::game::Library> for Vec<MaybeConditional<Library>> {
-    fn from(value: crate::silo::game::Library) -> Self {
+impl From<crate::silo::game::ApiLibrary> for Vec<MaybeConditional<Library>> {
+    fn from(value: crate::silo::game::ApiLibrary) -> Self {
         match value {
-            crate::silo::game::Library::Common(lib) => vec![lib.into()],
-            crate::silo::game::Library::Native(libs) => libs.into(),
+            crate::silo::game::ApiLibrary::Common(lib) => vec![lib.into()],
+            crate::silo::game::ApiLibrary::Native(libs) => libs.into(),
         }
     }
 }

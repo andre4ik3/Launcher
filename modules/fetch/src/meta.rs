@@ -17,17 +17,31 @@ use url::Url;
 
 use data::core::game::GameVersion;
 use data::core::java::JavaBuild;
-use data::web::meta::{MetaIndex, VERSION};
+use data::web::meta::{MetaIndex, MetaIndexAnnouncement, VERSION};
 use net::Client;
 use utils::platforms::{CURRENT_ARCH, CURRENT_OS};
 
 use super::Result;
 
 macro_rules! fetch_impl {
-    ($client:expr, $base:expr, $($arg:tt)*) => {{
+    ($client:ident, $base:ident, $($arg:tt)*) => {{
         let url = $base.join(format!($($arg)*).as_str())?;
-        Ok($client.get(url).await?.json().await.map_err(net::Error::from)?)
+        let data = $client.get(url).await?.text().await.map_err(net::Error::from)?;
+        Ok(ron::from_str(data.as_str())?)
     }};
+}
+
+
+pub struct MetaRepository<'a> {
+    client: &'a Client,
+    pub announcements: Vec<MetaIndexAnnouncement>,
+}
+
+impl<'a> MetaRepository<'a> {
+    pub async fn new(client: &'a Client, base: &Url) -> Result<Self> {
+        let index: Result<MetaIndex> = fetch_impl!(client, base, "index.ron");
+        Ok(Self { client, announcements: index?.announcements })
+    }
 }
 
 /// Fetches the index from the metadata server.

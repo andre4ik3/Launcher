@@ -19,17 +19,18 @@ use chrono::{DateTime, Utc};
 use url::Url;
 
 use macros::api_response;
+use crate::core::maven::MavenIdentifier;
 
 use crate::silo::game::GameManifestStability;
 
 #[api_response(rename = "camelCase")]
-pub struct GameVersionLegacyJavaVersion {
+pub struct ApiGameVersionLegacyJavaVersion {
     pub component: String,
     pub major_version: u64,
 }
 
 #[api_response(rename = "camelCase")]
-pub struct GameVersionAssetIndex {
+pub struct ApiGameVersionAssetIndex {
     pub id: String,
     pub sha1: String,
     pub size: u64,
@@ -38,28 +39,28 @@ pub struct GameVersionAssetIndex {
 }
 
 #[api_response]
-pub struct Downloadable {
+pub struct ApiGameVersionDownloadable {
     pub sha1: String,
     pub size: u64,
     pub url: Url,
 }
 
 #[api_response(strict = false)]
-pub struct Downloads {
-    pub client: Downloadable,
-    pub server: Option<Downloadable>,
+pub struct ApiGameVersionDownloads {
+    pub client: ApiGameVersionDownloadable,
+    pub server: Option<ApiGameVersionDownloadable>,
     // pub client_mappings: Option<Downloadable>,
     // pub server_mappings: Option<Downloadable>,
 }
 
 #[api_response(untagged = false, rename = "camelCase")]
-pub enum LibraryRuleAction {
+pub enum ApiLibraryRuleAction {
     Allow,
     Disallow,
 }
 
 #[api_response(untagged = false, rename = "camelCase")]
-pub enum Os {
+pub enum ApiOs {
     Linux,
     #[serde(rename = "osx")]
     MacOS,
@@ -67,27 +68,27 @@ pub enum Os {
 }
 
 #[api_response(untagged = false)]
-pub enum Arch {
+pub enum ApiArch {
     #[serde(rename = "x86")]
     X86_64,
 }
 
 #[api_response]
-pub struct LibraryRuleOs {
-    pub name: Option<Os>,
-    pub arch: Option<Arch>,
+pub struct ApiLibraryRuleOs {
+    pub name: Option<ApiOs>,
+    pub arch: Option<ApiArch>,
     pub version: Option<String>,
 }
 
 #[api_response]
-pub struct LibraryRule {
-    pub action: LibraryRuleAction,
+pub struct ApiLibraryRule {
+    pub action: ApiLibraryRuleAction,
     pub features: Option<HashMap<String, bool>>,
-    pub os: Option<LibraryRuleOs>,
+    pub os: Option<ApiLibraryRuleOs>,
 }
 
 #[api_response]
-pub struct LibraryArtifact {
+pub struct ApiLibraryArtifact {
     pub path: String,
     pub sha1: String,
     pub size: u64,
@@ -95,52 +96,52 @@ pub struct LibraryArtifact {
 }
 
 #[api_response]
-pub struct CommonLibraryDownloads {
-    pub artifact: LibraryArtifact,
+pub struct ApiCommonLibraryDownloads {
+    pub artifact: ApiLibraryArtifact,
 }
 
 #[api_response]
-pub struct NativeLibraryDownloads {
-    pub artifact: Option<LibraryArtifact>,
-    pub classifiers: HashMap<String, LibraryArtifact>,
+pub struct ApiNativeLibraryDownloads {
+    pub artifact: Option<ApiLibraryArtifact>,
+    pub classifiers: HashMap<String, ApiLibraryArtifact>,
 }
 
 #[api_response]
-pub struct LibraryNativeKeys {
+pub struct ApiLibraryNativeKeys {
     pub linux: Option<String>,
     pub osx: Option<String>,
     pub windows: Option<String>,
 }
 
 #[api_response]
-pub struct LibraryExtract {
+pub struct ApiLibraryExtract {
     pub exclude: Option<Vec<String>>,
 }
 
 #[api_response]
-pub enum Library {
-    Common(CommonLibrary),
-    Native(NativeLibrary),
+pub enum ApiLibrary {
+    Common(ApiCommonLibrary),
+    Native(ApiNativeLibrary),
 }
 
 #[api_response]
-pub struct CommonLibrary {
-    pub name: String,
-    pub downloads: CommonLibraryDownloads,
-    pub rules: Option<Vec<LibraryRule>>,
+pub struct ApiCommonLibrary {
+    pub name: MavenIdentifier,
+    pub downloads: ApiCommonLibraryDownloads,
+    pub rules: Option<Vec<ApiLibraryRule>>,
 }
 
 #[api_response]
-pub struct NativeLibrary {
-    pub name: String,
-    pub downloads: NativeLibraryDownloads,
-    pub natives: LibraryNativeKeys,
-    pub extract: Option<LibraryExtract>,
-    pub rules: Option<Vec<LibraryRule>>,
+pub struct ApiNativeLibrary {
+    pub name: MavenIdentifier,
+    pub downloads: ApiNativeLibraryDownloads,
+    pub natives: ApiLibraryNativeKeys,
+    pub extract: Option<ApiLibraryExtract>,
+    pub rules: Option<Vec<ApiLibraryRule>>,
 }
 
 #[api_response]
-pub struct LoggingDownloadable {
+pub struct ApiGameVersionLoggingDownloadable {
     pub id: String,
     pub sha1: String,
     pub size: u64,
@@ -148,26 +149,26 @@ pub struct LoggingDownloadable {
 }
 
 #[api_response]
-pub struct LoggingClient {
+pub struct ApiGameVersionLoggingClient {
     pub argument: String,
-    pub file: LoggingDownloadable,
+    pub file: ApiGameVersionLoggingDownloadable,
     #[serde(rename = "type")]
     pub logging_type: String,
 }
 
 #[api_response]
-pub struct Logging {
-    pub client: LoggingClient,
+pub struct ApiGameVersionLogging {
+    pub client: ApiGameVersionLoggingClient,
 }
 
 #[api_response(rename = "camelCase")]
 pub struct ApiGameVersionLegacy {
-    pub asset_index: GameVersionAssetIndex,
+    pub asset_index: ApiGameVersionAssetIndex,
     pub assets: String,
     pub compliance_level: Option<u8>,
-    pub downloads: Downloads,
+    pub downloads: ApiGameVersionDownloads,
     pub id: String,
-    pub java_version: Option<GameVersionLegacyJavaVersion>,
+    pub java_version: Option<ApiGameVersionLegacyJavaVersion>,
     pub main_class: String,
     pub minecraft_arguments: String,
     pub minimum_launcher_version: u64,
@@ -175,6 +176,6 @@ pub struct ApiGameVersionLegacy {
     pub time: DateTime<Utc>,
     #[serde(rename = "type")]
     pub stability: GameManifestStability,
-    pub libraries: Vec<Library>,
-    pub logging: Option<Logging>,
+    pub libraries: Vec<ApiLibrary>,
+    pub logging: Option<ApiGameVersionLogging>,
 }

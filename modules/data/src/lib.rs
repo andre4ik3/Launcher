@@ -19,16 +19,21 @@
 //! This module contains data models for different APIs and services. The module itself is split
 //! into many submodules that categorize the data models based on where they are used:
 //!
-//! - [core] - Models used in core launcher functions (i.e. accounts, Java builds, launching, etc.).
-//!     - [core::assets]
-//!     - [core::auth] - User accounts and credentials.
+//! - [core] - Useful structures and APIs used throughout the code.
 //!     - [core::conditional] - Data-driven condition API.
-//!     - [core::game]
-//!     - [core::java] - Java builds and installations.
+//!     - [core::maven] - Wrapper around Maven artifact identifiers.
+//!
+//! - [game] - Models used in core launcher functions (i.e. accounts, Java builds, launching, etc.).
+//!     - [game::assets]
+//!     - [game::auth] - User accounts and credentials.
+//!     - [game::conditional] - Data-driven condition API.
+//!     - [game::java] - Java builds and installations.
+//!     - [game::version]
 //!
 //! - [silo] - Models for web APIs used mainly during data generation (requires `silo` feature).
 //!     - [silo::game] - Mojang Launcher Meta API.
 //!     - [silo::java] - Azul Zulu Meta API.
+//!     - [silo::loader] - Loader Meta APIs.
 //!
 //! - [web] - Models for web APIs used either partially or wholly on the client side.
 //!     - [web::microsoft] - Microsoft's Authentication and Xbox APIs.

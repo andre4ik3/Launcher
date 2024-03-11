@@ -9,11 +9,14 @@ targets = [
 
 accepted = [
     "Apache-2.0",
-    "MIT",
+    "Apache-2.0 WITH LLVM-exception",
     "BSD-3-Clause",
-    "MPL-2.0",
+    "CC0-1.0",
     "GPL-3.0",
+    "MIT",
+    "MPL-2.0",
     "Unicode-DFS-2016",
+    "Zlib",
 ]
 
 ignore-build-dependencies = true

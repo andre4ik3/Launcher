@@ -19,3 +19,5 @@ pub mod conditional;
 pub mod game;
 pub mod java;
 pub mod library;
+pub mod loader;
+pub mod maven;

@@ -15,5 +15,6 @@ persistence = { path = "../persistence", version = "*", package = "launcher-pers
 utils = { path = "../utils", version = "*", package = "launcher-utils" }
 
 platforms = { version = "3", features = ["serde"] }
+ron = "0.8"
 thiserror = "1"
 url = { version = "2", features = ["serde"] }

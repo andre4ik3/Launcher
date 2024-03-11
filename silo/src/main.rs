@@ -69,12 +69,15 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("Successfully generated index file with {} announcements.", index.announcements.len());
 
     // Java builds
-    let java_builds = task::java::run(vec![8, 17]).await?;
-    tracing::info!("Successfully fetched {} Java builds.", java_builds.len());
+    // let java_builds = task::java::run(vec![8, 17]).await?;
+    // tracing::info!("Successfully fetched {} Java builds.", java_builds.len());
 
     // Game versions
     let game_versions = task::game::run(args.power_wash).await?;
     tracing::info!("Successfully fetched {} game versions.", game_versions.len());
+    
+    let loader_versions = task::loaders::run(game_versions).await?;
+    tracing::info!("Successfully loaded mod loaders.");
 
     CLIENT.get().unwrap().destroy().await;
     Ok(())

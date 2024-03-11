@@ -13,9 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
-use auth::{AuthenticationService, MicrosoftAuthenticationService};
-use data::web::microsoft::AUTH_URL;
 use url::Url;
 
 const BASE_URL: &str = "https://launchermeta.lambda.prod.andre4ik3.net/";

@@ -18,46 +18,46 @@ use chrono::{DateTime, Utc};
 use macros::api_response;
 
 use crate::silo::game::{
-    GameVersionAssetIndex, Downloads, GameManifestStability, GameVersionLegacyJavaVersion, Library,
-    LibraryRule, Logging,
+    ApiGameVersionAssetIndex, ApiGameVersionDownloads, GameManifestStability, ApiGameVersionLegacyJavaVersion, ApiLibrary,
+    ApiLibraryRule, ApiGameVersionLogging,
 };
 
 #[api_response]
-pub enum ModernGameRuleValue {
+pub enum ApiModernGameRuleValue {
     String(String),
     Array(Vec<String>),
 }
 
 #[api_response]
-pub enum ModernGameArgument {
+pub enum ApiModernGameArgument {
     Plain(String),
     Conditional {
-        rules: Vec<LibraryRule>,
-        value: ModernGameRuleValue,
+        rules: Vec<ApiLibraryRule>,
+        value: ApiModernGameRuleValue,
     },
 }
 
 #[api_response]
-pub struct ModernGameArguments {
-    pub game: Vec<ModernGameArgument>,
-    pub jvm: Vec<ModernGameArgument>,
+pub struct ApiModernGameArguments {
+    pub game: Vec<ApiModernGameArgument>,
+    pub jvm: Vec<ApiModernGameArgument>,
 }
 
 #[api_response(rename = "camelCase")]
 pub struct ApiGameVersion17w43a {
-    pub arguments: ModernGameArguments,
-    pub asset_index: GameVersionAssetIndex,
+    pub arguments: ApiModernGameArguments,
+    pub asset_index: ApiGameVersionAssetIndex,
     pub assets: String,
     pub compliance_level: u8,
-    pub downloads: Downloads,
+    pub downloads: ApiGameVersionDownloads,
     pub id: String,
-    pub java_version: GameVersionLegacyJavaVersion,
+    pub java_version: ApiGameVersionLegacyJavaVersion,
     pub main_class: String,
     pub minimum_launcher_version: u64,
     pub release_time: DateTime<Utc>,
     pub time: DateTime<Utc>,
     #[serde(rename = "type")]
     pub stability: GameManifestStability,
-    pub libraries: Vec<Library>,
-    pub logging: Logging,
+    pub libraries: Vec<ApiLibrary>,
+    pub logging: ApiGameVersionLogging,
 }

@@ -16,9 +16,4 @@
 pub mod index;
 pub mod java;
 pub mod game;
-
-pub enum TaskId {
-    Index,
-    JavaBuilds,
-    GameVersions,
-}
+pub mod loaders;
