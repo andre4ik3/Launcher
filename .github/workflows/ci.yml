@@ -58,7 +58,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: git clone --depth 1 https://andre4ik3:${{ secrets.META_TOKEN }}@github.com/andre4ik3/Launcher-Meta.git _site
-      - run: cargo run --locked --bin silo
+      - run: cargo run --locked --bin silo -- --power-wash
       - uses: EndBug/add-and-commit@v9
         with: { cwd: "./_site", default_author: github_actions }
       - id: deployment
