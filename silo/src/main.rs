@@ -76,8 +76,8 @@ async fn main() -> anyhow::Result<()> {
     let game_versions = task::game::run(args.power_wash).await?;
     tracing::info!("Successfully fetched {} game versions.", game_versions.len());
     
-    let loader_versions = task::loaders::run(game_versions).await?;
-    tracing::info!("Successfully loaded mod loaders.");
+    // let loader_versions = task::loaders::run(game_versions).await?;
+    // tracing::info!("Successfully loaded mod loaders.");
 
     CLIENT.get().unwrap().destroy().await;
     Ok(())
