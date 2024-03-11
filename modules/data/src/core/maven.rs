@@ -40,7 +40,12 @@ impl MavenIdentifier {
 
 impl Display for MavenIdentifier {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}:{}", self.group, self.artifact, self.version)
+        write!(f, "{}:{}:{}", self.group, self.artifact, self.version)?;
+        if let Some(classifier) = &self.classifier {
+            write!(f, ":{classifier}")?;
+        }
+
+        Ok(())
     }
 }
 
@@ -109,12 +114,23 @@ mod tests {
 
         assert_eq!(repr.to_string(), ser);
         assert_eq!(to_string(&repr).expect("serialization failed"), format!("\"{ser}\""));
+
+        let repr = MavenIdentifier::new("dev.andre4ik3", "cool-artifact", "1.2.3", Some("classifier"));
+        let ser = "dev.andre4ik3:cool-artifact:1.2.3:classifier".to_string();
+
+        assert_eq!(repr.to_string(), ser);
+        assert_eq!(to_string(&repr).expect("serialization failed"), format!("\"{ser}\""));
     }
 
     #[test]
     fn deserialization() {
         let repr = MavenIdentifier::new("dev.andre4ik3", "cool-artifact", "1.2.3", Option::<String>::None);
         let ser = "dev.andre4ik3:cool-artifact:1.2.3".to_string();
+
+        assert_eq!(from_str::<MavenIdentifier>(&format!("\"{ser}\"")).expect("deserialization failed"), repr);
+
+        let repr = MavenIdentifier::new("dev.andre4ik3", "cool-artifact", "1.2.3", Some("classifier"));
+        let ser = "dev.andre4ik3:cool-artifact:1.2.3:classifier".to_string();
 
         assert_eq!(from_str::<MavenIdentifier>(&format!("\"{ser}\"")).expect("deserialization failed"), repr);
     }
