@@ -2,8 +2,14 @@
 
 name: CI
 on:
-  - push
-  - workflow_dispatch
+  push:
+  workflow_dispatch:
+    inputs:
+      power_wash:
+        type: boolean
+        description: Fetch versions that are already in the cache
+        required: true
+        default: false
 
 jobs:
   changes:
@@ -32,7 +38,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
 
-      - if: needs.changes.outputs.cargo == 'true'
+      - name: Run cargo-deny
+        if: needs.changes.outputs.cargo == 'true'
         run: |
           cargo install cargo-deny
           cargo-deny check -c Deny.toml bans licenses sources
@@ -58,7 +65,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - run: git clone --depth 1 https://andre4ik3:${{ secrets.META_TOKEN }}@github.com/andre4ik3/Launcher-Meta.git _site
-      - run: cargo run --locked --bin silo -- --power-wash
+
+      - name: Run silo
+        run: |
+          if [[ "${{ inputs.power_wash }}" == "true" ]]; then
+            cargo run --locked --bin silo -- --power-wash
+          else
+            cargo run --locked --bin silo
+          fi
+
       - uses: EndBug/add-and-commit@v9
         with: { cwd: "./_site", default_author: github_actions }
       - id: deployment
