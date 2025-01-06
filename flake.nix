@@ -22,6 +22,7 @@
           "rustfmt"
           "rust-analyzer"
         ])
+        cargo-deny
 
         # macOS frontend (Swift)
         swift-format
