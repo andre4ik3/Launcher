@@ -1,4 +1,4 @@
-// Copyright © 2023-2024 andre4ik3
+// Copyright © 2023-2025 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ use crate::directories;
 
 const LOG_FILE_NAME: &str = "Launcher.log";
 
-fn panic_hook(panic_info: &panic::PanicInfo) {
+fn panic_hook(panic_info: &panic::PanicHookInfo) {
     let location = panic_info.location().map(ToString::to_string);
     let location = location.unwrap_or("<???>".to_string());
 

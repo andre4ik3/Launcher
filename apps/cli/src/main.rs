@@ -1,4 +1,4 @@
-// Copyright © 2023-2024 andre4ik3
+// Copyright © 2023-2025 andre4ik3
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ async fn main() -> anyhow::Result<()> {
     let _guard = utils::log::setup();
     let client = net::Client::new().await;
 
-    let url = Url::parse(BASE_URL).unwrap();
+    let url = Url::parse(BASE_URL)?;
 
     let index = fetch::meta::index(&client, &url).await?;
 
