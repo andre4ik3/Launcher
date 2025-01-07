@@ -35,19 +35,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: Swatinem/rust-cache@v2
 
       - name: Run cargo-deny
         if: needs.changes.outputs.cargo == 'true'
-        run: |
-          cargo install cargo-deny
-          cargo-deny check -c Deny.toml bans licenses sources
+        run: nix develop -c cargo-deny check -c Deny.toml bans licenses sources
 
       - uses: olix0r/cargo-action-fmt/setup@v2
-      - run: cargo check --locked --message-format=json | cargo-action-fmt
-      - run: cargo test --locked --no-run --message-format=json | cargo-action-fmt
-      - run: cargo test --locked
+
+      # TODO: add test commands to Nix, once it's packaged
+      - run: nix develop -c sh -c "cargo check --locked --message-format=json | cargo-action-fmt"
+      - run: nix develop -c sh -c "cargo test --locked --no-run --message-format=json | cargo-action-fmt"
+      - run: nix develop -c sh -c "cargo test --locked"
 
   metadata:
     name: Deploy metadata site
@@ -62,16 +63,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: Swatinem/rust-cache@v2
       - run: git clone --depth 1 https://andre4ik3:${{ secrets.META_TOKEN }}@github.com/andre4ik3/Launcher-Meta.git _site
 
+      # TODO: package silo in Nix
       - name: Run silo
         run: |
           if [[ "${{ inputs.power_wash }}" == "true" ]]; then
-            cargo run --locked --bin silo -- --power-wash
+            nix develop -c sh -c "cargo run --locked --bin silo -- --power-wash"
           else
-            cargo run --locked --bin silo
+            nix develop -c sh -c "cargo run --locked --bin silo"
           fi
 
       - uses: EndBug/add-and-commit@v9

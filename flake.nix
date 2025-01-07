@@ -10,6 +10,7 @@
 
   outputs = { nixpkgs, flake-utils, fenix, ... }: flake-utils.lib.eachDefaultSystem (system: let
     pkgs = import nixpkgs { inherit system; overlays = [ fenix.overlays.default ]; };
+    lib = nixpkgs.lib;
   in {
     devShells.default = pkgs.mkShell {
       packages = with pkgs; [
@@ -23,19 +24,17 @@
           "rust-analyzer"
         ])
         cargo-deny
-
-        # macOS frontend (Swift)
-        swift-format
-        #xcodegen
         llvmPackages.clangWithLibcAndBasicRtAndLibcxx
-
-        # Linux stuff
+      ] ++ (lib.optionals pkgs.hostPlatform.isLinux [
         pkg-config
         openssl
         gtk4
         libadwaita
         dbus
-      ];
+      ]) ++ (lib.optionals pkgs.hostPlatform.isDarwin [
+        swift-format
+        xcodegen
+      ]);
     };
   });
 }
