@@ -16,5 +16,5 @@ utils = { path = "../utils", version = "*", package = "launcher-utils" }
 
 platforms = { version = "3", features = ["serde"] }
 ron = "0.8"
-thiserror = "1"
+thiserror = "2"
 url = { version = "2", features = ["serde"] }

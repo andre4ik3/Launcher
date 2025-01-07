@@ -1,3 +1,3 @@
 [workspace]
-members = ["apps/cli", "modules/*", "silo"]
+members = ["apps/cli", "apps/linux", "modules/*", "silo"]
 resolver = "2"

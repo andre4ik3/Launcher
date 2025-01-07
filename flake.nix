@@ -26,7 +26,15 @@
 
         # macOS frontend (Swift)
         swift-format
-        xcodegen
+        #xcodegen
+        llvmPackages.clangWithLibcAndBasicRtAndLibcxx
+
+        # Linux stuff
+        pkg-config
+        openssl
+        gtk4
+        libadwaita
+        dbus
       ];
     };
   });

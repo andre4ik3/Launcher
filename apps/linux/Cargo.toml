@@ -4,8 +4,9 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-gtk = { version = "0.8", package = "gtk4", features = ["v4_12"] }
+gtk = { version = "0.9", package = "gtk4", features = ["v4_16"] }
+adw = { version = "0.7", package = "libadwaita" }
 tokio = { version = "1", features = ["full"] }
 
 [build-dependencies]
-glib-build-tools = "0.19"
+glib-build-tools = "0.20"
