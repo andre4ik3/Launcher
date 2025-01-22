@@ -26,7 +26,7 @@ jobs:
         with:
           filters: |
             cargo: ['Cargo.*', 'Deny.toml', '**/*/Cargo.*']
-            silo: ['Cargo.*', 'silo/**/*', 'modules/data/**/*', 'modules/net/**/*', 'modules/utils/**/*']
+            silo: ['Cargo.*', 'apps/silo/**/*', 'modules/data/**/*', 'modules/net/**/*', 'modules/utils/**/*']
 
   check:
     name: Check code
@@ -68,13 +68,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: git clone --depth 1 https://andre4ik3:${{ secrets.META_TOKEN }}@github.com/andre4ik3/Launcher-Meta.git _site
 
-      # TODO: package silo in Nix
       - name: Run silo
         run: |
           if [[ "${{ inputs.power_wash }}" == "true" ]]; then
-            nix develop -c sh -c "cargo run --locked --bin silo -- --power-wash"
+            nix run .#silo -- --power-wash
           else
-            nix develop -c sh -c "cargo run --locked --bin silo"
+            nix run .#silo
           fi
 
       - uses: EndBug/add-and-commit@v9
