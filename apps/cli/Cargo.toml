@@ -6,11 +6,7 @@ license = "GPL-3.0-or-later"
 publish = false
 
 [dependencies]
-auth = { path = "../../modules/auth", version = "*", package = "launcher-auth" }
-data = { path = "../../modules/data", version = "*", package = "launcher-data" }
-fetch = { path = "../../modules/fetch", version = "*", package = "launcher-fetch" }
-net = { path = "../../modules/net", version = "*", package = "launcher-net" }
-utils = { path = "../../modules/utils", version = "*", package = "launcher-utils" }
+core = { path = "../../core", version = "*", package = "launcher-core" }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }

@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use async_trait::async_trait;
-
 use data::core::auth::Account;
 pub use microsoft::MicrosoftAuthenticationService;
 use net::Client;
@@ -24,7 +22,6 @@ mod microsoft;
 mod offline;
 
 /// A generic interface for interacting with an authentication service.
-#[async_trait]
 pub trait AuthenticationService {
     /// The type of credentials that this authentication service accepts.
     type Credentials;

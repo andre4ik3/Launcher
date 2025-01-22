@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use async_trait::async_trait;
 use uuid::Uuid;
 
 use data::core::auth::{Account, AccountCredentials};
@@ -23,7 +22,6 @@ use crate::{AuthenticationService, Result};
 
 pub struct OfflineAuthenticationService;
 
-#[async_trait]
 impl AuthenticationService for OfflineAuthenticationService {
     /// The credentials for the offline authentication service -- that is, simply the username of
     /// the account that should be logged into.

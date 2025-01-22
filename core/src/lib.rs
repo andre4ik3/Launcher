@@ -13,6 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pub mod models;
-pub mod net;
-pub(crate) mod utils;
+pub use auth;
+pub use data;
+pub use fetch;
+pub use macros;
+pub use net;
+pub use persistence;
+pub use utils;
