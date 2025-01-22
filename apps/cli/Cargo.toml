@@ -6,7 +6,7 @@ license = "GPL-3.0-or-later"
 publish = false
 
 [dependencies]
-core = { path = "../../core", version = "*", package = "launcher-core" }
+launcher = { path = "../../core", version = "*", package = "launcher-core" }
 
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }

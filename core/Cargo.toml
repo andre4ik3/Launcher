@@ -5,6 +5,9 @@ edition = "2021"
 license = "GPL-3.0-or-later"
 publish = false
 
+[features]
+silo = ["data/silo", "fetch/silo"]
+
 [dependencies]
 auth = { path = "../modules/auth", version = "*", package = "launcher-auth" }
 data = { path = "../modules/data", version = "*", package = "launcher-data" }

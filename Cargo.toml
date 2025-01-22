@@ -1,3 +1,5 @@
 [workspace]
-members = ["apps/cli", "core", "modules/*", "silo"]
+members = ["apps/*", "core", "modules/*"]
 resolver = "2"
+metadata.crane.name = "launcher"
+package.version = "0.0.1"

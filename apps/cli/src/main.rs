@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use core::*;
+use launcher::{utils, net, fetch};
 use url::Url;
 
 const BASE_URL: &str = "https://launchermeta.lambda.prod.andre4ik3.net/";

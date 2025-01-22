@@ -1,0 +1,15 @@
+id: dev.andre4ik3.Launcher
+runtime: org.gnome.Platform
+runtime-version: '47'
+sdk: org.gnome.Sdk
+command: hello
+modules:
+  - name: hello
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 or something
+    sources:
+      - type: script
+        dest-file: hello.sh
+        commands:
+          - echo "Hello from flatpak"
