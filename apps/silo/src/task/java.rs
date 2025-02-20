@@ -17,11 +17,11 @@ use platforms::{Arch, OS};
 use semver::Version;
 use url::Url;
 
-use data::core::java::{Environment, JavaBuild, JavaEdition, JavaProvider};
-use data::silo::java::zulu::{ZuluDetails, ZuluMetadata};
+use launcher::data::core::java::{Environment, JavaBuild, JavaEdition, JavaProvider};
+use launcher::data::silo::java::zulu::{ZuluDetails, ZuluMetadata};
 
-use crate::{client, vpath};
 use crate::macros::write_to_ron_file;
+use crate::{client, vpath};
 
 const BASE_URL: &str = "https://api.azul.com/metadata/v1/zulu/packages/?javafx_bundled=false&crac_supported=false&latest=true&release_status=ga&availability_types=CA&certifications=tck";
 
@@ -55,7 +55,11 @@ const ENVIRONMENTS: &[Environment] = &[
 fn convert_build(meta: ZuluMetadata, details: ZuluDetails, environment: &Environment) -> JavaBuild {
     JavaBuild {
         provider: JavaProvider::Zulu,
-        version: Version::new(meta.java_version.0, meta.java_version.1, meta.java_version.2),
+        version: Version::new(
+            meta.java_version.0,
+            meta.java_version.1,
+            meta.java_version.2,
+        ),
         edition: if details.name.contains("jre") {
             JavaEdition::JRE // this is preferred -- it's about 3x smaller than JDK
         } else {
@@ -65,8 +69,9 @@ fn convert_build(meta: ZuluMetadata, details: ZuluDetails, environment: &Environ
         executable: match environment.os {
             OS::Linux | OS::MacOS => "bin/java",
             OS::Windows => "bin\\javaw.exe", // `javaw.exe` spawns a windowed process on Windows (normal `java.exe` runs headless!!)
-            _ => unreachable!()
-        }.to_string(),
+            _ => unreachable!(),
+        }
+        .to_string(),
         download: meta.download_url,
         name: details.name,
         size: details.size,
@@ -85,19 +90,19 @@ pub async fn run(major_versions: Vec<u64>) -> anyhow::Result<Vec<JavaBuild>> {
                 OS::MacOS => "macos",
                 OS::Windows => "windows",
                 OS::Linux => "linux-glibc", // TODO: musl support in the future?
-                _ => unreachable!()
+                _ => unreachable!(),
             };
 
             let arch = match environment.arch {
                 Arch::AArch64 => "aarch64",
                 Arch::X86_64 => "x64",
-                _ => unreachable!()
+                _ => unreachable!(),
             };
 
             let archive_type = match environment.os {
                 OS::MacOS | OS::Linux => "tar.gz",
                 OS::Windows => "zip",
-                _ => unreachable!()
+                _ => unreachable!(),
             };
 
             // Next, build them all into the URL that we will query.
@@ -114,20 +119,35 @@ pub async fn run(major_versions: Vec<u64>) -> anyhow::Result<Vec<JavaBuild>> {
             // In all cases I've observed, the first build is the one we want.
             // If we have a build, fetch more info about it using the package details endpoint.
             if builds.is_empty() {
-                tracing::warn!("Could not find build for Java {version} for {} {}!", environment.os, environment.arch);
+                tracing::warn!(
+                    "Could not find build for Java {version} for {} {}!",
+                    environment.os,
+                    environment.arch
+                );
                 continue;
             }
 
             let meta = builds.swap_remove(0);
-            let url = format!("https://api.azul.com/metadata/v1/zulu/packages/{}", meta.package_uuid);
+            let url = format!(
+                "https://api.azul.com/metadata/v1/zulu/packages/{}",
+                meta.package_uuid
+            );
             let details: ZuluDetails = client.get(url).await?.json().await?;
 
             // Finally, assemble the fully parsed Java build for consumption in clients...
             let build = convert_build(meta, details, environment);
 
             // ...and write it to disk.
-            tracing::info!("Fetched Java {version} for {} {}.", environment.os, environment.arch);
-            write_to_ron_file(vpath!("java/{version}/{}-{}.ron", environment.os, environment.arch), &build).await?;
+            tracing::info!(
+                "Fetched Java {version} for {} {}.",
+                environment.os,
+                environment.arch
+            );
+            write_to_ron_file(
+                vpath!("java/{version}/{}-{}.ron", environment.os, environment.arch),
+                &build,
+            )
+            .await?;
             output.push(build);
         }
     }

@@ -70,7 +70,7 @@ impl From<crate::silo::game::ApiCommonLibrary> for MaybeConditional<Library> {
             Some(rules) => MaybeConditional::Conditional {
                 when: Condition::And(rules.into_iter().map(Condition::from).collect()).simplify(),
                 then: library,
-            }
+            },
         }
     }
 }
@@ -81,22 +81,21 @@ impl From<crate::silo::game::ApiNativeLibrary> for Vec<MaybeConditional<Library>
         let mut libraries = Vec::<MaybeConditional<Library>>::new();
 
         // TODO: Make this more readable
-        let keys: Vec<(String, OS)> =
-            vec![value.natives.linux, value.natives.osx, value.natives.windows]
-                .into_iter()
-                .zip(vec![OS::Linux, OS::MacOS, OS::Windows])
-                .filter(|(key, _)| key.is_some())
-                .map(|(key, os)| (key.unwrap(), os))
-                .collect();
+        let keys: Vec<(String, OS)> = vec![
+            value.natives.linux,
+            value.natives.osx,
+            value.natives.windows,
+        ]
+        .into_iter()
+        .zip(vec![OS::Linux, OS::MacOS, OS::Windows])
+        .filter(|(key, _)| key.is_some())
+        .map(|(key, os)| (key.unwrap(), os))
+        .collect();
 
         // Base condition for the library (if exists).
-        let base_condition: Option<Condition> = value.rules.map(|s| {
-            Condition::And(
-                s.into_iter()
-                    .map(Condition::from)
-                    .collect()
-            ).simplify()
-        });
+        let base_condition: Option<Condition> = value
+            .rules
+            .map(|s| Condition::And(s.into_iter().map(Condition::from).collect()).simplify());
 
         for (key, os) in keys {
             // Mojang classic. In some libraries, there are native keys, but no corresponding

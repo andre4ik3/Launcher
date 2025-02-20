@@ -2,7 +2,7 @@
 name = "launcher-linux"
 version = "0.0.1"
 license = "GPL-3.0-or-later"
-edition = "2021"
+edition = "2024"
 publish = false
 
 [dependencies]

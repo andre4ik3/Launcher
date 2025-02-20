@@ -14,10 +14,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use chrono::{DateTime, Utc};
+use macros::data_structure;
 use platforms::OS;
 use semver::{Comparator, Op, Prerelease, VersionReq};
-use serde::{Deserialize, Serialize};
-use macros::data_structure;
 
 use super::conditional::{Condition, MaybeConditional};
 use super::library::Library;
@@ -151,7 +150,11 @@ impl From<crate::silo::game::ApiGameVersion17w43a> for GameVersion {
             stability: GameVersionStability::from(value.stability),
             java_version: VersionReq {
                 comparators: vec![Comparator {
-                    op: if value.java_version.major_version == 8 { Op::Exact } else { Op::GreaterEq },
+                    op: if value.java_version.major_version == 8 {
+                        Op::Exact
+                    } else {
+                        Op::GreaterEq
+                    },
                     major: value.java_version.major_version,
                     minor: None,
                     patch: None,
@@ -159,7 +162,11 @@ impl From<crate::silo::game::ApiGameVersion17w43a> for GameVersion {
                 }],
             },
             main_class: value.main_class,
-            libraries: value.libraries.into_iter().flat_map(Vec::<MaybeConditional<Library>>::from).collect(),
+            libraries: value
+                .libraries
+                .into_iter()
+                .flat_map(Vec::<MaybeConditional<Library>>::from)
+                .collect(),
             java_arguments: value
                 .arguments
                 .jvm

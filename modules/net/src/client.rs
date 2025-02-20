@@ -23,7 +23,11 @@ use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use tokio::time;
 
-use super::{Error, header::{self, HeaderValue}, queue, Result};
+use super::{
+    Error, Result,
+    header::{self, HeaderValue},
+    queue,
+};
 
 /// Maximum attempts for the client to make a request.
 const MAX_ATTEMPTS: u64 = 3;
@@ -71,8 +75,8 @@ impl Client {
     /// Upon exhaustion of all attempts, [Error::RequestAttemptsExhausted] is returned, containing
     /// the number of attempts tried as well as the last error that occurred within the closure.
     async fn attempt<T, Fut>(mut func: impl FnMut() -> Fut) -> Result<T>
-        where
-            Fut: Future<Output=Result<T>>,
+    where
+        Fut: Future<Output = Result<T>>,
     {
         let mut last_error = None;
 
@@ -108,7 +112,7 @@ impl Client {
             let request = request.try_clone().ok_or(Error::RequestCloneFail)?;
             queue.execute(request).await
         })
-            .await
+        .await
     }
 
     /// Attempts to download a file to a destination with retry logic and interrupted download
@@ -149,13 +153,16 @@ impl Client {
             dest.flush().await?;
             Ok(())
         })
-            .await
+        .await
     }
 
     /// Shorthand for creating a POST request with a form body and using it with [Client::execute].
     pub async fn post_form(&self, url: impl IntoUrl, body: &impl Serialize) -> Result<Response> {
         let mut request = Request::new(Method::POST, url.into_url()?);
-        request.headers_mut().insert(header::CONTENT_TYPE, HeaderValue::from_static("application/x-www-form-urlencoded"));
+        request.headers_mut().insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/x-www-form-urlencoded"),
+        );
         *request.body_mut() = Some(serde_urlencoded::to_string(body)?.into());
         self.execute(request).await
     }
@@ -163,7 +170,10 @@ impl Client {
     /// Shorthand for creating a POST request with a JSON body and using it with [Client::execute].
     pub async fn post_json(&self, url: impl IntoUrl, body: &impl Serialize) -> Result<Response> {
         let mut request = Request::new(Method::POST, url.into_url()?);
-        request.headers_mut().insert(header::CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        request.headers_mut().insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/json"),
+        );
         *request.body_mut() = Some(serde_json::to_string(body)?.into());
         self.execute(request).await
     }

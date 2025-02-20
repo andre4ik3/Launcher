@@ -13,14 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use reqwest::Client;
-
-use launcher::models::JavaInfo;
-use launcher::net::auth::AuthenticationService;
-use launcher::net::download::java::download;
-use launcher::net::meta::get_java;
-use launcher::repo::{Repo, JAVA};
-use launcher::store::{ConfigHolder, CredentialsHolder, StoreHolder, CONFIG, CREDENTIALS};
+use launcher::data::models::JavaInfo;
+use launcher::data::web::microsoft::AUTH_URL;
+use launcher::auth::AuthenticationService;
+use launcher::net::Client;
+use launcher::fetch::meta::java_build;
+use launcher::repo::{JAVA, Repo};
+use launcher::store::{CONFIG, CREDENTIALS, ConfigHolder, CredentialsHolder, StoreHolder};
 
 use crate::ffi::FFIJava;
 
@@ -78,13 +77,12 @@ impl LauncherBridge {
     }
 
     fn get_login_url(&self) -> String {
-        let url = launcher::net::auth::get_auth_url();
-        url.to_string()
+        AUTH_URL.to_string()
     }
 
     async fn do_login(&self, code: String) {
         let account =
-            launcher::net::auth::MicrosoftAuthenticationService::authenticate(&self.client, code)
+            launcher::auth::MicrosoftAuthenticationService::authenticate(&self.client, code)
                 .await
                 .unwrap();
 
@@ -131,8 +129,9 @@ impl LauncherBridge {
     /// Installs a major Java version from the UI.
     async fn java_install(&self, version: u8) {
         // TODO: Error handling
-        let build = get_java(&self.client, version).await.unwrap();
-        let archive = download(&self.client, build).await.unwrap();
+        let client = Client::new().await;
+        let build = java_build(&self.client, version).await.unwrap();
+        let archive = self.client.download(build).await.unwrap();
         JAVA.get().await.add(archive).await.unwrap();
     }
 

@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use crate::Result;
 use data::core::auth::Account;
 pub use microsoft::MicrosoftAuthenticationService;
 use net::Client;
@@ -27,8 +28,8 @@ pub trait AuthenticationService {
     type Credentials;
 
     /// Authenticates with the service, returning an authenticated account ready to be persisted.
-    async fn authenticate(client: &Client, credentials: Self::Credentials) -> crate::Result<Account>;
+    async fn authenticate(client: &Client, credentials: Self::Credentials) -> Result<Account>;
 
     /// Refreshes an expired account so that it is ready to be used again.
-    async fn refresh(client: &Client, account: Account) -> crate::Result<Account>;
+    async fn refresh(client: &Client, account: Account) -> Result<Account>;
 }

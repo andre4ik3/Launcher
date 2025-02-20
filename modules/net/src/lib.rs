@@ -23,7 +23,7 @@
 use std::io;
 
 pub use reqwest::{
-    Body, Certificate, dns, header, Identity, Method, NoProxy, Proxy, Request, Response, StatusCode,
+    Body, Certificate, Identity, Method, NoProxy, Proxy, Request, Response, StatusCode, dns, header,
 };
 use thiserror::Error;
 

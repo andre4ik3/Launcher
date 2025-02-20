@@ -31,7 +31,6 @@ macro_rules! fetch_impl {
     }};
 }
 
-
 pub struct MetaRepository<'a> {
     client: &'a Client,
     pub announcements: Vec<MetaIndexAnnouncement>,
@@ -40,7 +39,10 @@ pub struct MetaRepository<'a> {
 impl<'a> MetaRepository<'a> {
     pub async fn new(client: &'a Client, base: &Url) -> Result<Self> {
         let index: Result<MetaIndex> = fetch_impl!(client, base, "index.ron");
-        Ok(Self { client, announcements: index?.announcements })
+        Ok(Self {
+            client,
+            announcements: index?.announcements,
+        })
     }
 }
 
@@ -51,7 +53,11 @@ pub async fn index(client: &Client, base: &Url) -> Result<MetaIndex> {
 
 /// Fetches a Java build from the metadata server.
 pub async fn java_build(client: &Client, base: &Url, major_version: u64) -> Result<JavaBuild> {
-    fetch_impl!(client, base, "v{VERSION}/java/{major_version}/{CURRENT_OS}-{CURRENT_ARCH}.ron")
+    fetch_impl!(
+        client,
+        base,
+        "v{VERSION}/java/{major_version}/{CURRENT_OS}-{CURRENT_ARCH}.ron"
+    )
 }
 
 /// Fetches a game version from the metadata server.

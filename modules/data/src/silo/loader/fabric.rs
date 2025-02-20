@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use url::Url;
 use macros::api_response;
+use url::Url;
 
 use crate::core::maven::MavenIdentifier;
 
@@ -80,10 +80,7 @@ pub struct FabricVersionLauncherMetaLaunchWrapper {
 #[api_response]
 pub enum FabricVersionMainClass {
     Constant(String),
-    Variable {
-        client: String,
-        server: String,
-    }
+    Variable { client: String, server: String },
 }
 
 #[api_response(rename = "camelCase")]

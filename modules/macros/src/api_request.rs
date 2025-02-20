@@ -17,15 +17,15 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 
-use darling::FromMeta;
-use quote::{quote, TokenStreamExt};
-use syn::{DeriveInput, parse_macro_input};
 use crate::utils::parse_params;
+use darling::FromMeta;
+use quote::{TokenStreamExt, quote};
+use syn::{DeriveInput, parse_macro_input};
 
 #[derive(Debug, FromMeta)]
 struct MacroArgs {
     #[darling(default)]
-    rename: Option<String>
+    rename: Option<String>,
 }
 
 pub fn api_request(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -51,5 +51,5 @@ pub fn api_request(attr: TokenStream, item: TokenStream) -> TokenStream {
         #extra
         #ast
     })
-        .into()
+    .into()
 }

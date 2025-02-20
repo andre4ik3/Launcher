@@ -18,8 +18,8 @@ use chrono::{DateTime, Utc};
 use macros::api_response;
 
 use crate::silo::game::{
-    ApiGameVersionAssetIndex, ApiGameVersionDownloads, GameManifestStability, ApiGameVersionLegacyJavaVersion, ApiLibrary,
-    ApiLibraryRule, ApiGameVersionLogging,
+    ApiGameVersionAssetIndex, ApiGameVersionDownloads, ApiGameVersionLegacyJavaVersion,
+    ApiGameVersionLogging, ApiLibrary, ApiLibraryRule, GameManifestStability,
 };
 
 #[api_response]

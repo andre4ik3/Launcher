@@ -15,11 +15,11 @@
 
 extern crate proc_macro;
 
-use proc_macro::TokenStream;
-use darling::{FromMeta};
-use quote::{quote, TokenStreamExt};
-use syn::{Data, DeriveInput, parse_macro_input};
 use crate::utils::parse_params;
+use darling::FromMeta;
+use proc_macro::TokenStream;
+use quote::{TokenStreamExt, quote};
+use syn::{Data, DeriveInput, parse_macro_input};
 
 #[derive(Debug, FromMeta)]
 struct MacroArgs {
@@ -54,7 +54,7 @@ pub fn api_response(attr: TokenStream, item: TokenStream) -> TokenStream {
     if args.strict.unwrap_or(true) {
         extra.append_all(vec![quote! { #[serde(deny_unknown_fields)] }]);
     }
-    
+
     if let Some(rename) = args.rename {
         extra.append_all(vec![quote! { #[serde(rename_all = #rename)] }]);
     }
@@ -64,5 +64,5 @@ pub fn api_response(attr: TokenStream, item: TokenStream) -> TokenStream {
         #extra
         #ast
     })
-        .into()
+    .into()
 }

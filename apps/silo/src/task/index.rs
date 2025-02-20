@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use data::web::meta::{MetaIndex, MetaIndexAnnouncement, VERSION};
+use launcher::data::web::meta::{MetaIndex, MetaIndexAnnouncement, VERSION};
 
 use crate::macros::write_to_ron_file;
 use crate::path;

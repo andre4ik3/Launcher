@@ -21,6 +21,6 @@ pub use assets::*;
 pub use version::*;
 pub use version_manifest::*;
 
+mod assets;
 mod version;
 mod version_manifest;
-mod assets;

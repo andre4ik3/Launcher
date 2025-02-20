@@ -1,7 +1,7 @@
 [package]
 name = "launcher-utils"
 version = "0.0.1"
-edition = "2021"
+edition = "2024"
 license = "GPL-3.0-or-later"
 publish = false
 
@@ -16,8 +16,8 @@ tracing-subscriber = { version = "0.3", features = ["parking_lot"] }
 
 # archive
 tar = "0.4"
-xz2 = { version = "0.1", features = ["tokio"] }
-zip = "2"
+#xz2 = { version = "0.1", features = ["tokio"] }
+#zip = "2"
 
 # crypto
 md-5 = "0.10"

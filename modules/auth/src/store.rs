@@ -27,14 +27,16 @@ pub struct CredentialStore<'a> {
     registry: &'a Registry,
 }
 
-impl<'a> CredentialStore<'a> {
+impl CredentialStore {
     async fn get() -> Self {
         Self {
-            registry: REGISTRY.get_or_init(async {
-                FileRegistry::new_encrypted("Credentials.dat")
-                    .await
-                    .expect("failed to create registry")
-            }).await
+            registry: REGISTRY
+                .get_or_init(async {
+                    FileRegistry::new_encrypted("Credentials.dat")
+                        .await
+                        .expect("failed to create registry")
+                })
+                .await,
         }
     }
 
@@ -42,7 +44,7 @@ impl<'a> CredentialStore<'a> {
     async fn accounts(&self) -> RwLockReadGuard<'_, Vec<Account>> {
         self.registry.get().await
     }
-    
+
     /// Retrieves all accounts from the credential store in owned form.
     async fn accounts_owned(&self) -> Vec<Account> {
         self.accounts().await.clone()

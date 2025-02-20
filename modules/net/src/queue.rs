@@ -18,7 +18,7 @@ use std::time::Duration;
 use reqwest::{Client, Request, Response};
 use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
-use tokio::time::{interval, Interval};
+use tokio::time::{Interval, interval};
 
 use crate::{Error, Result};
 

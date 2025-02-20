@@ -16,8 +16,8 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct MavenIdentifier {
@@ -28,7 +28,12 @@ pub struct MavenIdentifier {
 }
 
 impl MavenIdentifier {
-    fn new(group: impl AsRef<str>, artifact: impl AsRef<str>, version: impl AsRef<str>, classifier: Option<impl AsRef<str>>) -> Self {
+    fn new(
+        group: impl AsRef<str>,
+        artifact: impl AsRef<str>,
+        version: impl AsRef<str>,
+        classifier: Option<impl AsRef<str>>,
+    ) -> Self {
         Self {
             group: group.as_ref().to_string(),
             artifact: artifact.as_ref().to_string(),
@@ -60,12 +65,20 @@ impl FromStr for MavenIdentifier {
 
         let classifier = parts.into_iter().nth(3);
 
-        Ok(Self { group, artifact, version, classifier })
+        Ok(Self {
+            group,
+            artifact,
+            version,
+            classifier,
+        })
     }
 }
 
 impl Serialize for MavenIdentifier {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         serializer.serialize_str(&self.to_string())
     }
 }
@@ -79,24 +92,36 @@ impl<'de> Visitor<'de> for MavenVisitor {
         formatter.write_str("a maven artifact identifier")
     }
 
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
         match MavenIdentifier::from_str(v) {
             Ok(maven) => Ok(maven),
-            Err(_) => Err(E::custom("failed to deserialize maven artifact identifier"))
+            Err(_) => Err(E::custom("failed to deserialize maven artifact identifier")),
         }
     }
 
-    fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E> where E: Error {
+    fn visit_borrowed_str<E>(self, v: &'de str) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
         Self::visit_str(self, v)
     }
 
-    fn visit_string<E>(self, v: String) -> Result<Self::Value, E> where E: Error {
+    fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
+    where
+        E: Error,
+    {
         Self::visit_str(self, &v)
     }
 }
 
 impl<'de> Deserialize<'de> for MavenIdentifier {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         deserializer.deserialize_str(MavenVisitor)
     }
 }
@@ -109,29 +134,61 @@ mod tests {
 
     #[test]
     fn serialization() {
-        let repr = MavenIdentifier::new("dev.andre4ik3", "cool-artifact", "1.2.3", Option::<String>::None);
+        let repr = MavenIdentifier::new(
+            "dev.andre4ik3",
+            "cool-artifact",
+            "1.2.3",
+            Option::<String>::None,
+        );
         let ser = "dev.andre4ik3:cool-artifact:1.2.3".to_string();
 
         assert_eq!(repr.to_string(), ser);
-        assert_eq!(to_string(&repr).expect("serialization failed"), format!("\"{ser}\""));
+        assert_eq!(
+            to_string(&repr).expect("serialization failed"),
+            format!("\"{ser}\"")
+        );
 
-        let repr = MavenIdentifier::new("dev.andre4ik3", "cool-artifact", "1.2.3", Some("classifier"));
+        let repr = MavenIdentifier::new(
+            "dev.andre4ik3",
+            "cool-artifact",
+            "1.2.3",
+            Some("classifier"),
+        );
         let ser = "dev.andre4ik3:cool-artifact:1.2.3:classifier".to_string();
 
         assert_eq!(repr.to_string(), ser);
-        assert_eq!(to_string(&repr).expect("serialization failed"), format!("\"{ser}\""));
+        assert_eq!(
+            to_string(&repr).expect("serialization failed"),
+            format!("\"{ser}\"")
+        );
     }
 
     #[test]
     fn deserialization() {
-        let repr = MavenIdentifier::new("dev.andre4ik3", "cool-artifact", "1.2.3", Option::<String>::None);
+        let repr = MavenIdentifier::new(
+            "dev.andre4ik3",
+            "cool-artifact",
+            "1.2.3",
+            Option::<String>::None,
+        );
         let ser = "dev.andre4ik3:cool-artifact:1.2.3".to_string();
 
-        assert_eq!(from_str::<MavenIdentifier>(&format!("\"{ser}\"")).expect("deserialization failed"), repr);
+        assert_eq!(
+            from_str::<MavenIdentifier>(&format!("\"{ser}\"")).expect("deserialization failed"),
+            repr
+        );
 
-        let repr = MavenIdentifier::new("dev.andre4ik3", "cool-artifact", "1.2.3", Some("classifier"));
+        let repr = MavenIdentifier::new(
+            "dev.andre4ik3",
+            "cool-artifact",
+            "1.2.3",
+            Some("classifier"),
+        );
         let ser = "dev.andre4ik3:cool-artifact:1.2.3:classifier".to_string();
 
-        assert_eq!(from_str::<MavenIdentifier>(&format!("\"{ser}\"")).expect("deserialization failed"), repr);
+        assert_eq!(
+            from_str::<MavenIdentifier>(&format!("\"{ser}\"")).expect("deserialization failed"),
+            repr
+        );
     }
 }

@@ -27,8 +27,8 @@ use crate::{crypto, registry::Result};
 /// A FileRegistry stores a single instance of T in a file, managing access to it via a shared lock.
 /// Custom read and write functions allow modifying how the data is stored on disk.
 pub struct FileRegistry<T>
-    where
-        T: Default + for<'a> Deserialize<'a> + Serialize,
+where
+    T: Default + for<'a> Deserialize<'a> + Serialize,
 {
     /// A lock holding the data. Used to control read/write access within the registry.
     data: RwLock<T>,
@@ -39,8 +39,8 @@ pub struct FileRegistry<T>
 }
 
 impl<T> FileRegistry<T>
-    where
-        T: Default + for<'a> Deserialize<'a> + Serialize,
+where
+    T: Default + for<'a> Deserialize<'a> + Serialize,
 {
     /// Creates the registry and reads the file from disk into memory. The file should have a .toml
     /// extension.
@@ -61,7 +61,9 @@ impl<T> FileRegistry<T>
         };
 
         if registry.load().await.is_err() {
-            tracing::warn!("Failed to read registry. It will be overwritten and initialized with the defaults.");
+            tracing::warn!(
+                "Failed to read registry. It will be overwritten and initialized with the defaults."
+            );
         }
 
         registry.save().await?;
@@ -105,7 +107,9 @@ impl<T> FileRegistry<T>
 
         if registry.load().await.is_err() {
             // TODO: Present this in the UI, wait for user confirmation before proceeding.
-            tracing::warn!("Failed to read encrypted registry (possibly due to missing/wrong encryption key). It will be overwritten and initialized with the defaults.");
+            tracing::warn!(
+                "Failed to read encrypted registry (possibly due to missing/wrong encryption key). It will be overwritten and initialized with the defaults."
+            );
         }
 
         registry.save().await?;
@@ -124,7 +128,8 @@ impl<T> FileRegistry<T>
     }
 
     /// Loads the file from disk.
-    #[tracing::instrument(name = "FileRegistry::load", skip(self), fields(file = % self.path.display()))]
+    #[tracing::instrument(name = "FileRegistry::load", skip(self), fields(file = % self.path.display()
+    ))]
     pub async fn load(&self) -> Result<()> {
         tracing::trace!("Reading file...");
         let mut lock = self.data.write().await;
@@ -141,7 +146,8 @@ impl<T> FileRegistry<T>
     }
 
     /// Saves the file to disk.
-    #[tracing::instrument(name = "FileRegistry::save", skip(self), fields(file = % self.path.display()))]
+    #[tracing::instrument(name = "FileRegistry::save", skip(self), fields(file = % self.path.display()
+    ))]
     pub async fn save(&self) -> Result<()> {
         tracing::trace!("Writing file...");
         let lock = self.data.read().await;

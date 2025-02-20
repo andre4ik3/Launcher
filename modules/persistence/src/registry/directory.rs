@@ -27,8 +27,8 @@ use crate::registry::Result;
 /// directory in a sub-path of the data directory. You can configure the file name and top-level
 /// directory. For example: JavaInfo is stored in a Java.toml file in parent directory Java.
 pub struct DirectoryRegistry<T>
-    where
-        T: for<'a> Deserialize<'a> + Serialize,
+where
+    T: for<'a> Deserialize<'a> + Serialize,
 {
     /// The assembled base directory.
     base: PathBuf,
@@ -39,8 +39,8 @@ pub struct DirectoryRegistry<T>
 }
 
 impl<T> DirectoryRegistry<T>
-    where
-        T: for<'a> Deserialize<'a> + Serialize,
+where
+    T: for<'a> Deserialize<'a> + Serialize,
 {
     /// Creates a new directory registry and loads any existing entries from the base into memory.
     #[tracing::instrument(name = "DirectoryRegistry::new")]
@@ -92,7 +92,8 @@ impl<T> DirectoryRegistry<T>
     }
 
     /// Reads all entries from disk into memory.
-    #[tracing::instrument(name = "DirectoryRegistry::refresh", skip(self), fields(base = % self.base.display()))]
+    #[tracing::instrument(name = "DirectoryRegistry::refresh", skip(self), fields(base = % self.base.display()
+    ))]
     pub async fn refresh(&mut self) -> Result<()> {
         tracing::trace!("Starting refresh.");
 

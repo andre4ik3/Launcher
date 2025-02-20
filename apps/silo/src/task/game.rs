@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use launcher::data::core::game::{GameVersion, GameVersionSnippet};
+use launcher::data::silo::game::{ApiGameVersion, GameManifest};
 use tokio::fs;
-use data::core::game::{GameVersion, GameVersionSnippet};
-use data::silo::game::{ApiGameVersion, GameManifest};
 
-use crate::{client, vpath};
 use crate::macros::write_to_ron_file;
+use crate::{client, vpath};
 
 const INDEX_URL: &str = "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json";
 
@@ -36,12 +36,19 @@ pub async fn run(power_wash: bool) -> anyhow::Result<Vec<GameVersionSnippet>> {
         // ...if we don't already have it (and we're not set to do a power wash)...
         if fs::try_exists(&path).await.unwrap_or(false) && !power_wash {
             if let Ok(data) = ron::from_str::<GameVersion>(&fs::read_to_string(&path).await?) {
-                tracing::info!("Skipping version {} as it appears we already have it.", version.id);
+                tracing::info!(
+                    "Skipping version {} as it appears we already have it.",
+                    version.id
+                );
                 write_to_ron_file(&path, &data).await?;
                 output.push(GameVersionSnippet::from(data));
                 continue;
             } else {
-                tracing::warn!("Removing malformed version {} at {}", version.id, path.display());
+                tracing::warn!(
+                    "Removing malformed version {} at {}",
+                    version.id,
+                    path.display()
+                );
                 fs::remove_file(&path).await?;
             }
         }
@@ -68,18 +75,17 @@ pub async fn run(power_wash: bool) -> anyhow::Result<Vec<GameVersionSnippet>> {
 #[cfg(test)]
 mod tests {
     use data::silo::game::ApiGameVersion;
-    use super::*;
 
     // TODO: Is it legal to include these in the repo? Maybe let's fetch them when testing?
     // const TEST_VERSIONS: [&str; 8] = [
-        // include_str!("../../res/game/rd-132211.json"),
-        // include_str!("../../res/game/13w38c.json"),
-        // include_str!("../../res/game/14w27b.json"),
-        // include_str!("../../res/game/16w04a.json"),
-        // include_str!("../../res/game/1.12.2.json"),
-        // include_str!("../../res/game/17w43a.json"),
-        // include_str!("../../res/game/23w17a.json"),
-        // include_str!("../../res/game/24w09a.json"),
+    // include_str!("../../res/game/rd-132211.json"),
+    // include_str!("../../res/game/13w38c.json"),
+    // include_str!("../../res/game/14w27b.json"),
+    // include_str!("../../res/game/16w04a.json"),
+    // include_str!("../../res/game/1.12.2.json"),
+    // include_str!("../../res/game/17w43a.json"),
+    // include_str!("../../res/game/23w17a.json"),
+    // include_str!("../../res/game/24w09a.json"),
     // ];
 
     #[tokio::test]

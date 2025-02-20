@@ -17,13 +17,13 @@ use std::collections::HashMap;
 
 use anyhow::anyhow;
 
-use data::core::game::GameVersionSnippet;
-use data::core::loader::{ModLoader, ModLoaderVersion};
-use data::silo::loader::fabric::{FabricVersion, FabricVersionLoader, FabricVersionMainClass};
-use net::Client;
+use launcher::data::core::game::GameVersionSnippet;
+use launcher::data::core::loader::{ModLoader, ModLoaderVersion};
+use launcher::data::silo::loader::fabric::{FabricVersion, FabricVersionLoader, FabricVersionMainClass};
+use launcher::net::Client;
 
-use crate::{client, vpath};
 use crate::macros::write_to_ron_file;
+use crate::{client, vpath};
 
 const FABRIC_BASE_URL: &str = "https://meta.fabricmc.net/v2/versions/loader";
 
@@ -46,7 +46,10 @@ pub const LOADERS: [ModLoader; 4] = [
     },
 ];
 
-async fn run_forge(client: &Client, game_versions: &Vec<GameVersionSnippet>) -> anyhow::Result<Vec<ModLoaderVersion>> {
+async fn run_forge(
+    client: &Client,
+    game_versions: &Vec<GameVersionSnippet>,
+) -> anyhow::Result<Vec<ModLoaderVersion>> {
     let mut output = Vec::new();
 
     for version in game_versions {}
@@ -54,7 +57,10 @@ async fn run_forge(client: &Client, game_versions: &Vec<GameVersionSnippet>) -> 
     Ok(output)
 }
 
-async fn run_fabric(client: &Client, game_versions: &Vec<GameVersionSnippet>) -> anyhow::Result<Vec<ModLoaderVersion>> {
+async fn run_fabric(
+    client: &Client,
+    game_versions: &Vec<GameVersionSnippet>,
+) -> anyhow::Result<Vec<ModLoaderVersion>> {
     let mut output = Vec::new();
 
     let loaders: Vec<FabricVersionLoader> = client.get(FABRIC_BASE_URL).await?.json().await?;
@@ -62,7 +68,14 @@ async fn run_fabric(client: &Client, game_versions: &Vec<GameVersionSnippet>) ->
     let loader = loader.ok_or(anyhow!("no fabric loader version"))?;
 
     for game_version in game_versions {
-        let version: FabricVersion = client.get(format!("{FABRIC_BASE_URL}/{}/{}", game_version.id, loader.version)).await?.json().await?;
+        let version: FabricVersion = client
+            .get(format!(
+                "{FABRIC_BASE_URL}/{}/{}",
+                game_version.id, loader.version
+            ))
+            .await?
+            .json()
+            .await?;
         output.push(ModLoaderVersion {
             loader_version: version.loader.version.to_string(),
             game_version: game_version.id.clone(),
@@ -79,7 +92,10 @@ async fn run_fabric(client: &Client, game_versions: &Vec<GameVersionSnippet>) ->
     Ok(output)
 }
 
-async fn run_quilt(client: &Client, game_versions: &Vec<GameVersionSnippet>) -> anyhow::Result<Vec<ModLoaderVersion>> {
+async fn run_quilt(
+    client: &Client,
+    game_versions: &Vec<GameVersionSnippet>,
+) -> anyhow::Result<Vec<ModLoaderVersion>> {
     let mut output = Vec::new();
 
     for version in game_versions {}
@@ -87,7 +103,10 @@ async fn run_quilt(client: &Client, game_versions: &Vec<GameVersionSnippet>) -> 
     Ok(output)
 }
 
-async fn run_neoforge(client: &Client, game_versions: &Vec<GameVersionSnippet>) -> anyhow::Result<Vec<ModLoaderVersion>> {
+async fn run_neoforge(
+    client: &Client,
+    game_versions: &Vec<GameVersionSnippet>,
+) -> anyhow::Result<Vec<ModLoaderVersion>> {
     let mut output = Vec::new();
 
     for version in game_versions {}
@@ -95,19 +114,25 @@ async fn run_neoforge(client: &Client, game_versions: &Vec<GameVersionSnippet>) 
     Ok(output)
 }
 
-pub async fn run(game_versions: Vec<GameVersionSnippet>) -> anyhow::Result<HashMap<String, Vec<ModLoaderVersion>>> {
+pub async fn run(
+    game_versions: Vec<GameVersionSnippet>,
+) -> anyhow::Result<HashMap<String, Vec<ModLoaderVersion>>> {
     let client = client();
     let versions: Vec<ModLoaderVersion> = vec![
         // run_forge(client, &game_versions).await?,
         run_fabric(client, &game_versions).await?,
         // run_quilt(client, &game_versions).await?,
         // run_neoforge(client, &game_versions).await?,
-    ].into_iter().flatten().collect();
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
 
     // Group each mod loader version by game version.
     let mut output = HashMap::<String, Vec<ModLoaderVersion>>::new();
     for version in versions {
-        output.entry(version.game_version.clone())
+        output
+            .entry(version.game_version.clone())
             .or_default()
             .push(version);
     }

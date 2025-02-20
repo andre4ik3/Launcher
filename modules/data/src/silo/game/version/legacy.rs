@@ -18,8 +18,8 @@ use std::collections::HashMap;
 use chrono::{DateTime, Utc};
 use url::Url;
 
-use macros::api_response;
 use crate::core::maven::MavenIdentifier;
+use macros::api_response;
 
 use crate::silo::game::GameManifestStability;
 

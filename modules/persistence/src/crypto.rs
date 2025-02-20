@@ -17,8 +17,8 @@ use std::ffi::OsStr;
 use std::fmt::Debug;
 use std::path::Path;
 
-use aes_gcm::{AeadCore, Aes256Gcm, Key, KeyInit};
 use aes_gcm::aead::{Aead, Nonce, OsRng};
+use aes_gcm::{AeadCore, Aes256Gcm, Key, KeyInit};
 use keyring::Entry;
 use thiserror::Error;
 use tokio::{fs, task};
@@ -123,8 +123,8 @@ pub async fn read_key(file: impl AsRef<Path> + Debug) -> Option<Key<Aes256Gcm>> 
             .ok_or(Error::KeyNotFound)
             .and_then(keyring_read)
     })
-        .await
-        .expect("blocking thread panicked");
+    .await
+    .expect("blocking thread panicked");
 
     tracing::debug!("Keyring key: {}", keyring_key.is_ok());
     tracing::debug!("Keyfile key: {}", keyfile_key.is_ok());
@@ -144,13 +144,15 @@ pub async fn write_key(file: impl AsRef<Path> + Debug, key: Key<Aes256Gcm>) -> R
             .ok_or(Error::KeyNotFound)
             .and_then(|stem| keyring_write(stem, &key))
     })
-        .await
-        .expect("blocking thread panicked");
+    .await
+    .expect("blocking thread panicked");
 
     match keyring_result {
         Ok(()) => {
             if let Err(err) = keyfile_clean(&file).await {
-                tracing::warn!("Failed to cleanup keyfile after successful keychain migration: {err}");
+                tracing::warn!(
+                    "Failed to cleanup keyfile after successful keychain migration: {err}"
+                );
             };
             Ok(())
         }

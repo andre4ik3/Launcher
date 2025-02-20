@@ -1,0 +1,17 @@
+[package]
+name = "launcher-lang"
+version = "0.0.1"
+edition = "2024"
+license = "GPL-3.0-or-later"
+publish = false
+
+[dependencies]
+fluent-bundle = "0.15"
+fluent-syntax = "0.11"
+unic-langid = { version = "0.9", features = ["macros"] }
+tokio = { version = "1", features = ["fs"] }
+thiserror = "2"
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }

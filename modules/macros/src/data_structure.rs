@@ -16,7 +16,7 @@
 use proc_macro::TokenStream;
 
 use darling::FromMeta;
-use quote::{quote, TokenStreamExt};
+use quote::{TokenStreamExt, quote};
 use syn::{Data, DeriveInput, parse_macro_input};
 
 use crate::utils::parse_params;
@@ -60,5 +60,5 @@ pub fn data_structure(attr: TokenStream, item: TokenStream) -> TokenStream {
         #extra
         #ast
     })
-        .into()
+    .into()
 }

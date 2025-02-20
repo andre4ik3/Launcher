@@ -13,10 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use gtk::prelude::*;
-use gtk::{gio, glib, Box, ListBox, Orientation, SelectionMode};
-use adw::{ActionRow, Application, ApplicationWindow, HeaderBar};
 use adw::prelude::ActionRowExt;
+use adw::{ActionRow, Application, ApplicationWindow, HeaderBar};
+use gtk::prelude::*;
+use gtk::{Box, ListBox, Orientation, SelectionMode, gio, glib};
 
 const APP_ID: &str = "dev.andre4ik3.Launcher";
 

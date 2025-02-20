@@ -37,9 +37,13 @@ macro_rules! vpath {
 
 /// Shortcut to write a serializable struct to a `.ron` file.
 pub async fn write_to_ron_file<T>(path: impl AsRef<Path>, data: &T) -> anyhow::Result<()>
-    where T: ?Sized + Serialize {
+where
+    T: ?Sized + Serialize,
+{
     let path = path.as_ref();
-    let config = PRETTY_CONFIG.get_or_init(|| async { PrettyConfig::new().struct_names(true) }).await;
+    let config = PRETTY_CONFIG
+        .get_or_init(|| async { PrettyConfig::new().struct_names(true) })
+        .await;
 
     // Ensure the parents of the path exist.
     if let Some(parent) = path.parent() {

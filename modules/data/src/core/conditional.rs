@@ -40,10 +40,7 @@ pub enum Condition {
 #[data_structure]
 pub enum MaybeConditional<T> {
     Unconditional(T),
-    Conditional {
-        when: Condition,
-        then: T,
-    },
+    Conditional { when: Condition, then: T },
 }
 
 // === impl ===
@@ -126,7 +123,7 @@ impl<T> MaybeConditional<T> {
             Self::Unconditional(val) => Some(val),
             Self::Conditional { when, then } => match when.eval(features) {
                 true => Some(then),
-                false => None
+                false => None,
             },
         }
     }
@@ -174,7 +171,7 @@ impl From<crate::silo::game::ApiLibraryRule> for Condition {
                         ("^11\\.", OS::Windows) => conditions.push(Condition::Never),
 
                         // We don't have an implementation of OS version requirement checking (yet).
-                        _ => todo!()
+                        _ => todo!(),
                     }
                 }
 
@@ -205,18 +202,26 @@ impl From<crate::silo::game::ApiLibraryRule> for Condition {
 impl From<crate::silo::game::ApiModernGameArgument> for Vec<MaybeConditional<String>> {
     fn from(value: crate::silo::game::ApiModernGameArgument) -> Self {
         match value {
-            crate::silo::game::ApiModernGameArgument::Plain(val) => vec![MaybeConditional::Unconditional(val)],
+            crate::silo::game::ApiModernGameArgument::Plain(val) => {
+                vec![MaybeConditional::Unconditional(val)]
+            }
             crate::silo::game::ApiModernGameArgument::Conditional { rules, value } => {
-                let condition = Condition::Or(rules.into_iter().map(Condition::from).collect()).simplify();
+                let condition =
+                    Condition::Or(rules.into_iter().map(Condition::from).collect()).simplify();
                 match value {
-                    crate::silo::game::ApiModernGameRuleValue::String(val) => vec![MaybeConditional::Conditional {
-                        when: condition,
-                        then: val,
-                    }],
-                    crate::silo::game::ApiModernGameRuleValue::Array(vals) => vals.into_iter().map(|val| MaybeConditional::Conditional {
-                        when: condition.clone(),
-                        then: val,
-                    }).collect()
+                    crate::silo::game::ApiModernGameRuleValue::String(val) => {
+                        vec![MaybeConditional::Conditional {
+                            when: condition,
+                            then: val,
+                        }]
+                    }
+                    crate::silo::game::ApiModernGameRuleValue::Array(vals) => vals
+                        .into_iter()
+                        .map(|val| MaybeConditional::Conditional {
+                            when: condition.clone(),
+                            then: val,
+                        })
+                        .collect(),
                 }
             }
         }
@@ -274,8 +279,14 @@ mod tests {
         );
 
         // Simplification of And(..., Never, ...) and Or(..., Always, ...) should always be false and true
-        assert_eq!(Condition::And(vec![feature.clone(), Condition::Never, feature.clone()]).simplify(), Condition::Never);
-        assert_eq!(Condition::Or(vec![feature.clone(), Condition::Always, feature.clone()]).simplify(), Condition::Always);
+        assert_eq!(
+            Condition::And(vec![feature.clone(), Condition::Never, feature.clone()]).simplify(),
+            Condition::Never
+        );
+        assert_eq!(
+            Condition::Or(vec![feature.clone(), Condition::Always, feature.clone()]).simplify(),
+            Condition::Always
+        );
 
         // Simplifying already simplified condition should be a no-op
         assert_eq!(feature.clone().simplify(), feature);

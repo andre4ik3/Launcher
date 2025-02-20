@@ -24,18 +24,18 @@
 //! Each main function of Silo is represented as a [task::Task]. Tasks can depend on one another and
 //! are run in parallel when possible.
 
-use std::path::PathBuf;
 use anyhow::anyhow;
+use std::path::PathBuf;
 use tokio::fs;
 use tokio::sync::OnceCell;
 
-use net::Client;
+use launcher::net::Client;
 
 mod cli;
-mod task;
 pub(crate) mod macros;
+mod task;
 
-pub(crate) use data::web::meta::VERSION;
+pub(crate) use launcher::data::web::meta::VERSION;
 
 const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
 const META_VERSIONS: [u64; 1] = [0];
@@ -51,22 +51,29 @@ pub(crate) fn client<'a>() -> &'a Client {
     CLIENT.get().unwrap()
 }
 
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = cli::parse();
-    let _guard = utils::log::setup();
+    let _guard = launcher::utils::log::setup();
 
     tracing::info!("Running Silo v{PACKAGE_VERSION}");
-    fs::create_dir_all(&args.output).await.expect("failed to create output folder");
+    fs::create_dir_all(&args.output)
+        .await
+        .expect("failed to create output folder");
 
     // Initialize statics
-    CLIENT.set(Client::new().await).map_err(|_| anyhow!("failed to setup client")).unwrap();
+    CLIENT
+        .set(Client::new().await)
+        .map_err(|_| anyhow!("failed to setup client"))
+        .unwrap();
     ROOT.set(fs::canonicalize(&args.output).await?).unwrap();
 
     // Index
     let index = task::index::run(vec![]).await?;
-    tracing::info!("Successfully generated index file with {} announcements.", index.announcements.len());
+    tracing::info!(
+        "Successfully generated index file with {} announcements.",
+        index.announcements.len()
+    );
 
     // Java builds
     // let java_builds = task::java::run(vec![8, 17]).await?;
@@ -74,8 +81,11 @@ async fn main() -> anyhow::Result<()> {
 
     // Game versions
     let game_versions = task::game::run(args.power_wash).await?;
-    tracing::info!("Successfully fetched {} game versions.", game_versions.len());
-    
+    tracing::info!(
+        "Successfully fetched {} game versions.",
+        game_versions.len()
+    );
+
     // let loader_versions = task::loaders::run(game_versions).await?;
     // tracing::info!("Successfully loaded mod loaders.");
 

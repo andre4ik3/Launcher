@@ -19,8 +19,8 @@ use uuid::Uuid;
 use data::core::auth::{Account, AccountCredentials};
 use data::web::microsoft::*;
 use data::web::mojang::{PROFILE_URL, UserProfile};
-use net::{Client, Method, Request};
 use net::header::HeaderValue;
+use net::{Client, Method, Request};
 
 use crate::{AuthenticationService, Error, Result};
 
@@ -42,7 +42,9 @@ impl AuthenticationService for MicrosoftAuthenticationService {
             .map(|p| (p.id, p.username))
             .unwrap_or_else(|_| (Uuid::new_v4().to_string(), "Player".to_string()));
 
-        tracing::debug!("Successfully retrieved Microsoft account {username}. Profile: {has_profile}");
+        tracing::debug!(
+            "Successfully retrieved Microsoft account {username}. Profile: {has_profile}"
+        );
 
         Ok(Account {
             id,
@@ -59,12 +61,17 @@ impl AuthenticationService for MicrosoftAuthenticationService {
 
     #[tracing::instrument(name = "MicrosoftAuthenticationService::refresh", skip_all)]
     async fn refresh(client: &Client, account: Account) -> Result<Account> {
-        tracing::debug!("Beginning refresh of Microsoft account {}.", account.username);
+        tracing::debug!(
+            "Beginning refresh of Microsoft account {}.",
+            account.username
+        );
 
         // Get a new access token and refresh token.
         let refresh_token = match account.credentials {
             AccountCredentials::Microsoft { refresh, .. } => refresh,
-            AccountCredentials::Offline => return Err(Error::WrongAccountType("microsoft", "offline")),
+            AccountCredentials::Offline => {
+                return Err(Error::WrongAccountType("microsoft", "offline"));
+            }
         };
 
         let (access_token, refresh_token) = refresh(client, refresh_token).await?;
@@ -97,7 +104,12 @@ async fn get_profile(client: &Client, token: &str) -> Result<UserProfile> {
     let value = HeaderValue::from_str(format!("Bearer {token}").as_str()).unwrap();
     request.headers_mut().insert("Authorization", value);
 
-    let data: UserProfile = client.execute(request).await?.json().await.map_err(net::Error::from)?;
+    let data: UserProfile = client
+        .execute(request)
+        .await?
+        .json()
+        .await
+        .map_err(net::Error::from)?;
     Ok(data)
 }
 
@@ -111,7 +123,12 @@ async fn exchange(client: &Client, code: String) -> Result<(String, String)> {
         ("scope", AUTH_SCOPE),
     ];
 
-    let data: AuthCodeExchangeResponse = client.post_form(AUTH_MS_TOKEN_URL, &params).await?.json().await.map_err(net::Error::from)?;
+    let data: AuthCodeExchangeResponse = client
+        .post_form(AUTH_MS_TOKEN_URL, &params)
+        .await?
+        .json()
+        .await
+        .map_err(net::Error::from)?;
     Ok((data.access_token, data.refresh_token))
 }
 
@@ -124,7 +141,12 @@ async fn refresh(client: &Client, refresh_token: String) -> Result<(String, Stri
         ("scope", AUTH_SCOPE),
     ];
 
-    let data: AuthCodeExchangeResponse = client.post_form(AUTH_MS_TOKEN_URL, &params).await?.json().await.map_err(net::Error::from)?;
+    let data: AuthCodeExchangeResponse = client
+        .post_form(AUTH_MS_TOKEN_URL, &params)
+        .await?
+        .json()
+        .await
+        .map_err(net::Error::from)?;
     Ok((data.access_token, data.refresh_token))
 }
 
@@ -141,7 +163,12 @@ async fn authenticate(client: &Client, token: String) -> Result<(String, DateTim
         token_type: "JWT",
     };
 
-    let data: AuthXboxTokenResponse = client.post_json(AUTH_XBL_TOKEN_URL, &body).await?.json().await.map_err(net::Error::from)?;
+    let data: AuthXboxTokenResponse = client
+        .post_json(AUTH_XBL_TOKEN_URL, &body)
+        .await?
+        .json()
+        .await
+        .map_err(net::Error::from)?;
     let xbl = data.token;
 
     // === XBL -> XSTS ===
@@ -154,7 +181,12 @@ async fn authenticate(client: &Client, token: String) -> Result<(String, DateTim
         token_type: "JWT",
     };
 
-    let data: AuthXboxTokenResponse = client.post_json(AUTH_XSTS_TOKEN_URL, &body).await?.json().await.map_err(net::Error::from)?;
+    let data: AuthXboxTokenResponse = client
+        .post_json(AUTH_XSTS_TOKEN_URL, &body)
+        .await?
+        .json()
+        .await
+        .map_err(net::Error::from)?;
     let xsts = data.token;
     let uhs = data
         .display_claims
@@ -169,7 +201,12 @@ async fn authenticate(client: &Client, token: String) -> Result<(String, DateTim
         xtoken: format!("XBL3.0 x={uhs};{xsts}"),
     };
 
-    let data: AuthGameTokenResponse = client.post_json(AUTH_GAME_TOKEN_URL, &body).await?.json().await.map_err(net::Error::from)?;
+    let data: AuthGameTokenResponse = client
+        .post_json(AUTH_GAME_TOKEN_URL, &body)
+        .await?
+        .json()
+        .await
+        .map_err(net::Error::from)?;
     let expires = Utc::now() + Duration::seconds(data.expires_in);
     Ok((data.access_token, expires))
 }

@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::collections::HashMap;
 use macros::{api_request, api_response};
+use std::collections::HashMap;
 
 /// A URL that can be opened in a WebView to authenticate the user.
 ///

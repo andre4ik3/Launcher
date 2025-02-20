@@ -37,14 +37,14 @@
       nativeBuildInputs = with pkgs; [ pkg-config ];
       buildInputs = with pkgs; [
         # Add additional build inputs here
-        #llvmPackages.clangWithLibcAndBasicRtAndLibcxx
+        llvmPackages.clangWithLibcAndBasicRtAndLibcxx
         glib
         dbus
         gtk4
         libadwaita
       ] ++ lib.optionals stdenv.isDarwin [
         # Additional darwin specific inputs can be set here
-#        pkgs.libiconv
+        pkgs.libiconv
       ];
 
       # Additional environment variables can be set directly
@@ -101,18 +101,35 @@
       silo = craneLib.buildPackage (individualCrateArgs // {
         pname = "silo";
         cargoExtraArgs = "-p silo";
-        src = fileSetForCrate { crate = ./silo; };
+        src = fileSetForCrate { crate = ./apps/silo; };
       });
     };
 
-    apps = rec {
-      default = cli;
-      cli = flake-utils.lib.mkApp {
+    checks = {
+      clippy = craneLib.cargoClippy (commonArgs // {
+        inherit cargoArtifacts;
+        cargoClippyExtraArgs = "--all-targets";
+      });
+
+      fmt = craneLib.cargoFmt { inherit src; };
+      deny = craneLib.cargoDeny { inherit src; };
+    };
+
+    apps = {
+      default = apps.launcher-cli;
+      mc = apps.launcher-cli;
+
+      launcher-cli = flake-utils.lib.mkApp {
         name = "mc";
         drv = packages.launcher-cli;
       };
-      linux = flake-utils.lib.mkApp {
+
+      launcher-linux = flake-utils.lib.mkApp {
         drv = packages.launcher-linux;
+      };
+
+      silo = flake-utils.lib.mkApp {
+        drv = packages.silo;
       };
     };
 
@@ -120,13 +137,13 @@
       packages = with pkgs; [
         # Core modules (Rust)
         cargo-deny
-        llvmPackages.clangWithLibcAndBasicRtAndLibcxx
-      ] ++ (lib.optionals hostPlatform.isLinux [
+        cargo-hakari
         pkg-config
         glib
         dbus
         gtk4
         libadwaita
+      ] ++ (lib.optionals hostPlatform.isLinux [
       ]) ++ (lib.optionals hostPlatform.isDarwin [
         swift-format
         xcodegen
